@@ -1,0 +1,28 @@
+/* src/styles/index.css */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Ajoutez votre propre style ici si nécessaire */
+:root {
+  --background-light: #ffffff;
+  --background-dark: #121212;
+  --text-light: #000000;
+  --text-dark: #ffffff;
+}
+
+body.light {
+  background-color: var(--background-light);
+  color: var(--text-light);
+}
+
+body.dark {
+  background-color: var(--background-dark);
+  color: var(--text-dark);
+}
+
+@media (max-width: 768px) {
+  .top-bar {
+    display: none;
+  }
+}
