@@ -69,8 +69,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/signin" element={<SignIn />} />
+        {/* <Route path="/" element={<Home />} /> */}
+        <Route path="/" element={<SignIn />} />
 
         <Route path="/signup" element={<SignUp />} />
         <Route path="/keyExpired" element={<KeyExpired />} />
