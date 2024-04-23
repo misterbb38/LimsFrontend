@@ -7,6 +7,7 @@ import EditHistoriqueButton from './EditHistoriqueButton'
 import EditResultatButton from './EditResultatButton'
 import AddHistoriqueForm from './AddHistoriqueForm'
 import AddResultatForm from './AddResultatForm'
+import EditPatientButton from './EditPatientButton'
 
 function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
   const [analyseData, setAnalyseData] = useState(null)
@@ -186,6 +187,10 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
           <div className="divider"></div>
 
           <h1 className="font-bold">Détails</h1>
+          <EditPatientButton
+            userId={analyseData.userId?._id}
+            onuserUpdated={() => fetchAnalyseData(analyseId)}
+          />
           <div className="divider"></div>
           <div>
             {/* Informations du analyse et patient */}
