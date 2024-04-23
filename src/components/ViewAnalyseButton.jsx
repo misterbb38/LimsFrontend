@@ -8,6 +8,7 @@ import EditResultatButton from './EditResultatButton'
 import AddHistoriqueForm from './AddHistoriqueForm'
 import AddResultatForm from './AddResultatForm'
 import EditPatientButton from './EditPatientButton'
+import GenerateBarcodeButton from './GenerateBarcodeButton'
 
 function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
   const [analyseData, setAnalyseData] = useState(null)
@@ -285,7 +286,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
                   <tr>
                     <th className="font-bold">Nom</th>
 
-                    <th className="font-bold">interpretation</th>
+                    <th className="font-bold">code barre</th>
                   </tr>
                 </thead>
                 {/* Corps du tableau */}
@@ -313,7 +314,15 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
                       <tr key={test._id}>
                         <td>{test.nom}</td>
 
-                        <td>{test.interpretation}</td>
+                        <td>
+                          <GenerateBarcodeButton
+                            nip={analyseData?.userId?.nip}
+                            nom={analyseData?.userId?.nom}
+                            prenom={analyseData?.userId?.prenom}
+                            identifiant={analyseData?.identifiant}
+                            test={test.nom}
+                          />
+                        </td>
                       </tr>
                     )
                   })}
