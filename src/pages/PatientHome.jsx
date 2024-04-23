@@ -259,12 +259,12 @@ function PatientHome() {
       <NavigationBreadcrumb pageName="Analyse" />
       <div className="divider"></div>
       {/* You can open the modal using document.getElementById('ID').showModal() method */}
-      <button
+      {/* <button
         className="btn"
         onClick={() => document.getElementById('my_modal_3').showModal()}
       >
         Ajouter une Analyse
-      </button>
+      </button> */}
       <dialog id="my_modal_3" className="modal">
         <div className="modal-box">
           <form method="dialog">

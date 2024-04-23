@@ -13,6 +13,7 @@ function EditPatientButton({ userId, onuserUpdated }) {
     adresse: '',
     password: '',
     userType: '',
+    sexe: '',
   })
   const [formErrors, setFormErrors] = useState({})
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
@@ -175,6 +176,28 @@ function EditPatientButton({ userId, onuserUpdated }) {
                   onChange={handleChange}
                 />
                 {renderError('adresse')}
+              </div>
+
+              {/* Sélection du Type d'Utilisateur */}
+              <div className="mb-4">
+                <label
+                  htmlFor="userType"
+                  className="mb-2.5 block font-medium base-content"
+                >
+                  Type d'Utilisateur
+                </label>
+                <select
+                  id="sexe"
+                  name="sexe"
+                  value={formData.sexe}
+                  onChange={handleChange}
+                  required
+                  className="input"
+                >
+                  <option value="">Sélectionnez le sexe</option>
+                  <option value="homme">homme</option>
+                  <option value="femme">femme</option>
+                </select>
               </div>
 
               {/* Sélection du Type d'Utilisateur */}

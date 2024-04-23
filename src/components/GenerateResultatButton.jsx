@@ -194,7 +194,7 @@ function GenerateResultatButton({ invoice }) {
     // Informations du client
     let currentY = 40 // Mise à jour pour utiliser currentY pour la position initiale
     doc.setFontSize(8) // Changez la taille à la valeur souhaitée
-    doc.setFont('helvetica') // Définissez la police en Helvetica et le style en gras
+    doc.setFont('helvetica', 'bold') // Définissez la police en Helvetica et le style en gras
     // doc.text(`Informations du patient`, 130, currentY)
     doc.text(`Nº Dossier: ${invoice?.identifiant}`, 135, currentY + 7)
     doc.text(
@@ -233,7 +233,7 @@ function GenerateResultatButton({ invoice }) {
 
     // En-tête de la facture
     doc.setFontSize(8)
-    doc.setFont('helvetica') // Définissez la police en Helvetica et le style en gras
+    doc.setFont('helvetica', 'bold') // Définissez la police en Helvetica et le style en gras
 
     doc.text(`NIP: ${invoice?.userId.nip}`, 35, currentY + 7)
     doc.setTextColor(0, 0, 0)
@@ -259,11 +259,11 @@ function GenerateResultatButton({ invoice }) {
     doc.text(formattedDate, 35 + dateLabelWidth, currentY + 12)
     doc.setFont('helvetica', 'normal')
 
-    doc.text(
-      `Nature: ${invoice.partenaireId?.typePartenaire || 'paf'} `,
-      35,
-      currentY + 17
-    )
+    // doc.text(
+    //   `Nature: ${invoice.partenaireId?.typePartenaire || 'paf'} `,
+    //   35,
+    //   currentY + 17
+    // )
 
     currentY += 37 // Adjust for marginBottom and header height
 
@@ -344,12 +344,15 @@ function GenerateResultatButton({ invoice }) {
 
       const maxLineWidth = 100
       const maxvaluWidth = 50 // Largeur maximale du texte dans le PDF
-      let nomTestLines = doc.splitTextToSize(
-        `Parametre: ${test.testId.nom}`,
-        maxLineWidth
-      )
+      let nomTestLines = doc.splitTextToSize(`${test.testId.nom}`, maxLineWidth)
+
+      // Choisir entre interpretationA et interpretationB en fonction de statutMachine
+      let interpretationText = test.statutMachine
+        ? test.testId.interpretationA || "Pas d'interprétationA disponible"
+        : test.testId.interpretationB || "Pas d'interprétationB disponible"
+
       let interpretationLines = doc.splitTextToSize(
-        `Interprétation:\n ${test.testId.interpretation}`,
+        `Interprétation:\n ${interpretationText}`,
         maxLineWidth
       )
 
@@ -383,20 +386,44 @@ function GenerateResultatButton({ invoice }) {
       doc.text(`${test.valeur}`, 90, currentY + 5)
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(8)
-      if (test.testId.valeur) {
-        doc.text(`${test.testId.valeur}`, 150, currentY + 5)
+      // Affichage de la valeur de la machine A ou B en fonction de statutMachine
+      let machineValue = test.statutMachine
+        ? test.testId.valeurMachineA
+        : test.testId.valeurMachineB
+      if (machineValue) {
+        doc.text(`${machineValue}`, 150, currentY + 5)
       }
+
       doc.setFontSize(6)
       doc.setFont('helvetica', 'bold')
+      // Déterminer quelle machine afficher en fonction de statutMachine
+      let machineText = test?.statutMachine
+        ? test?.testId?.machineA
+        : test?.testId?.machineB
+
+      // Afficher le nom de la machine
+      doc.text(`${machineText}`, 20, currentY)
+
+      // Calculer la largeur du texte de la machine pour positionner correctement la méthode
+      let machineTextWidth =
+        (doc.getStringUnitWidth(machineText) * doc.internal.getFontSize()) /
+        doc.internal.scaleFactor
+
+      // Position de début pour le texte de la méthode
+      let methodStartPos = 20 + machineTextWidth + 5 // 5 est un petit espace entre les deux textes
+
+      // Afficher la méthode si elle existe, juste après le nom de la machine
+      if (test?.methode) {
+        doc.text(`(${test?.methode})`, methodStartPos, currentY)
+      }
+
       doc.text(
         `Prélèvement: ${formattedDate} ${test?.typePrelevement}`,
         20,
-        currentY
+        currentY + 3
       )
       doc.setFontSize(8)
       doc.setFont('helvetica', 'normal')
-      currentY += 8 // Increment for one line
-      doc.text(`Catégorie: ${test?.testId?.categories}`, 20, currentY)
       currentY += 8 // Increment for one line
       if (test.statutInterpretation) {
         doc.text(interpretationLines, 20, currentY)

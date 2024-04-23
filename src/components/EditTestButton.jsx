@@ -15,7 +15,6 @@ function EditTestButton({ testId, ontestUpdated }) {
     nom: '',
     description: '',
     categories: '', // Nouveau champ
-
     valeurMachineA: '',
     valeurMachineB: '',
     machineA: '',

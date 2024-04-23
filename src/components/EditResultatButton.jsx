@@ -8,7 +8,7 @@ function EditResultatButton({ resultatId, onResultatUpdated }) {
   const [formData, setFormData] = useState({
     valeur: '',
     statutMachine: false,
-
+    metode: '',
     statutInterpretation: false,
     typePrelevement: '',
     datePrelevement: '',
@@ -45,6 +45,7 @@ function EditResultatButton({ resultatId, onResultatUpdated }) {
           typePrelevement: data.data.typePrelevement,
           datePrelevement: datePrelevementFormatted,
           remarque: data.data.remarque,
+          methode: data.data.methode,
           statutMachine: data.data.statutMachine,
         })
       }
@@ -159,6 +160,17 @@ function EditResultatButton({ resultatId, onResultatUpdated }) {
                   <option value="true">A</option>
                   <option value="false">B</option>
                 </select>
+              </div>
+
+              <div className="form-control">
+                <label className="label">Methode</label>
+                <input
+                  className="input input-bordered"
+                  type="text"
+                  name="methode"
+                  value={formData.methode}
+                  onChange={handleChange}
+                />
               </div>
               <div className="form-control">
                 <label className="label">Type de Prélèvement</label>

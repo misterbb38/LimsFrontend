@@ -258,7 +258,8 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
                   </tr>
                   {/* Quatrième ligne */}
                   <tr>
-                    <td></td>
+                    <td className="font-bold bg-primary  text-white">Sexe</td>
+                    <td>{analyseData.userId?.sexe || 'N/A'}</td>
                     <td className="font-bold bg-primary  text-white">
                       Adresse
                     </td>
@@ -396,7 +397,12 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
                       <td>{resul?.testId?.nom}</td>
                       <td>{resul?.valeur}</td>
                       <td>{resul?.typePrelevement}</td>
-                      <td>{resul?.testId?.valeur}</td>
+                      <td>
+                        {resul?.statutMachine
+                          ? resul?.testId?.valeurMachineA
+                          : resul?.testId?.valeurMachineB}
+                      </td>
+
                       <td>{resul.statutInterpretation ? 'Oui' : 'Non'}</td>
 
                       <td>{resul?.updatedBy?.nom}</td>

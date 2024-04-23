@@ -9,6 +9,7 @@ import { faTrash } from '@fortawesome/free-solid-svg-icons'
 function TestList() {
   const [tests, setTests] = useState([])
   const [loading, setLoading] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
@@ -17,18 +18,46 @@ function TestList() {
     fetchTests()
   }, [currentPage]) // Dépendance ajoutée ici pour recharger à chaque changement de page
 
+  // const fetchTests = async () => {
+  //   setLoading(true)
+  //   try {
+  //     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+  //     const token = userInfo?.token
+  //     const response = await fetch(`${apiUrl}/api/test?page=${currentPage}`, {
+  //       // Modification pour inclure la pagination
+  //       method: 'GET',
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     })
+  //     const data = await response.json()
+  //     if (data.success) {
+  //       setTests(data.data)
+  //       setTotalPages(data.totalPages) // Assumant que l'API renvoie le nombre total de pages
+  //     } else {
+  //       console.error('Failed to fetch tests')
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching tests:', error)
+  //   } finally {
+  //     setLoading(false)
+  //   }
+  // }
+
   const fetchTests = async () => {
     setLoading(true)
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'))
       const token = userInfo?.token
-      const response = await fetch(`${apiUrl}/api/test?page=${currentPage}`, {
-        // Modification pour inclure la pagination
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      const response = await fetch(
+        `${apiUrl}/api/test?page=${currentPage}&search=${searchTerm}`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
       const data = await response.json()
       if (data.success) {
         setTests(data.data)
@@ -61,6 +90,22 @@ function TestList() {
         Ajouter un nouveau test
       </button>
       <br></br>
+      <div className="">
+        <label className="label" htmlFor="search"></label>
+        <input
+          id="search"
+          type="text"
+          placeholder="Entrer le nom du test"
+          className="input input-borderedinput input-bordered input-primary w-full max-w-xs"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyPress={(event) => event.key === 'Enter' && fetchTests()}
+        />
+        <button className="btn btn-primary ml-2" onClick={fetchTests}>
+          Rechercher
+        </button>
+      </div>
+
       <dialog id="my_modal_3" className="modal">
         <div className="modal-box">
           <AddTestForm onTestChange={fetchTests} />

@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 function AddResultatForm({ analyseId, patientId, onResultatChange }) {
   const [testId, setTestId] = useState('')
   const [valeur, setValeur] = useState('')
+  const [methode, setMethode] = useState('')
   const [machineA, setMachineA] = useState('')
   const [machineB, setMachineB] = useState('')
 
@@ -73,6 +74,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
           testId,
           patientId,
           valeur,
+          methode,
           statutMachine,
           statutInterpretation,
           typePrelevement,
@@ -91,6 +93,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
         setMachineA('')
         setMachineB('')
         setValeur('')
+        setMethode('')
         setStatutMachine('')
         setStatutInterpretation(false)
         setTypePrelevement('')
@@ -175,6 +178,16 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
             <option value="false">B</option>
           </select>
         </div>
+
+        <div>
+          <label className="label">Methode</label>
+          <input
+            type="text"
+            value={methode}
+            onChange={(e) => setMethode(e.target.value)}
+            className="input input-bordered"
+          />
+        </div>
         <div>
           <label className="label">Type de Prélèvement</label>
           <input
@@ -184,6 +197,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
             className="input input-bordered"
           />
         </div>
+
         <div>
           <label className="label">Date de Prélèvement</label>
           <input

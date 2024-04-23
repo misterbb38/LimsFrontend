@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import PropTypes from 'prop-types'
 
 import LogoText from '../../images/bioramlogo.png'
@@ -11,6 +11,7 @@ const SignUp = ({ onUser }) => {
     email: '',
     password: '',
     confirmPassword: '',
+    sexe: '',
     dateNaissance: '',
     age: '',
     userType: '',
@@ -27,6 +28,7 @@ const SignUp = ({ onUser }) => {
     userType,
     adresse,
     age,
+    sexe,
   } = formData
   // const [passwordError, setPasswordError] = useState(false)
   // const [passwordLengthError, setPasswordLengthError] = useState(false)
@@ -91,6 +93,7 @@ const SignUp = ({ onUser }) => {
           dateNaissance,
           userType,
           adresse,
+          sexe,
         }),
       })
 
@@ -114,6 +117,7 @@ const SignUp = ({ onUser }) => {
           userType: '',
           adresse: '',
           age: '',
+          sexe: '',
         })
         onUser()
       }
@@ -310,6 +314,28 @@ const SignUp = ({ onUser }) => {
                     <option value="preleveur">Preleveur</option>
                     <option value="accueil">Accueil</option>
                     <option value="superadmin">Superadmin</option>
+                  </select>
+                </div>
+
+                {/* Sélection du Type de sexe */}
+                <div className="mb-4">
+                  <label
+                    htmlFor="userType"
+                    className="mb-2.5 block font-medium base-content"
+                  >
+                    Sexe
+                  </label>
+                  <select
+                    id="sexe"
+                    name="sexe"
+                    value={sexe}
+                    onChange={handleChange}
+                    required
+                    className="input"
+                  >
+                    <option value="">Sélectionnez</option>
+                    <option value="homme">homme</option>
+                    <option value="femme">femme</option>
                   </select>
                 </div>
 
