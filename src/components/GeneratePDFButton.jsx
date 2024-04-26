@@ -194,7 +194,7 @@ function GeneratePDFButton({ invoice }) {
     // Informations du client
     let currentY = 40 // Mise à jour pour utiliser currentY pour la position initiale
     doc.setFontSize(8) // Changez la taille à la valeur souhaitée
-    doc.setFont('helvetica') // Définissez la police en Helvetica et le style en gras
+    doc.setFont('helvetica', 'bold') // Définissez la police en Helvetica et le style en gras
     // doc.text(`Informations du patient`, 130, currentY)
     doc.text(`Nº Dossier: ${invoice?.identifiant}`, 135, currentY + 7)
     doc.text(
@@ -259,13 +259,14 @@ function GeneratePDFButton({ invoice }) {
     // Réinitialisez la police en style normal pour la date réelle
     doc.setFont('helvetica', 'bold')
     doc.text(formattedDate, 35 + dateLabelWidth, currentY + 12)
-    doc.setFont('helvetica', 'normal')
+   
 
     doc.text(
       `Nature: ${invoice.partenaireId?.typePartenaire || 'paf'} `,
       35,
       currentY + 17
     )
+    doc.setFont('helvetica', 'normal')
     // Initialiser currentY avec la valeur Y où vous souhaitez commencer à afficher le texte
     // let currentYv = currentY + 22
 
@@ -323,9 +324,9 @@ function GeneratePDFButton({ invoice }) {
     } else {
       // Ajustez l'affichage si 'typePartenaire' est différent de 'ipm' et 'assurance'
       doc.setTextColor(255, 255, 255)
-      doc.text('Analyse', 42, currentY + 8)
+      doc.text('Analyse', 42, currentY + 4)
       // Notez que 'Coeficiant B' n'est pas affiché dans ce cas
-      doc.text('Total', 166, currentY + 8) // Ajuster la position si nécessaire
+      doc.text('Total', 166, currentY + 4) // Ajuster la position si nécessaire
       currentY += 10
     }
 
@@ -654,7 +655,7 @@ function GeneratePDFButton({ invoice }) {
     // Avant d'ajouter la mise en garde, assurez-vous qu'il y a assez d'espace pour elle et le pied de page
     // Calculez l'espace nécessaire pour la mise en garde
     // Conversion de la date de récupération au format souhaité
-    let miseEnGarde = `Facture à ramener au retrait des résultats.`
+    let miseEnGarde = `Facture à ramener au retrait des résultats. `
 
     // Vérifier si la date de récupération est définie
     if (invoice.dateDeRecuperation) {

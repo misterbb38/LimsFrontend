@@ -65,7 +65,11 @@ const HomeContent = () => {
   }
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return (
+      <div>
+        <span className="loading loading-spinner text-primary"></span>
+      </div>
+    )
   }
 
   const COLORS = ['#FF69B4', '#1E90FF', '#FFD700'] // Couleurs pour femmes, hommes, enfants

@@ -80,6 +80,39 @@ function TestList() {
     setCurrentPage((prev) => prev - 1)
   }
 
+  // Fonction pour supprimer un test
+  const deleteTest = async (testId) => {
+    const confirmDelete = window.confirm(
+      'Êtes-vous sûr de vouloir supprimer ce test ?'
+    )
+    if (!confirmDelete) return
+
+    try {
+      setLoading(true)
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+      const token = userInfo?.token
+      const response = await fetch(`${apiUrl}/api/test/${testId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      const data = await response.json()
+      if (data.success) {
+        alert('Test supprimé avec succès.')
+        fetchTests() // Rafraîchir la liste des tests après la suppression
+      } else {
+        throw new Error(data.message || 'Erreur lors de la suppression du test')
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression du test:', error)
+      alert('Erreur lors de la suppression du test: ' + error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="base-content bg-base-100 mx-auto p-4 min-h-[800px]">
       <NavigationBreadcrumb pageName="Test" />
@@ -172,12 +205,7 @@ function TestList() {
                         <ViewTestButton testId={test._id} />
                         <button
                           className="btn btn-error"
-                          onClick={() => {
-                            const confirmDelete = window.confirm(
-                              'Êtes-vous sûr de vouloir supprimer ce test ?'
-                            )
-                            if (confirmDelete) fetchTests()
-                          }}
+                          onClick={() => deleteTest(test._id)}
                         >
                           <FontAwesomeIcon icon={faTrash} />
                         </button>

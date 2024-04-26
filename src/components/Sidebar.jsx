@@ -28,7 +28,7 @@ function Sidebar() {
     // { id: 3, label: 'Devis', route: '/dash/Devis', icon: faFileAlt },
     { id: 4, label: 'Patient', route: '/dash/patient', icon: faUsers },
     { id: 5, label: 'Personnel', route: '/dash/personnel', icon: faUsers },
-    { id: 6, label: 'Test', route: '/dash/test', icon: faTag },
+    { id: 6, label: 'Parametre', route: '/dash/test', icon: faTag },
     { id: 7, label: 'Partenaire', route: '/dash/partenaire', icon: faTag },
     {
       id: 8,
@@ -37,8 +37,8 @@ function Sidebar() {
       icon: faClipboardList,
     },
     // { id: 8, label: 'Instructions', route: '/dash/instruction', icon: faBook },
-    { id: 9, label: 'Message', route: '/dash/notification', icon: faEnvelope },
-    { id: 10, label: 'Paramètres', route: '/dash/parametre', icon: faCog },
+    // { id: 9, label: 'Message', route: '/dash/notification', icon: faEnvelope },
+    { id: 10, label: 'Profile', route: '/dash/parametre', icon: faCog },
   ]
 
   const handleMenuItemClick = (id) => {

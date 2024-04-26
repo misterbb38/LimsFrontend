@@ -8,6 +8,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
   const [availableTests, setAvailableTests] = useState([])
   const [ordonnancePdf, setOrdonnancePdf] = useState(null)
   const [users, setUsers] = useState([])
+  const [userOwn, setUserOwn] = useState([])
   const [selectedUserId, setSelectedUserId] = useState('')
   const [hasInsurance, setHasInsurance] = useState('')
   const [selectedPartenaireId, setSelectedPartenaireId] = useState('')
@@ -144,6 +145,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
     e.preventDefault()
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
     const token = userInfo?.token
+    const userconnect = userInfo?._id
 
     // Utiliser FormData pour envoyer le fichier et les autres données
     const formData = new FormData()
@@ -154,6 +156,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
     if (ordonnancePdf) {
       formData.append('ordonnancePdf', ordonnancePdf)
     }
+    formData.append('userOwn', userconnect)
     if (pc1) formData.append('pc1', 2000)
     if (pc2) formData.append('pc2', 4000)
     formData.append('deplacement', deplacement)

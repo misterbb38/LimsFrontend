@@ -6,7 +6,10 @@ import { faEye } from '@fortawesome/free-solid-svg-icons'
 function ViewTestButton({ testId }) {
   const [formData, setFormData] = useState({
     status: '',
-    prix: '',
+    prixAssurance: '',
+    prixIpm: '',
+    prixSococim: '',
+    prixPaf: '',
     nom: '',
   })
 
@@ -62,8 +65,20 @@ function ViewTestButton({ testId }) {
             </div>
 
             <div>
-              <label className="font-semibold">Prix:</label>
-              <p>{formData.prix}</p>
+              <label className="font-semibold">Prix Assurance:</label>
+              <p>{formData.prixAssurance}</p>
+            </div>
+            <div>
+              <label className="font-semibold">Prix Ipm:</label>
+              <p>{formData.prixIpm}</p>
+            </div>
+            <div>
+              <label className="font-semibold">Prix Sococim:</label>
+              <p>{formData.prixSococim}</p>
+            </div>
+            <div>
+              <label className="font-semibold">Prix Paf:</label>
+              <p>{formData.prixPaf}</p>
             </div>
 
             <div>

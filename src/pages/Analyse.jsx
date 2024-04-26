@@ -7,7 +7,6 @@ import ViewAnalyseButton from '../components/ViewAnalyseButton'
 import FiltreAnalyse from '../components/AnalyseFilter'
 import DeleteAnalyseButton from '../components/DeleteAnalyseButton'
 import NavigationBreadcrumb from '../components/NavigationBreadcrumb'
-import CurrencySelector from '../components/CurrencySelector' // Importez le nouveau composant
 import Chatbot from '../components/Chatbot'
 
 function Facture() {
@@ -16,15 +15,29 @@ function Facture() {
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
 
+  // // Mapping des statuts aux classes de couleur de DaisyUI
+  // const statusBadgeClasses = {
+  //   Création: 'badge badge-info text-white font-bold', // Bleu pour "Création"
+  //   'En attente': 'badge badge-warning text-white font-bold', // Jaune pour "En attente"
+  //   Approuvé: 'badge badge-success text-white font-bold', // Vert pour "Approuvé"
+  //   'Échantillon collecté': 'badge badge-primary text-white font-bold', // Bleu foncé pour "Échantillon collecté"
+  //   'Livré au laboratoire': 'badge badge-accent text-white font-bold', // Cyan ou une couleur spécifique pour "Livré au laboratoire"
+  //   Fait: 'badge badge-success text-white font-bold', // Vert pour "Fait"
+  //   Annulé: 'badge badge-error text-white font-bold', // Rouge pour "Annulé"
+  // }
+
   // Mapping des statuts aux classes de couleur de DaisyUI
   const statusBadgeClasses = {
-    Création: 'badge badge-info text-white font-bold', // Bleu pour "Création"
-    'En attente': 'badge badge-warning text-white font-bold', // Jaune pour "En attente"
-    Approuvé: 'badge badge-success text-white font-bold', // Vert pour "Approuvé"
-    'Échantillon collecté': 'badge badge-primary text-white font-bold', // Bleu foncé pour "Échantillon collecté"
-    'Livré au laboratoire': 'badge badge-accent text-white font-bold', // Cyan ou une couleur spécifique pour "Livré au laboratoire"
-    Fait: 'badge badge-success text-white font-bold', // Vert pour "Fait"
-    Annulé: 'badge badge-error text-white font-bold', // Rouge pour "Annulé"
+    Création: 'badge badge-info text-white font-bold px-2 py-1', // Bleu pour "Création"
+    'En attente': 'badge badge-warning text-white font-bold px-4 py-5', // Jaune pour "En attente"
+    Approuvé: 'badge badge-success text-white font-bold px-2 py-1', // Vert pour "Approuvé"
+    'Échantillon collecté':
+      'badge badge-primary text-white font-bold px-2 py-1', // Bleu foncé pour "Échantillon collecté"
+    'Livré au laboratoire': 'badge badge-accent text-white font-bold px-2 py-1', // Cyan pour "Livré au laboratoire"
+    Fait: 'badge badge-success text-white font-bold px-2 py-1', // Vert pour "Fait"
+    Annulé: 'badge badge-error text-white font-bold px-2 py-1', // Rouge pour "Annulé"
+    Validé: 'badge badge-success text-white font-bold px-2 py-1', // Vert pour "Validé"
+    Modification: 'badge badge-secondary text-white font-bold px-2 py-1', // Gris foncé pour "Modification"
   }
 
   const facturesPerPage = 8
@@ -57,9 +70,10 @@ function Facture() {
 
       const data = await response.json()
       if (data.success) {
+        // Assurez-vous d'utiliser le bon champ de date ici
         const facturesFiltrees = data.data.sort(
-          (a, b) => new Date(b.date) - new Date(a.date)
-        ) // Tri par date décroissante
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt) // Utilisation de createdAt pour le tri
+        )
         console.log(data)
         setAllFactures(facturesFiltrees)
         setDisplayedFactures(facturesFiltrees)
@@ -335,10 +349,19 @@ function Facture() {
                       >
                         {facture.historiques.length > 0
                           ? facture.historiques[facture.historiques.length - 1]
-                              .status
+                              .status === 'Échantillon collecté'
+                            ? 'Collecté'
+                            : facture.historiques[
+                                  facture.historiques.length - 1
+                                ].status === 'Livré au laboratoire'
+                              ? 'Livré'
+                              : facture.historiques[
+                                  facture.historiques.length - 1
+                                ].status
                           : 'Non défini'}
                       </span>
                     </td>
+
                     <td>
                       <div className="flex justify-around space-x-1">
                         <GeneratePDFButton invoice={facture} />
