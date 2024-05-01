@@ -308,16 +308,14 @@ function TopBar({ toggleSidebar, isSidebarOpen }) {
               </li>
             </ul>
           </div>
-          <img
+          {/* <img
             src={`${apiUrl}/${user.logo.replace(/\\/g, '/')}` || UserPhoto}
             alt="User"
             className="h-8 w-8 rounded-full"
-          />
+          /> */}
           <div className="ml-2">
             <div className="text-base-content">{user.nom}</div>
-            <div className="text-xs text-base-content">
-              {user.nomEntreprise}
-            </div>
+            <div className="text-xs text-base-content">{user.userType}</div>
           </div>
         </div>
       </div>

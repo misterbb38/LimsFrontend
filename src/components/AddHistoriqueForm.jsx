@@ -83,10 +83,10 @@ function AddHistoriqueForm({ analyseId, onHistoriqueChange }) {
             <option value="Approuvé">Approuvé</option>
             <option value="Échantillon collecté">Échantillon collecté</option>
             <option value="Livré au laboratoire">Livré au laboratoire</option>
-            <option value="Validé">Validé</option>
+
             <option value="Annulé">Annulé</option>
             {/* Conditionner l'affichage de l'option "Validé" */}
-            {userType === 'medecin' && <option value="Validé">Validé</option>}
+            {userType === 'docteur' && <option value="Validé">Validé</option>}
             {/* Ajoutez d'autres options de statut ici */}
           </select>
         </div>
