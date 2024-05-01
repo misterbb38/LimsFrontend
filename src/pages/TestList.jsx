@@ -174,6 +174,9 @@ function TestList() {
                     Prix IPM
                   </th>
                   <th className="font-bold text-lg text-base-content">
+                    Prix Sococim
+                  </th>
+                  <th className="font-bold text-lg text-base-content">
                     Status
                   </th>
                   <th className="font-bold text-lg text-base-content">
@@ -189,6 +192,7 @@ function TestList() {
                     <td>{test.prixPaf}</td>
                     <td>{test.prixAssurance}</td>
                     <td>{test.prixIpm}</td>
+                    <td>{test.prixSococim}</td>
                     <td>
                       <span
                         className={`badge ${test.status ? 'badge-success' : 'badge-error'}`}
