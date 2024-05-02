@@ -331,7 +331,9 @@ function Facture() {
                         ? `${facture.userId.prenom} ${facture.userId.nom}`
                         : 'Non attribué'}
                     </td>
-                    <td>{facture.userId.nip}</td>
+                    <td>
+                      {facture.userId ? facture.userId.nip : 'Non disponible'}
+                    </td>
                     <td>{facture.tests.map((test) => test.nom).join(', ')}</td>
                     {/* <td>{facture.status}</td> */}
 
