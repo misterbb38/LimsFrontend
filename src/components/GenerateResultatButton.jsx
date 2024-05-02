@@ -78,17 +78,6 @@ function GenerateResultatButton({ invoice }) {
     return colorMap[colorName.toLowerCase()] || '#000000' // Retourne noir par défaut si la couleur n'est pas trouvée
   }
 
-  //Définition des couleurs de fond basées sur le statut
-  // const statusColors = {
-  //   Attente: { textColor: '#FFFFFF', fillColor: '#FFA500' }, // Orange avec texte blanc
-  //   Payée: { textColor: '#FFFFFF', fillColor: '#008000' }, // Vert avec texte blanc
-  //   Annullée: { textColor: '#FFFFFF', fillColor: '#FF0000' }, // Rouge avec texte blanc
-  // }
-
-  // Récupération de la configuration de couleur basée sur le statut
-  // const { textColor, fillColor } = statusColors[invoice.historiques[invoice.historiques.length - 1]
-  //   .status]
-
   const generatePDF = async () => {
     const doc = new jsPDF()
     const userColor = getColorValue('gris') // Obtenez la couleur hexadécimale
@@ -104,6 +93,7 @@ function GenerateResultatButton({ invoice }) {
 
     try {
       // Charger les images
+
       const [imgLeft, imgRight] = await Promise.all([
         loadImage(logoLeft),
         loadImage(logoRight),
@@ -403,6 +393,38 @@ function GenerateResultatButton({ invoice }) {
           hour: '2-digit',
           minute: '2-digit',
         })
+      }
+
+      const validatedHistory = invoice.historiques.find(
+        (h) => h.status === 'Validé'
+      )
+      let validatedBy = 'Non spécifié'
+      if (validatedHistory && validatedHistory.updatedBy) {
+        validatedBy = `${validatedHistory.updatedBy.prenom} ${validatedHistory.updatedBy.nom}`
+        doc.setFontSize(10)
+        doc.setFont('helvetica', 'bold')
+        doc.text(`Validé par: ${validatedBy}`, 20, currentY)
+      }
+      // Affichage du médecin qui a validé l'analyse
+
+      currentY += 10 // Incrément pour passer à la section suivante
+      // Positionnement initial pour les détails
+
+      const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
+      const validatedHistoryLogo = invoice.historiques.find(
+        (h) => h.status === 'Validé'
+      )
+      if (
+        validatedHistoryLogo &&
+        validatedHistoryLogo.updatedBy &&
+        validatedHistoryLogo.updatedBy.logo
+      ) {
+        const logoPath = validatedHistoryLogo.updatedBy.logo.replace(/\\/g, '/')
+        const fullLogoPath = `${apiUrl}/${logoPath}`
+
+        const doctorLogo = await loadImage(fullLogoPath)
+        const doctorLogoHeight = 50 * (doctorLogo.height / doctorLogo.width)
+        doc.addImage(doctorLogo, 'PNG', 20, currentY, 50, doctorLogoHeight)
       }
 
       // Vérification pour l'ajout d'une page avant le total et les informations bancaires

@@ -155,6 +155,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
               <AddHistoriqueForm
                 analyseId={analyseId}
                 onHistoriqueChange={() => fetchAnalyseData(analyseId)}
+                existingHistoriques={analyseData.historiques} // Passer les historiques existants
               />
               <div className="modal-action">
                 <form method="dialog">
