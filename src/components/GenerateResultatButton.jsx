@@ -91,6 +91,18 @@ function GenerateResultatButton({ invoice }) {
         img.src = src
       })
 
+    function addPageNumbers(doc) {
+      const pageCount = doc.internal.getNumberOfPages() // Obtenir le nombre total de pages
+
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i) // Définir la page courante sur laquelle le numéro de page sera ajouté
+        doc.setFontSize(10) // Définir la taille de la police pour le numéro de page
+        doc.setTextColor(150) // Définir la couleur du texte pour le numéro de page
+        // Ajouter le numéro de page au centre du pied de page de chaque page
+        doc.text(`Page ${i} sur ${pageCount}`, 105, 275, { align: 'center' })
+      }
+    }
+
     try {
       // Charger les images
 
@@ -403,7 +415,14 @@ function GenerateResultatButton({ invoice }) {
         validatedBy = `${validatedHistory.updatedBy.prenom} ${validatedHistory.updatedBy.nom}`
         doc.setFontSize(10)
         doc.setFont('helvetica', 'bold')
-        doc.text(`Validé par: ${validatedBy}`, 20, currentY)
+        doc.text(`Validé par: ${validatedBy}`, 140, currentY)
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(8)
+        doc.text(
+          `${formatDateAndTime(validatedHistory.updatedBy.createdAt)}`,
+          150,
+          currentY + 4
+        )
       }
       // Affichage du médecin qui a validé l'analyse
 
@@ -424,7 +443,7 @@ function GenerateResultatButton({ invoice }) {
 
         const doctorLogo = await loadImage(fullLogoPath)
         const doctorLogoHeight = 50 * (doctorLogo.height / doctorLogo.width)
-        doc.addImage(doctorLogo, 'PNG', 20, currentY, 50, doctorLogoHeight)
+        doc.addImage(doctorLogo, 'PNG', 150, currentY, 50, doctorLogoHeight)
       }
 
       // Vérification pour l'ajout d'une page avant le total et les informations bancaires
@@ -445,7 +464,8 @@ function GenerateResultatButton({ invoice }) {
       // Continuer avec la logique de création du PDF comme avant
 
       // currentY += 20 // Espace avant les informations bancaires
-
+      // Ajouter des numéros de page juste avant de finaliser le document
+      addPageNumbers(doc)
       // doc.save(`facture-${invoice._id}.pdf`)
       const blob = doc.output('blob')
       // Créez une URL à partir du blob
