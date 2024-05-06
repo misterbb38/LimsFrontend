@@ -1152,6 +1152,13 @@ function GeneratePDFButton({ invoice }) {
         // Ajustement de currentY pour continuer le document après cette ligne
         currentY = startY + cellHeight
       }
+      currentY += 5
+      doc.text(
+        `Facture ${invoice.statusPayement}`,
+        152,
+        currentY
+      )
+
 
       // Dernière ligne verte
       if (currentY > 250) {
