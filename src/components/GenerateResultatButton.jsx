@@ -146,25 +146,6 @@ function GenerateResultatButton({ invoice }) {
       // Ajouter le pied de page à la première page
       addFooter()
 
-      // // Ajout des logos et du texte central
-      // const imgLeft = new Image()
-      // imgLeft.src = logoLeft
-      // const imgRight = new Image()
-      // imgRight.src = logoRight
-      // // Dimensions originales de l'image
-      // const imgWidth = imgLeft.width
-      // const imgHeight = imgLeft.height
-      // // Largeur maximale pour l'image dans le PDF
-      // const maxWidth = 30 // Exemple : 35 unités de largeur dans le PDF
-
-      // // Calcul du rapport hauteur/largeur de l'image
-      // const ratio = imgWidth / imgHeight
-
-      // // Calcul de la nouvelle hauteur en conservant le rapport hauteur/largeur
-      // const newHeight = maxWidth / ratio
-
-      // Ajout de l'image au PDF avec les nouvelles dimensions
-      // La largeur est définie sur maxWidth et la hauteur est ajustée pour conserver le rapport
       doc.setFontSize(12)
       doc.setFont('helvetica')
       doc.text("LABORATOIRE D'ANALYSES MEDICALES", 65, 10)
@@ -321,15 +302,25 @@ function GenerateResultatButton({ invoice }) {
         )
         doc.setFont('helvetica', 'bold')
         doc.setFontSize(8)
-        if (test?.dernierResultatAnterieur) {
-          doc.text(
-            `${test?.dernierResultatAnterieur?.valeur}`,
-            90,
-            currentY + 2
-          )
-          doc.text(`${formattedDateAnterieur}`, 150, currentY + 2)
+        // if (test?.dernierResultatAnterieur) {
+        //   doc.text(
+        //     `${test?.dernierResultatAnterieur?.valeur}`,
+        //     90,
+        //     currentY + 2
+        //   )
+        //   doc.text(`${formattedDateAnterieur}`, 150, currentY + 2)
+        // }
+        // Ne pas afficher les informations si test?.observations existe
+        if (!test?.observations && test?.dernierResultatAnterieur) {
+          const valeurAnterieure = test.dernierResultatAnterieur.valeur ?? ''
+          const dateAnterieure = formattedDateAnterieur ?? ''
+          doc.text('Anterieure', 150, currentY)
+          doc.text(valeurAnterieure, 160, currentY + 5)
+          doc.text(dateAnterieure, 170, currentY)
         }
-        doc.text(`${test.valeur}`, 90, currentY + 5)
+        if (!test?.observations) {
+          doc.text(`${test?.valeur}`, 90, currentY + 5)
+        }
         doc.setFont('helvetica', 'normal')
         doc.setFontSize(8)
         // Affichage de la valeur de la machine A ou B en fonction de statutMachine
@@ -337,7 +328,7 @@ function GenerateResultatButton({ invoice }) {
           ? test.testId.valeurMachineA
           : test.testId.valeurMachineB
         if (machineValue) {
-          doc.text(`${machineValue}`, 150, currentY + 5)
+          doc.text(`${machineValue}`, 120, currentY + 5)
         }
 
         doc.setFontSize(6)
@@ -347,8 +338,13 @@ function GenerateResultatButton({ invoice }) {
           ? test?.testId?.machineA
           : test?.testId?.machineB
 
-        // Afficher le nom de la machine
-        doc.text(`${machineText}`, 20, currentY)
+        // Vérifiez si machineText n'est ni undefined, ni une chaîne vide
+        if (machineText) {
+          doc.text(` ${machineText}`, 20, currentY)
+        } else {
+          // Optionnel: vous pouvez commenter ou décommenter la ligne suivante selon vos besoins
+          // doc.text('Machine utilisée: Non spécifiée', 20, currentY);
+        }
 
         // Calculer la largeur du texte de la machine pour positionner correctement la méthode
         // let machineTextWidth =
@@ -395,6 +391,226 @@ function GenerateResultatButton({ invoice }) {
           currentY += 5 * interpretationLines.length // Mise à jour de Y basée sur le nombre de lignes d'interprétation
         }
         currentY += 1 // Ajout d'un espace avant le prochain test
+
+        if (
+          test?.observations ||
+          test?.culture ||
+          test?.gram ||
+          test?.conclusion
+        ) {
+          if (test?.observations) {
+            doc.setFontSize(10)
+            doc.setFont('helvetica', 'bold')
+            doc.text(`Examen macroscopique`, 20, currentY)
+            doc.setFontSize(8)
+            doc.setFont('helvetica', 'normal')
+            currentY += 5 // Incrémentation de currentY après chaque élément
+            // Leucocytes
+            doc.text(`${test?.observations?.macroscopique}`, 20, currentY)
+            currentY += 7
+            doc.setFontSize(10)
+            doc.setFont('helvetica', 'bold')
+            doc.text(`Examen microscopique`, 20, currentY)
+            currentY += 5
+            doc.text(`Etat Frais`, 25, currentY)
+            doc.setFontSize(8)
+            doc.setFont('helvetica', 'normal')
+            currentY += 5 // Incrémentation de currentY après chaque élément
+            // Leucocytes
+            if (test?.observations?.microscopique?.leucocytes) {
+              doc.text(
+                `Leucocytes: ${test?.observations?.microscopique?.leucocytes}`,
+                20,
+                currentY
+              )
+              currentY += 5 // Incrémentation de currentY après chaque élément
+            }
+
+            // Hématies
+            if (test?.observations?.microscopique?.hematies) {
+              doc.text(
+                `Hématies: ${test?.observations?.microscopique?.hematies}`,
+                20,
+                currentY
+              )
+              currentY += 5
+            }
+
+            // Cellules Epithéliales
+            if (test?.observations?.microscopique?.cellulesEpitheliales) {
+              doc.text(
+                `Cellules épithéliales: ${test?.observations?.microscopique?.cellulesEpitheliales}`,
+                20,
+                currentY
+              )
+              currentY += 5
+            }
+
+            // Éléments Levuriformes
+            if (test?.observations?.microscopique?.elementsLevuriforme) {
+              doc.text(
+                `Éléments levuriformes: ${test?.observations?.microscopique?.elementsLevuriforme}`,
+                20,
+                currentY
+              )
+              currentY += 5
+            }
+
+            // Filaments Mycéliens
+            if (test?.observations?.microscopique?.filamentsMyceliens) {
+              doc.text(
+                `Filaments mycéliens: ${test?.observations?.microscopique?.filamentsMyceliens}`,
+                20,
+                currentY
+              )
+              currentY += 5
+            }
+
+            // Trichomonas Vaginalis
+            if (test?.observations?.microscopique?.trichomonasVaginalis) {
+              doc.text(
+                `Trichomonas vaginalis: ${test?.observations?.microscopique?.trichomonasVaginalis}`,
+                20,
+                currentY
+              )
+              currentY += 5
+            }
+
+            // Cristaux
+            if (test?.observations?.microscopique?.cristaux) {
+              doc.text(
+                `Cristaux: ${test?.observations?.microscopique?.cristaux}`,
+                20,
+                currentY
+              )
+              currentY += 5
+            }
+
+            // Cylindres
+            if (test?.observations?.microscopique?.cylindres) {
+              doc.text(
+                `Cylindres: ${test?.observations?.microscopique?.cylindres}`,
+                20,
+                currentY
+              )
+              currentY += 7
+            }
+
+            // Vérifiez si vous avez besoin d'ajouter une nouvelle page si `currentY` est trop élevé
+            if (currentY > 250) {
+              doc.addPage()
+              currentY = 20 // Réinitialiser `currentY` pour la nouvelle page
+            }
+          }
+          if (test?.gram) {
+            doc.setFontSize(10)
+            doc.setFont('helvetica', 'bold')
+            doc.text(`Gram`, 25, currentY)
+            currentY += 5
+            doc.setFontSize(8)
+            doc.setFont('helvetica', 'normal')
+            doc.text(`Gram: ${test?.gram}`, 20, currentY)
+            currentY += 7
+          }
+
+          if (test?.culture) {
+            doc.setFontSize(10)
+            doc.setFont('helvetica', 'bold')
+            doc.text(`Culture:`, 20, currentY)
+            currentY += 3
+            doc.setFontSize(8)
+            doc.setFont('helvetica', 'normal')
+            doc.text(` ${test?.culture?.description}`, 20, currentY)
+            currentY += 5
+            doc.text(
+              `Germe Identifié: ${test?.culture?.germeIdentifie}`,
+              20,
+              currentY
+            )
+            currentY += 7
+          }
+
+          if (test?.conclusion) {
+            doc.setFontSize(10)
+            doc.setFont('helvetica', 'bold')
+            doc.text(`Conclusion`, 20, currentY)
+            currentY += 5
+
+            doc.text(` ${test?.conclusion}`, 20, currentY)
+            doc.setFontSize(8)
+            doc.setFont('helvetica', 'normal')
+            currentY += 5
+          }
+          if (
+            test?.observations?.antibiogramme &&
+            Object.keys(test.observations.antibiogramme).length > 0
+          ) {
+            doc.addPage()
+            currentY = 15 // Réinitialiser la position Y pour le contenu de la nouvelle page
+            addFooter()
+            // En-têtes de colonne
+
+            doc.setFontSize(10)
+            doc.setFont('helvetica', 'bold')
+            doc.text(
+              `ANTIBIOGRAMME : ${test?.culture?.germeIdentifie} `,
+              42,
+              currentY
+            )
+            currentY += 7
+            doc.setFont('helvetica', 'normal')
+            // En-têtes de colonne avec bordures
+            const columnWidthAntibiotique = 70 // Largeur de la colonne Antibiotique
+            const columnWidthSensibilite = 30 // Largeur de la colonne Sensibilité
+            const lineHeight = 7 // Hauteur de ligne standard
+
+            // Dessiner les bordures pour les en-têtes
+            doc.rect(40, currentY, columnWidthAntibiotique, lineHeight) // Bordure pour "Antibiotique"
+            doc.rect(110, currentY, columnWidthSensibilite, lineHeight) // Bordure pour "Sensibilité"
+
+            doc.setFontSize(10)
+            doc.setFont('helvetica', 'bold')
+            doc.text('Antibiotique', 42, currentY + 5) // Position ajustée pour le texte dans la cellule
+            doc.text('Sensibilité', 112, currentY + 5)
+
+            currentY += lineHeight // Déplacer currentY pour les données
+
+            // Données de l'antibiogramme
+            const antibiogramme = test?.observations?.antibiogramme
+            if (antibiogramme) {
+              doc.setFontSize(8)
+              doc.setFont('helvetica', 'normal')
+              Object.entries(antibiogramme).forEach(
+                ([antibiotique, sensibilite]) => {
+                  // Dessiner des cellules avec bordures pour chaque donnée
+                  doc.rect(40, currentY, columnWidthAntibiotique, lineHeight)
+                  doc.rect(110, currentY, columnWidthSensibilite, lineHeight)
+
+                  // Ajouter du texte avec un petit padding horizontal
+                  doc.text(antibiotique, 42, currentY + 5)
+                  doc.text(sensibilite, 112, currentY + 5)
+
+                  currentY += lineHeight // Incrément pour la prochaine ligne
+                }
+              )
+              currentY += 5
+              doc.text(
+                'S : sensible    I : intermédiaire     R : résistant ',
+                42,
+                currentY
+              )
+              doc.addPage()
+              currentY = 15 // Réinitialiser la position Y pour le contenu de la nouvelle page
+              addFooter()
+            } else {
+              doc.text(
+                "Aucune donnée d'antibiogramme disponible.",
+                42,
+                currentY
+              )
+            }
+          }
+        }
       })
       function formatDateAndTime(dateString) {
         const date = new Date(dateString)
@@ -448,6 +664,11 @@ function GenerateResultatButton({ invoice }) {
 
       // Vérification pour l'ajout d'une page avant le total et les informations bancaires
       if (currentY > 250) {
+        doc.addPage()
+        currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
+        addFooter()
+      }
+      if (invoice?.observations?.antibiogramme) {
         doc.addPage()
         currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
         addFooter()
