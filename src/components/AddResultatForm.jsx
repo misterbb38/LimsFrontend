@@ -758,6 +758,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
             </div>
 
             <div>
+              {/* essai */}
               <label className="label">Antibiogrammes</label>
               {antibiogrammes.map((antibio, index) => (
                 <div key={index} className="flex items-center gap-2 mb-2">
