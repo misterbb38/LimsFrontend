@@ -102,8 +102,8 @@ function AddPartenaireForm({ onPartenaireChange }) {
               Choisissez une type
             </option>
             <option value="assurance">assurance</option>
-
             <option value="ipm">ipm</option>
+            <option value="clinique">Clinique</option>
           </select>
         </div>
 

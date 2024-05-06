@@ -8,6 +8,7 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
   const [selectedTests, setSelectedTests] = useState([])
   const [availableTests, setAvailableTests] = useState([])
   const [ordonnancePdf, setOrdonnancePdf] = useState(null)
+  const [statusPayement, setStatusPayement] = useState('')
   const [pc1, setPc1] = useState(false)
   const [pc2, setPc2] = useState(false)
   const [deplacement, setDeplacement] = useState(0)
@@ -94,6 +95,8 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
         setReductionValue(data.data.reduction || 0)
         setPc1(data.data.pc1 === 2000) // true si pc1 est 2000, sinon false
         setPc2(data.data.pc2 === 4000)
+        setStatusPayement(data.data.statusPayement || 'Impayée') // Utilisez la valeur par défaut si aucune donnée n'est disponible
+        // Other state initializations
         setDeplacement(data.data.deplacement || 0)
         // Conversion de la date de récupération de format "jj/mm/année" à "YYYY-MM-DD"
         if (data.data.dateDeRecuperation) {
@@ -209,6 +212,7 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
       formData.append('reduction', reductionValue.toString()) // Convertir en chaîne si nécessaire
       formData.append('typeReduction', reductionType)
     }
+    formData.append('statusPayement', statusPayement)
 
     try {
       const response = await fetch(`${apiUrl}/api/analyse/${analyseId}`, {
@@ -285,7 +289,6 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
                   ))}
                 </div>
               </div>
-
               <div className="form-control">
                 <label className="cursor-pointer label">
                   <span className="label-text">
@@ -340,7 +343,6 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
                   </>
                 )}
               </div>
-
               <div>
                 <label className="cursor-pointer label">
                   <span className="label-text">PC1 (2000 Cfa)</span>
@@ -363,7 +365,6 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
                   />
                 </label>
               </div>
-
               <div>
                 <label className="label">
                   <span className="label-text">Déplacement</span>
@@ -375,7 +376,6 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
                   className="input input-bordered input-primary w-full max-w-xs"
                 />
               </div>
-
               <div className="form-control">
                 <label className="cursor-pointer label">
                   <span className="label-text">Avez-vous une réduction ?</span>
@@ -425,7 +425,6 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
                   </>
                 )}
               </div>
-
               {/* Champ pour l'ordonnance PDF */}
               <div className="form-control">
                 <label className="label">
@@ -436,6 +435,21 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
                   className="file-input file-input-bordered file-input-primary w-full max-w-xs"
                   onChange={handleOrdonnanceChange}
                 />
+              </div>
+              {/* // Dans le formulaire de soumission */}
+              <div className="form-control">
+                <label className="label">Status du paiement</label>
+                <select
+                  className="select select-bordered"
+                  value={statusPayement}
+                  onChange={(e) => setStatusPayement(e.target.value)}
+                >
+                  <option value="" disabled>
+                    Choisissez
+                  </option>
+                  <option value="Impayée">Impayée</option>
+                  <option value="Payée">Payée</option>
+                </select>
               </div>
 
               <div className="form-control">
@@ -449,7 +463,6 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
                   onChange={(e) => setDateDeRecuperation(e.target.value)}
                 />
               </div>
-
               <div className="modal-action">
                 <button type="submit" className="btn btn-primary">
                   Enregistrer

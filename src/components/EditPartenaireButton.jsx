@@ -145,7 +145,7 @@ function EditPartenaireButton({ partenaireId, onpartenaireUpdated }) {
                     Choisissez un type
                   </option>
                   <option value="assurance">assurance</option>
-
+                  <option value="clinique">clinique</option>
                   <option value="ipm">ipm</option>
                 </select>
               </div>

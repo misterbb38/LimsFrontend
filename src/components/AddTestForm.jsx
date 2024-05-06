@@ -11,6 +11,7 @@ function AddTestForm({ onTestChange }) {
   const [categories, setCategories] = useState('')
   const [valeur, setValeur] = useState('')
   const [prixSococim, setPrixSococim] = useState('')
+  const [prixClinique, setPrixClinique] = useState('')
   const [interpretationA, setInterpretationA] = useState('')
   const [interpretationB, setInterpretationB] = useState('')
 
@@ -46,6 +47,7 @@ function AddTestForm({ onTestChange }) {
           prixAssurance,
           prixIpm,
           prixPaf,
+          prixClinique,
           coeficiantB,
           categories,
           valeur,
@@ -86,6 +88,7 @@ function AddTestForm({ onTestChange }) {
     setDescription('')
     setPrixAssurance('')
     setPrixIpm('')
+    setPrixClinique('')
     setPrixPaf('')
     setCoeficiantB('')
     setCategories('')
@@ -183,6 +186,18 @@ function AddTestForm({ onTestChange }) {
           />
         </div>
         <div>
+          <label className="text-sm font-medium base-content">
+            Prix Clinique
+          </label>
+          <br></br>
+          <input
+            type="number"
+            value={prixClinique}
+            onChange={(e) => setPrixSococim(e.target.value)}
+            className="input input-bordered input-primary w-full max-w-xs"
+          />
+        </div>
+        <div>
           <label className="text-sm font-medium base-content">Prix PAF</label>
           <br></br>
           <input
@@ -193,7 +208,7 @@ function AddTestForm({ onTestChange }) {
           />
         </div>
         <div>
-          <label className="text-sm font-medium base-content">Catégories</label>
+          <label className="text-sm font-medium base-content">Methode</label>
           <br></br>
           <input
             type="text"

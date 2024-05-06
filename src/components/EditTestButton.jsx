@@ -10,7 +10,8 @@ function EditTestButton({ testId, ontestUpdated }) {
     status: '',
     prixAssurance: '',
     prixIpm: '',
-    rixPaf: '',
+    prixPaf: '',
+    prixClinique: '',
     coeficiantB: '',
     nom: '',
     description: '',
@@ -70,6 +71,8 @@ function EditTestButton({ testId, ontestUpdated }) {
     if (!formData.prixPaf.toString().trim())
       errors.prix = 'Le prix  est obligatoire.'
     if (!formData.prixSococim.toString().trim())
+      errors.prix = 'Le prix  est obligatoire.'
+    if (!formData.prixClinique.toString().trim())
       errors.prix = 'Le prix  est obligatoire.'
     if (!formData.coeficiantB.toString().trim())
       errors.prix = 'Le coeficiant B  est obligatoire.'
@@ -175,6 +178,17 @@ function EditTestButton({ testId, ontestUpdated }) {
                 {renderError('prixSococim')}
               </div>
               <div className="form-control">
+                <label className="label">Prix Clinique</label>
+                <input
+                  className="input input-bordered"
+                  type="number"
+                  name="prixClinique"
+                  value={formData.prixClinique}
+                  onChange={handleChange}
+                />
+                {renderError('prixClinique')}
+              </div>
+              <div className="form-control">
                 <label className="label">Prix Paf</label>
                 <input
                   className="input input-bordered"
@@ -272,7 +286,7 @@ function EditTestButton({ testId, ontestUpdated }) {
               </div>
 
               <div className="form-control">
-                <label className="label">Catégories</label>
+                <label className="label">Methode</label>
                 <input
                   className="input input-bordered"
                   type="text"

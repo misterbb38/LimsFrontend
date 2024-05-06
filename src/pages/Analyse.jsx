@@ -40,6 +40,11 @@ function Facture() {
     Modification: 'badge badge-secondary text-white font-bold px-2 py-1', // Gris foncé pour "Modification"
   }
 
+  const paymentStatusClasses = {
+    Payée: 'badge badge-success text-white font-bold px-2 py-1',
+    Impayée: 'badge badge-error text-white font-bold px-2 py-1',
+  }
+
   const facturesPerPage = 8
 
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
@@ -312,6 +317,9 @@ function Facture() {
                   <th className="font-bold text-lg text-base-content">NIP</th>
                   <th className="font-bold text-lg text-base-content">Test</th>
                   <th className="font-bold text-lg text-base-content">
+                    Facture
+                  </th>
+                  <th className="font-bold text-lg text-base-content">
                     {' '}
                     Status
                   </th>
@@ -335,6 +343,13 @@ function Facture() {
                       {facture.userId ? facture.userId.nip : 'Non disponible'}
                     </td>
                     <td>{facture.tests.map((test) => test.nom).join(', ')}</td>
+                    <td>
+                      <span
+                        className={paymentStatusClasses[facture.statusPayement]}
+                      >
+                        {facture.statusPayement}
+                      </span>
+                    </td>
                     {/* <td>{facture.status}</td> */}
 
                     <td>
