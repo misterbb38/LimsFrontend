@@ -631,9 +631,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   handleMicroscopiqueChange('cristaux', e.target.value)
                 }
               >
-                <option value="" selected>
-                  Non concerner
-                </option>
+                <option value="">Non concerner</option>
                 <option value="Absence">Absence</option>
                 <option value="Présence">Présence</option>
               </select>
@@ -649,9 +647,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   )
                 }
               >
-                <option value="" selected>
-                  Non concerner
-                </option>
+                <option value="">Non concerner</option>
                 <option value="Absence">Absence</option>
                 <option value="Présence">Présence</option>
               </select>
@@ -667,9 +663,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   )
                 }
               >
-                <option value="" selected>
-                  Non concerner
-                </option>
+                <option value="">Non concerner</option>
                 <option value="Absence">Absence</option>
                 <option value="Présence">Présence</option>
               </select>
@@ -685,9 +679,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   )
                 }
               >
-                <option value="" selected>
-                  Non concerner
-                </option>
+                <option value="">Non concerner</option>
                 <option value="Absence">Absence</option>
                 <option value="Présence">Présence</option>
               </select>
@@ -705,9 +697,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   )
                 }
               >
-                <option value="" selected>
-                  Non concerner
-                </option>
+                <option value="">Non concerner</option>
                 <option value="Absence">Absence</option>
                 <option value="Présence">Présence</option>
               </select>
@@ -720,9 +710,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   handleMicroscopiqueChange('cylindres', e.target.value)
                 }
               >
-                <option value="" selected>
-                  Non concerner
-                </option>
+                <option value="">Non concerner</option>
                 <option value="Absence">Absence</option>
                 <option value="Présence">Présence</option>
               </select>
