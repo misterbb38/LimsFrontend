@@ -447,6 +447,7 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
                   <option value="" disabled>
                     Choisissez
                   </option>
+                  {/* option */}
                   <option value="Impayée">Impayée</option>
                   <option value="Payée">Payée</option>
                 </select>
