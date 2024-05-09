@@ -96,10 +96,10 @@ function GenerateResultatButton({ invoice }) {
 
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i) // Définir la page courante sur laquelle le numéro de page sera ajouté
-        doc.setFontSize(10) // Définir la taille de la police pour le numéro de page
+        doc.setFontSize(8) // Définir la taille de la police pour le numéro de page
         doc.setTextColor(150) // Définir la couleur du texte pour le numéro de page
         // Ajouter le numéro de page au centre du pied de page de chaque page
-        doc.text(`Page ${i} sur ${pageCount}`, 105, 275, { align: 'center' })
+        doc.text(` ${i}/${pageCount}`, 185, 275, { align: 'center' })
       }
     }
 
@@ -323,27 +323,29 @@ function GenerateResultatButton({ invoice }) {
         }
         doc.setFont('helvetica', 'normal')
         doc.setFontSize(8)
-        // Affichage de la valeur de la machine A ou B en fonction de statutMachine
-        let machineValue = test.statutMachine
-          ? test.testId.valeurMachineA
-          : test.testId.valeurMachineB
-        if (machineValue) {
-          doc.text(`${machineValue}`, 120, currentY + 5)
-        }
+        if (!test?.observations) {
+          // Affichage de la valeur de la machine A ou B en fonction de statutMachine
+          let machineValue = test.statutMachine
+            ? test.testId.valeurMachineA
+            : test.testId.valeurMachineB
+          if (machineValue) {
+            doc.text(`${machineValue}`, 120, currentY + 5)
+          }
 
-        doc.setFontSize(6)
-        doc.setFont('helvetica', 'bold')
-        // Déterminer quelle machine afficher en fonction de statutMachine
-        let machineText = test?.statutMachine
-          ? test?.testId?.machineA
-          : test?.testId?.machineB
+          doc.setFontSize(6)
+          doc.setFont('helvetica', 'bold')
+          // Déterminer quelle machine afficher en fonction de statutMachine
+          let machineText = test?.statutMachine
+            ? test?.testId?.machineA
+            : test?.testId?.machineB
 
-        // Vérifiez si machineText n'est ni undefined, ni une chaîne vide
-        if (machineText) {
-          doc.text(` ${machineText}`, 20, currentY)
-        } else {
-          // Optionnel: vous pouvez commenter ou décommenter la ligne suivante selon vos besoins
-          // doc.text('Machine utilisée: Non spécifiée', 20, currentY);
+          // Vérifiez si machineText n'est ni undefined, ni une chaîne vide
+          if (machineText) {
+            doc.text(` ${machineText}`, 20, currentY)
+          } else {
+            // Optionnel: vous pouvez commenter ou décommenter la ligne suivante selon vos besoins
+            // doc.text('Machine utilisée: Non spécifiée', 20, currentY);
+          }
         }
 
         // Calculer la largeur du texte de la machine pour positionner correctement la méthode
@@ -399,16 +401,18 @@ function GenerateResultatButton({ invoice }) {
           test?.gram ||
           test?.conclusion
         ) {
-          doc.text(
-            ` ${test?.typePrelevement} ${test?.lieuPrelevement}  ${formattedDate}`,
-            20,
-            currentY - 10
-          )
+          if (test?.observations) {
+            doc.text(
+              ` ${test?.typePrelevement} ${test?.lieuPrelevement}  ${formattedDate}`,
+              20,
+              currentY - 10
+            )
+          }
 
           if (test?.observations) {
             doc.setFontSize(13)
             doc.setFont('helvetica', 'bold')
-            doc.text(`Examen macroscopique`, 20, currentY)
+            doc.text(`EXAMEN MACROSCOPIQUE`, 20, currentY)
             doc.setFontSize(10)
             doc.setFont('helvetica', 'normal')
             currentY += 5 // Incrémentation de currentY après chaque élément
@@ -619,9 +623,9 @@ function GenerateResultatButton({ invoice }) {
             if (test?.observations?.microscopique) {
               doc.setFontSize(13)
               doc.setFont('helvetica', 'bold')
-              doc.text(`Examen microscopique`, 20, currentY)
-              currentY += 5
-              doc.text(`Etat Frais`, 25, currentY)
+              doc.text(`EXAMEN CYTOLOGIQUE`, 20, currentY)
+              // currentY += 5
+              // doc.text(`Etat Frais`, 25, currentY)
               doc.setFontSize(10)
               doc.setFont('helvetica', 'normal')
               currentY += 5 // Incrémentation après chaque élément
@@ -880,63 +884,129 @@ function GenerateResultatButton({ invoice }) {
             //   }
             // }
             // chimie
+            // if (test?.observations?.chimie) {
+            //   doc.setFontSize(13)
+            //   doc.setFont('helvetica', 'bold')
+            //   doc.text(`Chimie`, 20, currentY)
+            //   currentY += 5
+            //   doc.setFontSize(10)
+            //   doc.setFont('helvetica', 'normal')
+
+            //   // Proteines Totales
+            //   if (test?.observations?.chimie?.proteinesTotales) {
+            //     doc.text('Proteines Totales:', 20, currentY)
+            //     doc.text(
+            //       `${test.observations.chimie.proteinesTotales}`,
+            //       65,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // Proteines Arochies
+            //   if (test?.observations?.chimie?.proteinesArochies) {
+            //     doc.text('Proteines Arochies:', 20, currentY)
+            //     doc.text(
+            //       `${test.observations.chimie.proteinesArochies}`,
+            //       65,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // Glycorachie
+            //   if (test?.observations?.chimie?.glycorachie) {
+            //     doc.text('Glycorachie:', 20, currentY)
+            //     doc.text(
+            //       `${test.observations.chimie.glycorachie}`,
+            //       65,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // Acide Urique
+            //   if (test?.observations?.chimie?.acideUrique) {
+            //     doc.text('Acide Urique:', 20, currentY)
+            //     doc.text(
+            //       `${test.observations.chimie.acideUrique}`,
+            //       65,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // LDH
+            //   if (test?.observations?.chimie?.LDH) {
+            //     doc.text('LDH:', 20, currentY)
+            //     doc.text(`${test.observations.chimie.LDH}`, 65, currentY)
+            //     currentY += 5
+            //   }
+            // }
+            // Vérification pour l'ajout d'une page avant le total et les informations bancaires
+            if (currentY > 250) {
+              doc.addPage()
+              currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
+              addFooter()
+            }
             if (test?.observations?.chimie) {
-              doc.setFontSize(13)
-              doc.setFont('helvetica', 'bold')
-              doc.text(`Chimie`, 20, currentY)
-              currentY += 5
-              doc.setFontSize(10)
-              doc.setFont('helvetica', 'normal')
+              const {
+                proteinesTotales,
+                proteinesArochies,
+                glycorachie,
+                acideUrique,
+                LDH,
+              } = test.observations.chimie
 
-              // Proteines Totales
-              if (test?.observations?.chimie?.proteinesTotales) {
-                doc.text('Proteines Totales:', 20, currentY)
-                doc.text(
-                  `${test.observations.chimie.proteinesTotales}`,
-                  65,
-                  currentY
-                )
+              // Vérifier si tous les champs sont vides
+              if (
+                proteinesTotales ||
+                proteinesArochies ||
+                glycorachie ||
+                acideUrique ||
+                LDH
+              ) {
+                doc.setFontSize(13)
+                doc.setFont('helvetica', 'bold')
+                doc.text(`CHIMIE`, 20, currentY)
                 currentY += 5
-              }
+                doc.setFontSize(10)
+                doc.setFont('helvetica', 'normal')
 
-              // Proteines Arochies
-              if (test?.observations?.chimie?.proteinesArochies) {
-                doc.text('Proteines Arochies:', 20, currentY)
-                doc.text(
-                  `${test.observations.chimie.proteinesArochies}`,
-                  65,
-                  currentY
-                )
-                currentY += 5
-              }
+                // Proteines Totales
+                if (proteinesTotales) {
+                  doc.text('Proteines Totales:', 20, currentY)
+                  doc.text(proteinesTotales, 65, currentY)
+                  currentY += 5
+                }
 
-              // Glycorachie
-              if (test?.observations?.chimie?.glycorachie) {
-                doc.text('Glycorachie:', 20, currentY)
-                doc.text(
-                  `${test.observations.chimie.glycorachie}`,
-                  65,
-                  currentY
-                )
-                currentY += 5
-              }
+                // Proteines Arochies
+                if (proteinesArochies) {
+                  doc.text('Proteines Arochies:', 20, currentY)
+                  doc.text(proteinesArochies, 65, currentY)
+                  currentY += 5
+                }
 
-              // Acide Urique
-              if (test?.observations?.chimie?.acideUrique) {
-                doc.text('Acide Urique:', 20, currentY)
-                doc.text(
-                  `${test.observations.chimie.acideUrique}`,
-                  65,
-                  currentY
-                )
-                currentY += 5
-              }
+                // Glycorachie
+                if (glycorachie) {
+                  doc.text('Glycorachie:', 20, currentY)
+                  doc.text(glycorachie, 65, currentY)
+                  currentY += 5
+                }
 
-              // LDH
-              if (test?.observations?.chimie?.LDH) {
-                doc.text('LDH:', 20, currentY)
-                doc.text(`${test.observations.chimie.LDH}`, 65, currentY)
-                currentY += 5
+                // Acide Urique
+                if (acideUrique) {
+                  doc.text('Acide Urique:', 20, currentY)
+                  doc.text(acideUrique, 65, currentY)
+                  currentY += 5
+                }
+
+                // LDH
+                if (LDH) {
+                  doc.text('LDH:', 20, currentY)
+                  doc.text(LDH, 65, currentY)
+                  currentY += 5
+                }
               }
             }
 
@@ -949,39 +1019,57 @@ function GenerateResultatButton({ invoice }) {
           if (test?.gram) {
             doc.setFontSize(13)
             doc.setFont('helvetica', 'bold')
-            doc.text(`Gram`, 25, currentY)
-            currentY += 5
+            doc.text(
+              `EXAMEN BACTERIOLOGIE DIRECT  (Coloration de gram)`,
+              20,
+              currentY
+            )
+            currentY += 8
             doc.setFontSize(10)
             doc.setFont('helvetica', 'normal')
             doc.text(`Gram:`, 20, currentY)
 
             doc.text(`${test?.gram}`, 65, currentY)
-            currentY += 5
+            currentY += 8
+          }
+          // Vérification pour l'ajout d'une page avant le total et les informations bancaires
+          if (currentY > 250) {
+            doc.addPage()
+            currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
+            addFooter()
+          }
+          if (test?.observations) {
+            if (test?.culture) {
+              doc.setFontSize(13)
+              doc.setFont('helvetica', 'bold')
+              doc.text(`CULTURES SUR MILIEUX SPECIFIQUES:`, 20, currentY)
+              currentY += 5
+              doc.setFontSize(10)
+              doc.setFont('helvetica', 'normal')
+              doc.text(`Culture:`, 20, currentY)
+              doc.text(`${test?.culture?.culture}`, 65, currentY)
+              currentY += 5
+              doc.text(` Germe Identifié: `, 20, currentY)
+              doc.text(` ${test?.culture?.germeIdentifie}`, 65, currentY)
+              currentY += 5
+              doc.text(` Numeration:`, 20, currentY)
+              doc.text(` ${test?.culture?.description}`, 65, currentY)
+
+              currentY += 7
+            }
           }
 
-          if (test?.culture) {
-            doc.setFontSize(13)
-            doc.setFont('helvetica', 'bold')
-            doc.text(`Culture:`, 20, currentY)
-            currentY += 5
-            doc.setFontSize(10)
-            doc.setFont('helvetica', 'normal')
-            doc.text(`Culture:`, 20, currentY)
-            doc.text(`${test?.culture?.culture}`, 65, currentY)
-            currentY += 5
-            doc.text(` Germe Identifié: `, 20, currentY)
-            doc.text(` ${test?.culture?.germeIdentifie}`, 65, currentY)
-            currentY += 5
-            doc.text(` Numeration:`, 20, currentY)
-            doc.text(` ${test?.culture?.description}`, 65, currentY)
-
-            currentY += 7
+          // Vérification pour l'ajout d'une page avant le total et les informations bancaires
+          if (currentY > 250) {
+            doc.addPage()
+            currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
+            addFooter()
           }
 
           if (test?.conclusion) {
             doc.setFontSize(13)
             doc.setFont('helvetica', 'bold')
-            doc.text(`Conclusion`, 20, currentY)
+            doc.text(`CONCLUSION`, 20, currentY)
             currentY += 5
 
             doc.text(` ${test?.conclusion}`, 20, currentY)
@@ -989,6 +1077,7 @@ function GenerateResultatButton({ invoice }) {
             doc.setFont('helvetica', 'normal')
             currentY += 5
           }
+
           if (
             test?.observations?.antibiogramme &&
             Object.keys(test.observations.antibiogramme).length > 0
@@ -997,6 +1086,16 @@ function GenerateResultatButton({ invoice }) {
             currentY = 15 // Réinitialiser la position Y pour le contenu de la nouvelle page
             addFooter()
             // En-têtes de colonne
+
+            doc.text(`Nº Dossier: ${invoice?.identifiant}`, 42, currentY)
+            currentY += 5
+            doc.text(
+              `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
+              42,
+              currentY
+            )
+
+            currentY += 5
 
             doc.setFontSize(10)
             doc.setFont('helvetica', 'bold')
