@@ -1153,11 +1153,24 @@ function GeneratePDFButton({ invoice }) {
         currentY = startY + cellHeight
       }
       currentY += 5
-      doc.text(
-        `Facture ${invoice.statusPayement}`,
-        152,
-        currentY
-      )
+      // doc.text(
+      //   `Facture ${invoice.statusPayement}`,
+      //   152,
+      //   currentY
+      // )
+      const text = `Facture ${invoice.statusPayement}`
+
+      // Dessiner le texte
+      doc.text(text, 152, currentY)
+
+      // Calculer la largeur et la hauteur du texte pour dessiner un rectangle autour
+      const textWidth = doc.getStringUnitWidth(text) * doc.internal.getFontSize() / doc.internal.scaleFactor
+      const textHeight = doc.getFontSize() / doc.internal.scaleFactor
+
+      // Ajouter un rectangle autour du texte (avec une bordure plus épaisse)
+      const padding = 2 // Ajouter un peu d'espace entre le texte et le rectangle
+      doc.setLineWidth(0.5) // Épaisseur de la bordure
+      doc.rect(152 - padding, currentY - textHeight - padding, textWidth + 2 * padding, textHeight + 2 * padding)
 
 
       // Dernière ligne verte
@@ -1171,6 +1184,7 @@ function GeneratePDFButton({ invoice }) {
       // Calculez l'espace nécessaire pour la mise en garde
       // Conversion de la date de récupération au format souhaité
       let miseEnGarde = `Facture à ramener au retrait des résultats. `
+
 
       // Vérifier si la date de récupération est définie
       if (invoice.dateDeRecuperation) {

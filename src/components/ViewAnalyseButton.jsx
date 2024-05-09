@@ -164,11 +164,8 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
               </div>
             </div>
           </dialog>
-          <dialog
-            id={`my_modal_6_${analyseId}`}
-            className="modal modal-bottom sm:modal-middle"
-          >
-            <div className="modal-box">
+          <dialog id={`my_modal_6_${analyseId}`} className="modal modal-middle">
+            <div className="modal-box  w-11/12 max-w-5xl">
               <AddResultatForm
                 analyseId={analyseId}
                 patientId={analyseData.userId?._id}

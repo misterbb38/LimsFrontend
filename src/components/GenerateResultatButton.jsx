@@ -377,12 +377,13 @@ function GenerateResultatButton({ invoice }) {
         if (test?.methode) {
           doc.text(`(${test.methode})`, methodStartPos, currentY)
         }
-
-        doc.text(
-          `Prélèvement: ${formattedDate} ${test?.typePrelevement}`,
-          20,
-          currentY + 3
-        )
+        if (!test?.observations) {
+          doc.text(
+            `Prélèvement: ${formattedDate} ${test?.typePrelevement}`,
+            20,
+            currentY + 3
+          )
+        }
         doc.setFontSize(8)
         doc.setFont('helvetica', 'normal')
         currentY += 8 // Increment for one line
@@ -390,7 +391,7 @@ function GenerateResultatButton({ invoice }) {
           doc.text(interpretationLines, 20, currentY)
           currentY += 5 * interpretationLines.length // Mise à jour de Y basée sur le nombre de lignes d'interprétation
         }
-        currentY += 1 // Ajout d'un espace avant le prochain test
+        currentY += 5 // Ajout d'un espace avant le prochain test
 
         if (
           test?.observations ||
@@ -398,102 +399,545 @@ function GenerateResultatButton({ invoice }) {
           test?.gram ||
           test?.conclusion
         ) {
+          doc.text(
+            ` ${test?.typePrelevement} ${test?.lieuPrelevement}  ${formattedDate}`,
+            20,
+            currentY - 10
+          )
+
           if (test?.observations) {
-            doc.setFontSize(10)
+            doc.setFontSize(13)
             doc.setFont('helvetica', 'bold')
             doc.text(`Examen macroscopique`, 20, currentY)
-            doc.setFontSize(8)
-            doc.setFont('helvetica', 'normal')
-            currentY += 5 // Incrémentation de currentY après chaque élément
-            // Leucocytes
-            doc.text(`${test?.observations?.macroscopique}`, 20, currentY)
-            currentY += 7
             doc.setFontSize(10)
-            doc.setFont('helvetica', 'bold')
-            doc.text(`Examen microscopique`, 20, currentY)
-            currentY += 5
-            doc.text(`Etat Frais`, 25, currentY)
-            doc.setFontSize(8)
             doc.setFont('helvetica', 'normal')
             currentY += 5 // Incrémentation de currentY après chaque élément
+
             // Leucocytes
-            if (test?.observations?.microscopique?.leucocytes) {
-              doc.text(
-                `Leucocytes: ${test?.observations?.microscopique?.leucocytes}`,
-                20,
-                currentY
-              )
-              currentY += 5 // Incrémentation de currentY après chaque élément
-            }
+            doc.text(
+              ` ${test?.typePrelevement} ${test?.observations?.macroscopique} `,
+              20,
+              currentY
+            )
+            currentY += 7
+            // if (test?.observations?.microscopique) {
+            //   doc.setFontSize(13)
+            //   doc.setFont('helvetica', 'bold')
+            //   doc.text(`Examen microscopique`, 20, currentY)
+            //   currentY += 5
+            //   doc.text(`Etat Frais`, 25, currentY)
+            //   doc.setFontSize(10)
+            //   doc.setFont('helvetica', 'normal')
+            //   currentY += 5 // Incrémentation de currentY après chaque élément
+            //   // Leucocytes
+            //   if (test?.observations?.microscopique?.leucocytes) {
+            //     // Position fixe pour le texte "Leucocytes:"
+            //     doc.text('Leucocytes:', 20, currentY)
 
-            // Hématies
-            if (test?.observations?.microscopique?.hematies) {
-              doc.text(
-                `Hématies: ${test?.observations?.microscopique?.hematies}`,
-                20,
-                currentY
-              )
+            //     // Position fixe pour la valeur variable à l'axe X de 45
+            //     doc.text(
+            //       `${test.observations.microscopique.leucocytes}`,
+            //       45,
+            //       currentY
+            //     )
+
+            //     // Incrémentation de currentY après chaque élément
+            //     currentY += 5
+            //   }
+
+            //   // Hématies
+            //   if (test?.observations?.microscopique?.hematies) {
+            //     doc.text(
+            //       `Hématies: ${test?.observations?.microscopique?.hematies}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // pH
+            //   if (test?.observations?.microscopique?.ph) {
+            //     doc.text(
+            //       `pH: ${test?.observations?.microscopique?.ph}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // Cellules Epithéliales
+            //   if (test?.observations?.microscopique?.cellulesEpitheliales) {
+            //     doc.text(
+            //       `Cellules épithéliales: ${test?.observations?.microscopique?.cellulesEpitheliales}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // Éléments Levuriformes
+            //   if (test?.observations?.microscopique?.elementsLevuriforme) {
+            //     doc.text(
+            //       `Éléments levuriformes: ${test?.observations?.microscopique?.elementsLevuriforme}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // Filaments Mycéliens
+            //   if (test?.observations?.microscopique?.filamentsMyceliens) {
+            //     doc.text(
+            //       `Filaments mycéliens: ${test?.observations?.microscopique?.filamentsMyceliens}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // Trichomonas Vaginalis
+            //   if (test?.observations?.microscopique?.trichomonasVaginalis) {
+            //     doc.text(
+            //       `Trichomonas vaginalis: ${test?.observations?.microscopique?.trichomonasVaginalis}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // Cristaux
+            //   if (test?.observations?.microscopique?.cristaux) {
+            //     doc.text(
+            //       `Cristaux: ${test?.observations?.microscopique?.cristaux}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // Cylindres
+            //   if (test?.observations?.microscopique?.cylindres) {
+            //     doc.text(
+            //       `Cylindres: ${test?.observations?.microscopique?.cylindres}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 7
+            //   }
+
+            //   // Parasites
+            //   if (test?.observations?.microscopique?.parasites) {
+            //     doc.text(
+            //       `Parasites: ${test?.observations?.microscopique?.parasites}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // Trichomonas intestinales
+            //   if (test?.observations?.microscopique?.trichomonasIntestinales) {
+            //     doc.text(
+            //       `Trichomonas intestinales: ${test?.observations?.microscopique?.trichomonasIntestinales}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // Oeufs de Bilharzies
+            //   if (test?.observations?.microscopique?.oeufsDeBilharzies) {
+            //     doc.text(
+            //       `Oeufs de Bilharzies: ${test?.observations?.microscopique?.oeufsDeBilharzies}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // Clue Cells
+            //   if (test?.observations?.microscopique?.clueCells) {
+            //     doc.text(
+            //       `Clue Cells: ${test?.observations?.microscopique?.clueCells}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // Gardnerella Vaginalis
+            //   if (test?.observations?.microscopique?.gardnerellaVaginalis) {
+            //     doc.text(
+            //       `Gardnerella Vaginalis: ${test?.observations?.microscopique?.gardnerellaVaginalis}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // Bacilles de Doderlein
+            //   if (test?.observations?.microscopique?.bacillesDeDoderlein) {
+            //     doc.text(
+            //       `Bacilles de Doderlein: ${test?.observations?.microscopique?.bacillesDeDoderlein}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // Type de Flore
+            //   if (test?.observations?.microscopique?.typeDeFlore) {
+            //     doc.text(
+            //       `Type de Flore: ${test?.observations?.microscopique?.typeDeFlore}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // Recherche de Streptocoque B
+            //   if (test?.observations?.microscopique?.rechercheDeStreptocoqueB) {
+            //     doc.text(
+            //       `Recherche de Streptocoque B: ${test?.observations?.microscopique?.rechercheDeStreptocoqueB}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // Monocytes
+            //   if (test?.observations?.microscopique?.monocytes) {
+            //     doc.text(
+            //       `Monocytes: ${test?.observations?.microscopique?.monocytes}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 7 // Peut-être un peu plus d'espace après le dernier élément
+            //   }
+            // }
+
+            if (test?.observations?.microscopique) {
+              doc.setFontSize(13)
+              doc.setFont('helvetica', 'bold')
+              doc.text(`Examen microscopique`, 20, currentY)
               currentY += 5
+              doc.text(`Etat Frais`, 25, currentY)
+              doc.setFontSize(10)
+              doc.setFont('helvetica', 'normal')
+              currentY += 5 // Incrémentation après chaque élément
+
+              // Leucocytes
+              if (test?.observations?.microscopique?.leucocytes) {
+                doc.text('Leucocytes:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.leucocytes}`,
+                  65,
+                  currentY
+                )
+                currentY += 5
+              }
+
+              // Hématies
+              if (test?.observations?.microscopique?.hematies) {
+                doc.text('Hématies:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.hematies}`,
+                  65,
+                  currentY
+                )
+                currentY += 5
+              }
+
+              // pH
+              if (test?.observations?.microscopique?.ph) {
+                doc.text('pH:', 20, currentY)
+                doc.text(`${test.observations.microscopique.ph}`, 65, currentY)
+                currentY += 5
+              }
+
+              // Cellules épithéliales
+              if (test?.observations?.microscopique?.cellulesEpitheliales) {
+                doc.text('Cellules épithéliales:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.cellulesEpitheliales}`,
+                  65,
+                  currentY
+                )
+                currentY += 5
+              }
+
+              // Éléments levuriformes
+              if (test?.observations?.microscopique?.elementsLevuriforme) {
+                doc.text('Éléments levuriformes:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.elementsLevuriforme}`,
+                  65,
+                  currentY
+                )
+                currentY += 5
+              }
+
+              // Filaments mycéliens
+              if (test?.observations?.microscopique?.filamentsMyceliens) {
+                doc.text('Filaments mycéliens:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.filamentsMyceliens}`,
+                  65,
+                  currentY
+                )
+                currentY += 5
+              }
+
+              // Trichomonas vaginalis
+              if (test?.observations?.microscopique?.trichomonasVaginalis) {
+                doc.text('Trichomonas vaginalis:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.trichomonasVaginalis}`,
+                  65,
+                  currentY
+                )
+                currentY += 5
+              }
+
+              // Cristaux
+              if (test?.observations?.microscopique?.cristaux) {
+                doc.text('Cristaux:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.cristaux}`,
+                  65,
+                  currentY
+                )
+                currentY += 5
+              }
+
+              // Cylindres
+              if (test?.observations?.microscopique?.cylindres) {
+                doc.text('Cylindres:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.cylindres}`,
+                  65,
+                  currentY
+                )
+                currentY += 7
+              }
+
+              // Parasites
+              if (test?.observations?.microscopique?.parasites) {
+                doc.text('Parasites:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.parasites}`,
+                  65,
+                  currentY
+                )
+                currentY += 5
+              }
+
+              // Trichomonas intestinales
+              if (test?.observations?.microscopique?.trichomonasIntestinales) {
+                doc.text('Trichomonas intestinales:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.trichomonasIntestinales}`,
+                  65,
+                  currentY
+                )
+                currentY += 5
+              }
+
+              // Œufs de Bilharzies
+              if (test?.observations?.microscopique?.oeufsDeBilharzies) {
+                doc.text('Œufs de Bilharzies:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.oeufsDeBilharzies}`,
+                  65,
+                  currentY
+                )
+                currentY += 5
+              }
+
+              // Clue Cells
+              if (test?.observations?.microscopique?.clueCells) {
+                doc.text('Clue Cells:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.clueCells}`,
+                  65,
+                  currentY
+                )
+                currentY += 5
+              }
+
+              // Gardnerella vaginalis
+              if (test?.observations?.microscopique?.gardnerellaVaginalis) {
+                doc.text('Gardnerella vaginalis:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.gardnerellaVaginalis}`,
+                  65,
+                  currentY
+                )
+                currentY += 5
+              }
+
+              // Bacilles de Doderlein
+              if (test?.observations?.microscopique?.bacillesDeDoderlein) {
+                doc.text('Bacilles de Doderlein:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.bacillesDeDoderlein}`,
+                  65,
+                  currentY
+                )
+                currentY += 5
+              }
+
+              // Type de Flore
+              if (test?.observations?.microscopique?.typeDeFlore) {
+                doc.text('Type de Flore:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.typeDeFlore}`,
+                  65,
+                  currentY
+                )
+                currentY += 5
+              }
+
+              // Recherche de Streptocoque B
+              if (test?.observations?.microscopique?.rechercheDeStreptocoqueB) {
+                doc.text('Recherche Streptocoque B:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.rechercheDeStreptocoqueB}`,
+                  65,
+                  currentY
+                )
+                currentY += 5
+              }
+
+              // Monocytes
+              if (test?.observations?.microscopique?.monocytes) {
+                doc.text('Monocytes:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.monocytes}`,
+                  65,
+                  currentY
+                )
+                currentY += 7 // Peut-être un peu plus d'espace après le dernier élément
+              }
             }
 
-            // Cellules Epithéliales
-            if (test?.observations?.microscopique?.cellulesEpitheliales) {
-              doc.text(
-                `Cellules épithéliales: ${test?.observations?.microscopique?.cellulesEpitheliales}`,
-                20,
-                currentY
-              )
+            // // chimie
+            // if (test?.observations?.chimie) {
+            //   doc.setFontSize(13)
+            //   doc.setFont('helvetica', 'bold')
+            //   doc.text(`Chimie`, 20, currentY)
+            //   currentY += 5
+            //   doc.setFontSize(10)
+            //   doc.setFont('helvetica', 'normal')
+            //   // proteinesTotales
+            //   if (test?.observations?.chimie?.proteinesTotales) {
+            //     doc.text(
+            //       `proteinesTotales: ${test?.observations?.chimie?.proteinesTotales}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // proteinesArochies
+            //   if (test?.observations?.chimie?.proteinesArochies) {
+            //     doc.text(
+            //       `proteinesArochies: ${test?.observations?.chimie?.proteinesArochies}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // glycorachie
+            //   if (test?.observations?.chimie?.glycorachie) {
+            //     doc.text(
+            //       `glycorachie: ${test?.observations?.chimie?.glycorachie}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // acideUrique
+            //   if (test?.observations?.chimie?.acideUrique) {
+            //     doc.text(
+            //       `acideUrique: ${test?.observations?.chimie?.acideUrique}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+
+            //   // LDH
+            //   if (test?.observations?.chimie?.LDH) {
+            //     doc.text(
+            //       `LDH: ${test?.observations?.chimie?.LDH}`,
+            //       20,
+            //       currentY
+            //     )
+            //     currentY += 5
+            //   }
+            // }
+            // chimie
+            if (test?.observations?.chimie) {
+              doc.setFontSize(13)
+              doc.setFont('helvetica', 'bold')
+              doc.text(`Chimie`, 20, currentY)
               currentY += 5
-            }
+              doc.setFontSize(10)
+              doc.setFont('helvetica', 'normal')
 
-            // Éléments Levuriformes
-            if (test?.observations?.microscopique?.elementsLevuriforme) {
-              doc.text(
-                `Éléments levuriformes: ${test?.observations?.microscopique?.elementsLevuriforme}`,
-                20,
-                currentY
-              )
-              currentY += 5
-            }
+              // Proteines Totales
+              if (test?.observations?.chimie?.proteinesTotales) {
+                doc.text('Proteines Totales:', 20, currentY)
+                doc.text(
+                  `${test.observations.chimie.proteinesTotales}`,
+                  65,
+                  currentY
+                )
+                currentY += 5
+              }
 
-            // Filaments Mycéliens
-            if (test?.observations?.microscopique?.filamentsMyceliens) {
-              doc.text(
-                `Filaments mycéliens: ${test?.observations?.microscopique?.filamentsMyceliens}`,
-                20,
-                currentY
-              )
-              currentY += 5
-            }
+              // Proteines Arochies
+              if (test?.observations?.chimie?.proteinesArochies) {
+                doc.text('Proteines Arochies:', 20, currentY)
+                doc.text(
+                  `${test.observations.chimie.proteinesArochies}`,
+                  65,
+                  currentY
+                )
+                currentY += 5
+              }
 
-            // Trichomonas Vaginalis
-            if (test?.observations?.microscopique?.trichomonasVaginalis) {
-              doc.text(
-                `Trichomonas vaginalis: ${test?.observations?.microscopique?.trichomonasVaginalis}`,
-                20,
-                currentY
-              )
-              currentY += 5
-            }
+              // Glycorachie
+              if (test?.observations?.chimie?.glycorachie) {
+                doc.text('Glycorachie:', 20, currentY)
+                doc.text(
+                  `${test.observations.chimie.glycorachie}`,
+                  65,
+                  currentY
+                )
+                currentY += 5
+              }
 
-            // Cristaux
-            if (test?.observations?.microscopique?.cristaux) {
-              doc.text(
-                `Cristaux: ${test?.observations?.microscopique?.cristaux}`,
-                20,
-                currentY
-              )
-              currentY += 5
-            }
+              // Acide Urique
+              if (test?.observations?.chimie?.acideUrique) {
+                doc.text('Acide Urique:', 20, currentY)
+                doc.text(
+                  `${test.observations.chimie.acideUrique}`,
+                  65,
+                  currentY
+                )
+                currentY += 5
+              }
 
-            // Cylindres
-            if (test?.observations?.microscopique?.cylindres) {
-              doc.text(
-                `Cylindres: ${test?.observations?.microscopique?.cylindres}`,
-                20,
-                currentY
-              )
-              currentY += 7
+              // LDH
+              if (test?.observations?.chimie?.LDH) {
+                doc.text('LDH:', 20, currentY)
+                doc.text(`${test.observations.chimie.LDH}`, 65, currentY)
+                currentY += 5
+              }
             }
 
             // Vérifiez si vous avez besoin d'ajouter une nouvelle page si `currentY` est trop élevé
@@ -503,41 +947,45 @@ function GenerateResultatButton({ invoice }) {
             }
           }
           if (test?.gram) {
-            doc.setFontSize(10)
+            doc.setFontSize(13)
             doc.setFont('helvetica', 'bold')
             doc.text(`Gram`, 25, currentY)
             currentY += 5
-            doc.setFontSize(8)
+            doc.setFontSize(10)
             doc.setFont('helvetica', 'normal')
-            doc.text(`Gram: ${test?.gram}`, 20, currentY)
-            currentY += 7
+            doc.text(`Gram:`, 20, currentY)
+
+            doc.text(`${test?.gram}`, 65, currentY)
+            currentY += 5
           }
 
           if (test?.culture) {
-            doc.setFontSize(10)
+            doc.setFontSize(13)
             doc.setFont('helvetica', 'bold')
             doc.text(`Culture:`, 20, currentY)
-            currentY += 3
-            doc.setFontSize(8)
-            doc.setFont('helvetica', 'normal')
-            doc.text(` ${test?.culture?.description}`, 20, currentY)
             currentY += 5
-            doc.text(
-              `Germe Identifié: ${test?.culture?.germeIdentifie}`,
-              20,
-              currentY
-            )
+            doc.setFontSize(10)
+            doc.setFont('helvetica', 'normal')
+            doc.text(`Culture:`, 20, currentY)
+            doc.text(`${test?.culture?.culture}`, 65, currentY)
+            currentY += 5
+            doc.text(` Germe Identifié: `, 20, currentY)
+            doc.text(` ${test?.culture?.germeIdentifie}`, 65, currentY)
+            currentY += 5
+            doc.text(` Numeration:`, 20, currentY)
+            doc.text(` ${test?.culture?.description}`, 65, currentY)
+
             currentY += 7
           }
 
           if (test?.conclusion) {
-            doc.setFontSize(10)
+            doc.setFontSize(13)
             doc.setFont('helvetica', 'bold')
             doc.text(`Conclusion`, 20, currentY)
             currentY += 5
 
             doc.text(` ${test?.conclusion}`, 20, currentY)
-            doc.setFontSize(8)
+            doc.setFontSize(10)
             doc.setFont('helvetica', 'normal')
             currentY += 5
           }

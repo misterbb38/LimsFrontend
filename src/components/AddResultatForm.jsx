@@ -218,6 +218,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
   const [statutInterpretation, setStatutInterpretation] = useState(false)
   const [statutMachine, setStatutMachine] = useState(false)
   const [typePrelevement, setTypePrelevement] = useState('')
+  const [lieuPrelevement, setLieuPrelevement] = useState('')
   const [datePrelevement, setDatePrelevement] = useState('')
   const [tests, setTests] = useState([])
   const [remarque, setRemarque] = useState('')
@@ -279,11 +280,30 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     trichomonasVaginalis: '',
     cristaux: '',
     cylindres: '',
+    parasites: '',
+    trichomonasIntestinales: '',
+    oeufsDeBilharzies: '',
+    clueCells: '',
+    gardnerellaVaginalis: '',
+    bacillesDeDoderlein: '',
+    typeDeFlore: '',
+    ph: '',
+    rechercheDeStreptocoqueB: '',
+    monocytes: '',
+  })
+
+  const [chimie, setChimie] = useState({
+    proteinesTotales: '',
+    proteinesArochies: '',
+    glycorachie: '',
+    acideUrique: '',
+    LDH: '',
   })
 
   const [culture, setCulture] = useState({
     description: '',
     germeIdentifie: '',
+    culture: '',
   })
   const [gram, setGram] = useState('')
   const [conclusion, setConclusion] = useState('')
@@ -353,9 +373,50 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     setMicroscopique((prev) => ({ ...prev, [field]: value }))
   }
 
+  const handleChimieChange = (field, value) => {
+    setChimie((prev) => ({ ...prev, [field]: value }))
+  }
+
   const handleCultureChange = (field, value) => {
     setCulture((prev) => ({ ...prev, [field]: value }))
   }
+
+  // Détecter si la valeur actuelle de germeIdentifie est parmi les options prédéfinies
+  const predefinedGerms = [
+    'Escherichia coli',
+    'Klebsiella pneumoniae ssp pneumoniae',
+    'Streptococcus agalactiae',
+    'Candida albicans',
+    'Gardnerella vaginalis',
+    'Candida spp',
+    'Candida kefyr',
+    'Mobiluncus spp',
+    'Ureaplasma urealyticum',
+    'Mycoplasma hominis',
+    'Chlamydiae trachomatis',
+    'Staphylococcus aureus',
+    'Klebsiella oxytoca',
+    'Citrobacter freundii',
+    'Citrobacter koseri',
+    'Enterobacter cloacae',
+    'Proteus mirabilis',
+    'Proteus vulgaris',
+    'Pseudomonas aeruginosa',
+    'Enterococcus faecalis',
+    'Enterococcus faecium',
+    'Neisseria gonorrhoeae',
+    'Neisseria meningitidis',
+    'Haemophilus influenzae',
+    'Morganella morganii',
+    'Salmonella spp',
+    'Serratia marcescens',
+    'Shigella spp',
+    'Staphylococcus xylosus',
+    'Acinetobacter baumannii',
+    'Vibrio cholerae',
+  ]
+
+  const isPredefined = predefinedGerms.includes(culture.germeIdentifie)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -372,6 +433,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     let observations = {
       macroscopique: currentView === 'complexe' ? macroscopique : undefined,
       microscopique: currentView === 'complexe' ? microscopique : undefined,
+      chimie: currentView === 'complexe' ? chimie : undefined,
       antibiogramme:
         currentView === 'complexe'
           ? antibiogrammes.reduce((acc, curr) => {
@@ -394,7 +456,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
         machineB: currentView === 'simple' ? machineB : undefined,
         statutMachine,
         statutInterpretation,
-        typePrelevement: currentView === 'simple' ? typePrelevement : undefined,
+        typePrelevement,
+        lieuPrelevement,
         datePrelevement: datePrelevement || null,
         remarque,
         updatedBy,
@@ -442,6 +505,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     setStatutMachine(false)
     setStatutInterpretation(false)
     setTypePrelevement('')
+    setLieuPrelevement('')
     setDatePrelevement('')
     setRemarque('')
     setAntibiogrammes([])
@@ -455,7 +519,25 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
       trichomonasVaginalis: '',
       cristaux: '',
       cylindres: '',
+      parasites: '',
+      trichomonasIntestinales: '',
+      oeufsDeBilharzies: '',
+      clueCells: '',
+      gardnerellaVaginalis: '',
+      bacillesDeDoderlein: '',
+      typeDeFlore: '',
+      ph: '',
+      rechercheDeStreptocoqueB: '',
+      monocytes: '',
     })
+    setChimie({
+      proteinesTotales: '',
+      proteinesArochies: '',
+      glycorachie: '',
+      acideUrique: '',
+      LDH: '',
+    })
+
     setCulture({
       description: '',
       germeIdentifie: '',
@@ -493,6 +575,51 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
           </select>
           <p>La machine A est : {machineA}</p>
           <p>La machine B est : {machineB}</p>
+        </div>
+
+        <div>
+          <label className="label">Type de Prélèvement</label>
+          <select
+            className="select select-bordered"
+            value={typePrelevement}
+            onChange={(e) => setTypePrelevement(e.target.value)}
+          >
+            <option value="">Sélectionner une option</option>
+            <option value="Urines">Urines</option>
+            <option value="Secretions vaginales">Sécrétions vaginales</option>
+            <option value="Selles">Selles</option>
+            <option value="Uretral">Urétal</option>
+            <option value="Sperme">Sperme</option>
+            <option value="Vulve">Vulve</option>
+            <option value="Pus">Pus</option>
+            <option value="Culot urinaire">Culot urinaire</option>
+            <option value="Soude urinaire">Sonde urinaire</option>
+            <option value="Amydales">Amygdales</option>
+            <option value="LCR">LCR</option>
+            <option value="Ascite">Ascite</option>
+            <option value="Pleural">Pleural</option>
+            <option value="Articulaire">Articulaire</option>
+            <option value="Sang">Sang</option>
+            <option value="Seringue">Seringue</option>
+            <option value="Ballon">Ballon</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="label">Lieu de Prélèvement</label>
+          <select
+            className="select select-bordered"
+            value={lieuPrelevement}
+            onChange={(e) => setLieuPrelevement(e.target.value)}
+          >
+            <option value="">Sélectionner une option</option>
+            <option value="Prélevé au laboratoire">
+              Prélevé au laboratoire
+            </option>
+            <option value="Apporté au laboratoire">
+              Apporté au laboratoire
+            </option>
+          </select>
         </div>
 
         <div className="flex flex-col items-center mb-4">
@@ -563,15 +690,6 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                 className="input input-bordered"
               />
             </div>
-            <div>
-              <label className="label">Type de Prélèvement</label>
-              <input
-                type="text"
-                value={typePrelevement}
-                onChange={(e) => setTypePrelevement(e.target.value)}
-                className="input input-bordered"
-              />
-            </div>
 
             <div>
               <label className="label">Date de Prélèvement</label>
@@ -587,176 +705,508 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
 
         {currentView === 'complexe' && (
           <div id="complexe">
+            {/* macroscopie */}
             <div>
               <label className="label">Macroscopique</label>
-              <input
-                type="text"
+              <select
+                className="select select-bordered"
                 value={macroscopique}
                 onChange={(e) => setMacroscopique(e.target.value)}
-                className="input input-bordered"
-              />
+              >
+                <option value="">Sélectionner un état</option>
+                <option value="Claires">Claires</option>
+                <option value="Legerement troubles">Légèrement troubles</option>
+                <option value="Troubles">Troubles</option>
+                <option value="Abondantes">Abondantes</option>
+                <option value="Peu abondantes">Peu abondantes</option>
+                <option value="Fetides">Fétides</option>
+                <option value="Peu fetides">Peu fétides</option>
+                <option value="Tres fetides">Très fétides</option>
+                <option value="Laiteuses">Laiteuses</option>
+                <option value="Epaisses">Épaisses</option>
+                <option value="Lies">Lies</option>
+                <option value="Non lie">Non lié</option>
+                <option value="Ospalescent">Opalescent</option>
+                <option value="Irrite">Irrité</option>
+                <option value="Verdates">Verdâtres</option>
+                <option value="Dures">Dures</option>
+                <option value="Brunatres">Brunâtres</option>
+                <option value="Molles">Molles</option>
+                <option value="Odorantes">Odorantes</option>
+              </select>
             </div>
-            <div>
-              <label className="label">Leucocytes</label>
-              <input
-                type="text"
-                value={microscopique.leucocytes}
-                onChange={(e) =>
-                  handleMicroscopiqueChange('leucocytes', e.target.value)
-                }
-                className="input input-bordered"
-              />
-            </div>
+            <div className="divider"></div>
+            <h2 className="bold">Microscopie</h2>
+            {/* microscopie */}
+            <div className="flex flex-wrap gap-4 items-center">
+              <div className="flex flex-nowrap gap-4 items-center w-full">
+                <div>
+                  <label className="label">Leucocytes</label>
+                  <input
+                    type="text"
+                    value={microscopique.leucocytes}
+                    onChange={(e) =>
+                      handleMicroscopiqueChange('leucocytes', e.target.value)
+                    }
+                    className="input input-bordered"
+                  />
+                </div>
 
-            <div>
-              <label className="label">Hématies</label>
-              <input
-                type="text"
-                value={microscopique.hematies}
-                onChange={(e) =>
-                  handleMicroscopiqueChange('hematies', e.target.value)
-                }
-                className="input input-bordered"
-              />
-            </div>
+                <div>
+                  <label className="label">Hématies</label>
+                  <input
+                    type="text"
+                    value={microscopique.hematies}
+                    onChange={(e) =>
+                      handleMicroscopiqueChange('hematies', e.target.value)
+                    }
+                    className="input input-bordered"
+                  />
+                </div>
 
-            <div>
-              {/* Autres champs déjà définis dans votre formulaire */}
+                <div>
+                  {/* Autres champs déjà définis dans votre formulaire */}
 
-              <label className="label">Cristaux</label>
-              <select
-                className="select select-bordered"
-                value={microscopique.cristaux}
-                onChange={(e) =>
-                  handleMicroscopiqueChange('cristaux', e.target.value)
-                }
-              >
-                <option value="">Non concerner</option>
-                <option value="Absence">Absence</option>
-                <option value="Présence">Présence</option>
-              </select>
+                  <label className="label">pH</label>
+                  <input
+                    type="text"
+                    className="input input-bordered"
+                    value={microscopique.ph}
+                    onChange={(e) =>
+                      handleMicroscopiqueChange('ph', e.target.value)
+                    }
+                    placeholder=""
+                  />
+                </div>
+              </div>
 
-              <label className="label">Cellules épithéliales</label>
-              <select
-                className="select select-bordered"
-                value={microscopique.cellulesEpitheliales}
-                onChange={(e) =>
-                  handleMicroscopiqueChange(
-                    'cellulesEpitheliales',
-                    e.target.value
-                  )
-                }
-              >
-                <option value="">Non concerner</option>
-                <option value="Absence">Absence</option>
-                <option value="Présence">Présence</option>
-              </select>
+              <div>
+                <label className="label">Cristaux</label>
+                <select
+                  className="select select-bordered"
+                  value={microscopique.cristaux}
+                  onChange={(e) =>
+                    handleMicroscopiqueChange('cristaux', e.target.value)
+                  }
+                >
+                  <option value="">Non concerner</option>
+                  <option value="Absence">Absence</option>
+                  <option value="Présence">Présence</option>
+                </select>
+              </div>
 
-              <label className="label">Eléments levuriformes</label>
-              <select
-                className="select select-bordered"
-                value={microscopique.elementsLevuriforme}
-                onChange={(e) =>
-                  handleMicroscopiqueChange(
-                    'elementsLevuriforme',
-                    e.target.value
-                  )
-                }
-              >
-                <option value="">Non concerner</option>
-                <option value="Absence">Absence</option>
-                <option value="Présence">Présence</option>
-              </select>
+              <div>
+                <label className="label">Cellules épithéliales</label>
+                <select
+                  className="select select-bordered"
+                  value={microscopique.cellulesEpitheliales}
+                  onChange={(e) =>
+                    handleMicroscopiqueChange(
+                      'cellulesEpitheliales',
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="">Non concerner</option>
+                  <option value="Absence">Absence</option>
+                  <option value="Présence">Présence</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Eléments levuriformes</label>
+                <select
+                  className="select select-bordered"
+                  value={microscopique.elementsLevuriforme}
+                  onChange={(e) =>
+                    handleMicroscopiqueChange(
+                      'elementsLevuriforme',
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="">Non concerner</option>
+                  <option value="Absence">Absence</option>
+                  <option value="Présence">Présence</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">filaments mycéliens</label>
+                <select
+                  className="select select-bordered"
+                  value={microscopique.filamentsMyceliens}
+                  onChange={(e) =>
+                    handleMicroscopiqueChange(
+                      'filamentsMyceliens',
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="">Non concerner</option>
+                  <option value="Absence">Absence</option>
+                  <option value="Présence">Présence</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Trichomonas vaginalis</label>
+                <select
+                  className="select select-bordered"
+                  value={microscopique.trichomonasVaginalis}
+                  onChange={(e) =>
+                    handleMicroscopiqueChange(
+                      'trichomonasVaginalis',
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="">Non concerner</option>
+                  <option value="Absence">Absence</option>
+                  <option value="Présence">Présence</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">cylindres</label>
+                <select
+                  className="select select-bordered"
+                  value={microscopique.cylindres}
+                  onChange={(e) =>
+                    handleMicroscopiqueChange('cylindres', e.target.value)
+                  }
+                >
+                  <option value="">Non concerner</option>
+                  <option value="Absence">Absence</option>
+                  <option value="Présence">Présence</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Parasites</label>
+                <select
+                  className="select select-bordered"
+                  value={microscopique.parasites}
+                  onChange={(e) =>
+                    handleMicroscopiqueChange('parasites', e.target.value)
+                  }
+                >
+                  <option value="">Non concerner</option>
+                  <option value="Absence">Absence</option>
+                  <option value="Présence">Présence</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Oeufs de Bilharzies</label>
+                <select
+                  className="select select-bordered"
+                  value={microscopique.oeufsDeBilharzies}
+                  onChange={(e) =>
+                    handleMicroscopiqueChange(
+                      'oeufsDeBilharzies',
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="">Non concerner</option>
+                  <option value="Absence">Absence</option>
+                  <option value="Présence">Présence</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Clue Cells</label>
+                <select
+                  className="select select-bordered"
+                  value={microscopique.clueCells}
+                  onChange={(e) =>
+                    handleMicroscopiqueChange('clueCells', e.target.value)
+                  }
+                >
+                  <option value="">Non concerner</option>
+                  <option value="Absence">Absence</option>
+                  <option value="Présence">Présence</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Gardnerella Vaginalis</label>
+                <select
+                  className="select select-bordered"
+                  value={microscopique.gardnerellaVaginalis}
+                  onChange={(e) =>
+                    handleMicroscopiqueChange(
+                      'gardnerellaVaginalis',
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="">Non concerner</option>
+                  <option value="Absence">Absence</option>
+                  <option value="Présence">Présence</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Bacilles de Doderlein</label>
+                <select
+                  className="select select-bordered"
+                  value={microscopique.bacillesDeDoderlein}
+                  onChange={(e) =>
+                    handleMicroscopiqueChange(
+                      'bacillesDeDoderlein',
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="">Non concerner</option>
+                  <option value="Absence">Absence</option>
+                  <option value="Présence">Présence</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Type de Flore</label>
+                <select
+                  className="select select-bordered"
+                  value={microscopique.typeDeFlore}
+                  onChange={(e) =>
+                    handleMicroscopiqueChange('typeDeFlore', e.target.value)
+                  }
+                >
+                  <option value="">Non concerner</option>
+                  <option value="Normale">I</option>
+                  <option value="Anormale">II</option>
+                  <option value="Normale">III</option>
+                  <option value="Anormale">IV</option>
+                  <option value="Normale">équilibrée</option>
+                  <option value="Anormale">deséquilibrée</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Recherche de Streptocoque B</label>
+                <select
+                  className="select select-bordered"
+                  value={microscopique.rechercheDeStreptocoqueB}
+                  onChange={(e) =>
+                    handleMicroscopiqueChange(
+                      'rechercheDeStreptocoqueB',
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="">Non concerner</option>
+                  <option value="Négatif">Négatif</option>
+                  <option value="Positif">Positif</option>
+                </select>
+              </div>
 
-              <label className="label">filaments mycéliens</label>
-              <select
-                className="select select-bordered"
-                value={microscopique.filamentsMyceliens}
-                onChange={(e) =>
-                  handleMicroscopiqueChange(
-                    'filamentsMyceliens',
-                    e.target.value
-                  )
-                }
-              >
-                <option value="">Non concerner</option>
-                <option value="Absence">Absence</option>
-                <option value="Présence">Présence</option>
-              </select>
+              <div>
+                <label className="label">Monocytes</label>
+                <select
+                  className="select select-bordered"
+                  value={microscopique.monocytes}
+                  onChange={(e) =>
+                    handleMicroscopiqueChange('monocytes', e.target.value)
+                  }
+                >
+                  <option value="">Non concerner</option>
+                  <option value="Absence">Absence</option>
+                  <option value="Présence">Présence</option>
+                </select>
+              </div>
 
-              <label className="label">
-                Trichomonas vaginalis /Autres parasites
-              </label>
-              <select
-                className="select select-bordered"
-                value={microscopique.trichomonasVaginalis}
-                onChange={(e) =>
-                  handleMicroscopiqueChange(
-                    'trichomonasVaginalis',
-                    e.target.value
-                  )
-                }
-              >
-                <option value="">Non concerner</option>
-                <option value="Absence">Absence</option>
-                <option value="Présence">Présence</option>
-              </select>
-
-              <label className="label">cylindres</label>
-              <select
-                className="select select-bordered"
-                value={microscopique.cylindres}
-                onChange={(e) =>
-                  handleMicroscopiqueChange('cylindres', e.target.value)
-                }
-              >
-                <option value="">Non concerner</option>
-                <option value="Absence">Absence</option>
-                <option value="Présence">Présence</option>
-              </select>
               {/* Continuez pour les autres champs microscopiques */}
             </div>
+            <div className="divider"></div>
+            <h2 className="bold">Chimie</h2>
+            {/* Chimie */}
+            <div className="">
+              <div className="flex flex-wrap gap-2 items-center">
+                <div>
+                  <label className="label">proteinesTotales</label>
+                  <input
+                    type="text"
+                    value={chimie.proteinesTotales}
+                    onChange={(e) =>
+                      handleChimieChange('proteinesTotales', e.target.value)
+                    }
+                    className="input input-bordered"
+                  />
+                </div>
 
-            <div>
-              <label className="label">Culture: Description</label>
-              <input
-                type="text"
-                value={culture.description}
-                onChange={(e) =>
-                  handleCultureChange('description', e.target.value)
-                }
-                className="input input-bordered"
-              />
+                <div>
+                  <label className="label">proteinesArochies</label>
+                  <input
+                    type="text"
+                    value={chimie.proteinesArochies}
+                    onChange={(e) =>
+                      handleChimieChange('proteinesArochies', e.target.value)
+                    }
+                    className="input input-bordered"
+                  />
+                </div>
+
+                <div>
+                  <label className="label">glycorachie</label>
+                  <input
+                    type="text"
+                    className="input input-bordered"
+                    value={chimie.glycorachie}
+                    onChange={(e) =>
+                      handleChimieChange('glycorachie', e.target.value)
+                    }
+                    placeholder=""
+                  />
+                </div>
+
+                <div>
+                  <label className="label">acideUrique</label>
+                  <input
+                    type="text"
+                    className="input input-bordered"
+                    value={chimie.acideUrique}
+                    onChange={(e) =>
+                      handleChimieChange('acideUrique', e.target.value)
+                    }
+                    placeholder=""
+                  />
+                </div>
+
+                <div>
+                  <label className="label">LDH</label>
+                  <input
+                    type="text"
+                    className="input input-bordered"
+                    value={chimie.LDH}
+                    onChange={(e) => handleChimieChange('LDH', e.target.value)}
+                    placeholder=""
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="label">Culture: Germe Identifié</label>
-              <input
-                type="text"
-                value={culture.germeIdentifie}
-                onChange={(e) =>
-                  handleCultureChange('germeIdentifie', e.target.value)
-                }
-                className="input input-bordered"
-              />
+            <div className="divider"></div>
+            <h2 className="bold">culture</h2>
+            {/* culture */}
+            <div className="mt-2 mb-2">
+              <div>
+                <label className="label">Culture: concentration</label>
+                <select
+                  value={culture.description}
+                  onChange={(e) =>
+                    handleCultureChange('description', e.target.value)
+                  }
+                  className="select select-bordered"
+                >
+                  <option value="">Sélectionner une concentration</option>
+                  <option value="DGU < 10^3">
+                    DGU &lt; 10<sup>3</sup>
+                  </option>
+                  <option value="DGU > 10^3">
+                    DGU &gt; 10<sup>3</sup>
+                  </option>
+                  <option value="DGU > 10^4">
+                    DGU &gt; 10<sup>4</sup>
+                  </option>
+                  <option value="DGU > 10^5">
+                    DGU &gt; 10<sup>5</sup>
+                  </option>
+                  <option value="DGU > 10^6">
+                    DGU &gt; 10<sup>6</sup>
+                  </option>
+                  <option value="DGU > 10^7">
+                    DGU &gt; 10<sup>7</sup>
+                  </option>
+                  <option value="DGU > 10^8">
+                    DGU &gt; 10<sup>8</sup>
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label className="label">Culture</label>
+                <select
+                  value={culture.culture} // Assurez-vous que l'état culture contient un champ culture initialisé correctement
+                  onChange={(e) =>
+                    handleCultureChange('culture', e.target.value)
+                  }
+                  className="select select-bordered"
+                >
+                  <option value="">Sélectionner un état</option>
+                  <option value="Negatives">Négatives</option>
+                  <option value="Positives">Positives</option>
+                  <option value="Non contributives">Non contributives</option>
+                </select>
+              </div>
+
+              <div>
+                <div>
+                  <label className="label">
+                    Culture: Germe Identifié - Sélection
+                  </label>
+                  <select
+                    value={isPredefined ? culture.germeIdentifie : ''}
+                    onChange={(e) =>
+                      handleCultureChange('germeIdentifie', e.target.value)
+                    }
+                    className="select select-bordered"
+                    disabled={!isPredefined && culture.germeIdentifie !== ''}
+                  >
+                    <option value="">Sélectionner un germe</option>
+                    {predefinedGerms.map((germe) => (
+                      <option key={germe} value={germe}>
+                        {germe}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="label">
+                    Culture: Germe Identifié - Saisie manuelle
+                  </label>
+                  <input
+                    type="text"
+                    value={!isPredefined ? culture.germeIdentifie : ''}
+                    onChange={(e) =>
+                      handleCultureChange('germeIdentifie', e.target.value)
+                    }
+                    className="input input-bordered"
+                    disabled={isPredefined}
+                  />
+                </div>
+              </div>
             </div>
+            <div className="divider"></div>
+
+            {/* Gram */}
             <div>
               <label className="label">Gram</label>
-              <input
-                type="text"
+              <select
+                className="select select-bordered"
                 value={gram}
                 onChange={(e) => setGram(e.target.value)}
-                className="input input-bordered"
-              />
+              >
+                <option value="">Sélectionner un type de Gram</option>
+                <option value="Bacilles Gram négatif">
+                  Bacilles Gram négatif
+                </option>
+                <option value="Bacilles Gram positif">
+                  Bacilles Gram positif
+                </option>
+                <option value="Cocci Gram négatif">Cocci Gram négatif</option>
+                <option value="Cocci Gram positif">Cocci Gram positif</option>
+                <option value="Levures">Levures</option>
+              </select>
             </div>
+            <div className="divider"></div>
+
+            {/* conclusion */}
             <div>
               <label className="label">Conclusion</label>
-              <textarea
+              <select
                 value={conclusion}
                 onChange={(e) => setConclusion(e.target.value)}
-                className="textarea textarea-bordered"
-              />
+                className="select select-bordered"
+              >
+                <option value="">Sélectionner une conclusion</option>
+                <option value="Conclusion 1">Conclusion 1</option>
+                <option value="Conclusion 2">Conclusion 2</option>
+                <option value="Conclusion 3">Conclusion 3</option>
+                <option value="Conclusion 4">Conclusion 4</option>
+              </select>
             </div>
-
+            {/* antibiogramme */}
             <div>
               {/* essai */}
               <label className="label">Antibiogrammes</label>
