@@ -290,6 +290,10 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     ph: '',
     rechercheDeStreptocoqueB: '',
     monocytes: '',
+    polynucleairesNeutrophilesAlterees: '',
+    polynucleairesNeutrophilesNonAlterees: '',
+    eosinophiles: '',
+    basophiles: '',
   })
 
   const [chimie, setChimie] = useState({
@@ -298,6 +302,19 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     glycorachie: '',
     acideUrique: '',
     LDH: '',
+  })
+
+  // Déclaration de l'état pour la recherche de chlamydia
+  const [rechercheChlamydia, setRechercheChlamydia] = useState({
+    naturePrelevement: '',
+    rechercheAntigeneChlamydiaTrochomatis: '',
+  })
+
+  // Déclaration de l'état pour la recherche de mycoplasmes
+  const [rechercheMycoplasmes, setRechercheMycoplasmes] = useState({
+    naturePrelevement: '',
+    rechercheUreaplasmaUrealyticum: '',
+    rechercheMycoplasmaHominis: '',
   })
 
   const [culture, setCulture] = useState({
@@ -377,6 +394,14 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     setChimie((prev) => ({ ...prev, [field]: value }))
   }
 
+  const handleRechercheChlamydiaChange = (field, value) => {
+    setRechercheChlamydia((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleRechercheMycoplasmesChange = (field, value) => {
+    setRechercheMycoplasmes((prev) => ({ ...prev, [field]: value }))
+  }
+
   const handleCultureChange = (field, value) => {
     setCulture((prev) => ({ ...prev, [field]: value }))
   }
@@ -434,6 +459,10 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
       macroscopique: currentView === 'complexe' ? macroscopique : undefined,
       microscopique: currentView === 'complexe' ? microscopique : undefined,
       chimie: currentView === 'complexe' ? chimie : undefined,
+      rechercheChlamydia:
+        currentView === 'complexe' ? rechercheChlamydia : undefined,
+      rechercheMycoplasmes:
+        currentView === 'complexe' ? rechercheMycoplasmes : undefined,
       antibiogramme:
         currentView === 'complexe'
           ? antibiogrammes.reduce((acc, curr) => {
@@ -537,6 +566,18 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
       acideUrique: '',
       LDH: '',
     })
+    // Pour réinitialiser l'état de recherche de chlamydia
+    setRechercheChlamydia({
+      naturePrelevement: '',
+      rechercheAntigeneChlamydiaTrochomatis: '',
+    })
+
+    // Pour réinitialiser l'état de recherche de mycoplasmes
+    setRechercheMycoplasmes({
+      naturePrelevement: '',
+      rechercheUreaplasmaUrealyticum: '',
+      rechercheMycoplasmaHominis: '',
+    })
 
     setCulture({
       description: '',
@@ -576,50 +617,62 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
           <p>La machine A est : {machineA}</p>
           <p>La machine B est : {machineB}</p>
         </div>
+        {/* general */}
+        <div className="flex flex-nowrap gap-4 items-center w-full">
+          <div>
+            <label className="label">Type de Prélèvement</label>
+            <select
+              className="select select-bordered"
+              value={typePrelevement}
+              onChange={(e) => setTypePrelevement(e.target.value)}
+            >
+              <option value="">Sélectionner une option</option>
+              <option value="Urines">Urines</option>
+              <option value="Secretions vaginales">Sécrétions vaginales</option>
+              <option value="Selles">Selles</option>
+              <option value="Uretral">Urétal</option>
+              <option value="Sperme">Sperme</option>
+              <option value="Vulve">Vulve</option>
+              <option value="Pus">Pus</option>
+              <option value="Culot urinaire">Culot urinaire</option>
+              <option value="Soude urinaire">Sonde urinaire</option>
+              <option value="Amydales">Amygdales</option>
+              <option value="LCR">LCR</option>
+              <option value="Ascite">Ascite</option>
+              <option value="Pleural">Pleural</option>
+              <option value="Articulaire">Articulaire</option>
+              <option value="Sang">Sang</option>
+              <option value="Seringue">Seringue</option>
+              <option value="Ballon">Ballon</option>
+            </select>
+          </div>
 
-        <div>
-          <label className="label">Type de Prélèvement</label>
-          <select
-            className="select select-bordered"
-            value={typePrelevement}
-            onChange={(e) => setTypePrelevement(e.target.value)}
-          >
-            <option value="">Sélectionner une option</option>
-            <option value="Urines">Urines</option>
-            <option value="Secretions vaginales">Sécrétions vaginales</option>
-            <option value="Selles">Selles</option>
-            <option value="Uretral">Urétal</option>
-            <option value="Sperme">Sperme</option>
-            <option value="Vulve">Vulve</option>
-            <option value="Pus">Pus</option>
-            <option value="Culot urinaire">Culot urinaire</option>
-            <option value="Soude urinaire">Sonde urinaire</option>
-            <option value="Amydales">Amygdales</option>
-            <option value="LCR">LCR</option>
-            <option value="Ascite">Ascite</option>
-            <option value="Pleural">Pleural</option>
-            <option value="Articulaire">Articulaire</option>
-            <option value="Sang">Sang</option>
-            <option value="Seringue">Seringue</option>
-            <option value="Ballon">Ballon</option>
-          </select>
-        </div>
+          <div>
+            <label className="label">Lieu de Prélèvement</label>
+            <select
+              className="select select-bordered"
+              value={lieuPrelevement}
+              onChange={(e) => setLieuPrelevement(e.target.value)}
+            >
+              <option value="">Sélectionner une option</option>
+              <option value="Prélevé au laboratoire">
+                Prélevé au laboratoire
+              </option>
+              <option value="Apporté au laboratoire">
+                Apporté au laboratoire
+              </option>
+            </select>
+          </div>
 
-        <div>
-          <label className="label">Lieu de Prélèvement</label>
-          <select
-            className="select select-bordered"
-            value={lieuPrelevement}
-            onChange={(e) => setLieuPrelevement(e.target.value)}
-          >
-            <option value="">Sélectionner une option</option>
-            <option value="Prélevé au laboratoire">
-              Prélevé au laboratoire
-            </option>
-            <option value="Apporté au laboratoire">
-              Apporté au laboratoire
-            </option>
-          </select>
+          <div>
+            <label className="label">Date de Prélèvement</label>
+            <input
+              type="datetime-local"
+              value={datePrelevement}
+              onChange={(e) => setDatePrelevement(e.target.value)}
+              className="input input-bordered"
+            />
+          </div>
         </div>
 
         <div className="flex flex-col items-center mb-4">
@@ -643,7 +696,10 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
         </div>
 
         {currentView === 'simple' && (
-          <div id="simple">
+          <div
+            id="simple"
+            className="flex flex-nowrap gap-4 items-center w-full"
+          >
             <div>
               <label className="label">Valeur</label>
               <input
@@ -681,7 +737,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
               </select>
             </div>
 
-            <div>
+            {/* <div>
               <label className="label">Methode</label>
               <input
                 type="text"
@@ -689,17 +745,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                 onChange={(e) => setMethode(e.target.value)}
                 className="input input-bordered"
               />
-            </div>
-
-            <div>
-              <label className="label">Date de Prélèvement</label>
-              <input
-                type="datetime-local"
-                value={datePrelevement}
-                onChange={(e) => setDatePrelevement(e.target.value)}
-                className="input input-bordered"
-              />
-            </div>
+            </div> */}
           </div>
         )}
 
@@ -762,6 +808,20 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                     }
                     className="input input-bordered"
                   />
+                </div>
+                <div>
+                  <label className="label">Unité de mesure</label>
+                  <select
+                    className="select select-bordered"
+                    value={microscopique.unite}
+                    onChange={(e) =>
+                      handleMicroscopiqueChange('unite', e.target.value)
+                    }
+                  >
+                    <option value="">Sélectionnez une unité</option>
+                    <option value="champ">champ</option>
+                    <option value="mm3">mm3</option>
+                  </select>
                 </div>
 
                 <div>
@@ -966,12 +1026,12 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   }
                 >
                   <option value="">Non concerner</option>
-                  <option value="Normale">I</option>
-                  <option value="Anormale">II</option>
-                  <option value="Normale">III</option>
-                  <option value="Anormale">IV</option>
-                  <option value="Normale">équilibrée</option>
-                  <option value="Anormale">deséquilibrée</option>
+                  <option value="I">I</option>
+                  <option value="II">II</option>
+                  <option value="III">III</option>
+                  <option value="III">IV</option>
+                  <option value="équilibrée">équilibrée</option>
+                  <option value="deséquilibrée">deséquilibrée</option>
                 </select>
               </div>
               <div>
@@ -994,17 +1054,72 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
 
               <div>
                 <label className="label">Monocytes</label>
-                <select
-                  className="select select-bordered"
+                <input
+                  type="text"
+                  className="input input-bordered"
                   value={microscopique.monocytes}
                   onChange={(e) =>
                     handleMicroscopiqueChange('monocytes', e.target.value)
                   }
-                >
-                  <option value="">Non concerner</option>
-                  <option value="Absence">Absence</option>
-                  <option value="Présence">Présence</option>
-                </select>
+                />
+              </div>
+
+              <div>
+                <label className="label">
+                  Polynucléaires neutrophiles altérées
+                </label>
+                <input
+                  type="text"
+                  className="input input-bordered"
+                  value={microscopique.polynucleairesNeutrophilesAlterees}
+                  onChange={(e) =>
+                    handleMicroscopiqueChange(
+                      'polynucleairesNeutrophilesAlterees',
+                      e.target.value
+                    )
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="label">
+                  Polynucléaires neutrophiles non altérées
+                </label>
+                <input
+                  type="text"
+                  className="input input-bordered"
+                  value={microscopique.polynucleairesNeutrophilesNonAlterees}
+                  onChange={(e) =>
+                    handleMicroscopiqueChange(
+                      'polynucleairesNeutrophilesNonAlterees',
+                      e.target.value
+                    )
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="label">Éosinophiles</label>
+                <input
+                  type="text"
+                  className="input input-bordered"
+                  value={microscopique.eosinophiles}
+                  onChange={(e) =>
+                    handleMicroscopiqueChange('eosinophiles', e.target.value)
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="label">Basophiles</label>
+                <input
+                  type="text"
+                  className="input input-bordered"
+                  value={microscopique.basophiles}
+                  onChange={(e) =>
+                    handleMicroscopiqueChange('basophiles', e.target.value)
+                  }
+                />
               </div>
 
               {/* Continuez pour les autres champs microscopiques */}
@@ -1090,26 +1205,18 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   className="select select-bordered"
                 >
                   <option value="">Sélectionner une concentration</option>
-                  <option value="DGU < 10^3">
-                    DGU &lt; 10<sup>3</sup>
+                  <option value="DGU < 1000/ml">DGU &lt; 1000/ml</option>
+                  <option value="DGU > 1000/ml">DGU &gt; 1000/ml</option>
+                  <option value="DGU > 10.000/ml">DGU &gt; 10.000/ml</option>
+                  <option value="DGU > 100.000/ml">DGU &gt; 100.000/ml</option>
+                  <option value="DGU > 1.000.000/ml">
+                    DGU &gt; 1.000.000/ml
                   </option>
-                  <option value="DGU > 10^3">
-                    DGU &gt; 10<sup>3</sup>
+                  <option value="DGU > 100.000.000/ml">
+                    DGU &gt; 100.000.000/ml
                   </option>
-                  <option value="DGU > 10^4">
-                    DGU &gt; 10<sup>4</sup>
-                  </option>
-                  <option value="DGU > 10^5">
-                    DGU &gt; 10<sup>5</sup>
-                  </option>
-                  <option value="DGU > 10^6">
-                    DGU &gt; 10<sup>6</sup>
-                  </option>
-                  <option value="DGU > 10^7">
-                    DGU &gt; 10<sup>7</sup>
-                  </option>
-                  <option value="DGU > 10^8">
-                    DGU &gt; 10<sup>8</sup>
+                  <option value="DGU > 1000.000.000/ml">
+                    DGU &gt; 1000.000.000/ml
                   </option>
                 </select>
               </div>
@@ -1190,7 +1297,114 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
               </select>
             </div>
             <div className="divider"></div>
+            {/* Chlamydiae */}
+            <div>
+              <div>
+                <label className="label">
+                  Nature du prélèvement pour Chlamydia
+                </label>
+                <select
+                  className="select select-bordered"
+                  value={rechercheChlamydia.naturePrelevement}
+                  onChange={(e) =>
+                    handleRechercheChlamydiaChange(
+                      'naturePrelevement',
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="">Sélectionnez</option>
+                  <option value="cervical">Cervical</option>
+                  <option value="urine">Urine</option>
+                  <option value="sperme">Sperme</option>
+                  <option value="uretral">Urétal</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">
+                  Recherche d'antigène de Chlamydia trachomatis
+                </label>
+                <select
+                  className="select select-bordered"
+                  value={
+                    rechercheChlamydia.rechercheAntigeneChlamydiaTrochomatis
+                  }
+                  onChange={(e) =>
+                    handleRechercheChlamydiaChange(
+                      'rechercheAntigeneChlamydiaTrochomatis',
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="">Sélectionnez</option>
+                  <option value="négative">Négative</option>
+                  <option value="positive">Positive</option>
+                </select>
+              </div>
 
+              {/* Champs pour la Recherche de Mycoplasmes */}
+              <div>
+                <label className="label">
+                  Nature du prélèvement pour Mycoplasmes
+                </label>
+                <select
+                  className="select select-bordered"
+                  value={rechercheMycoplasmes.naturePrelevement}
+                  onChange={(e) =>
+                    handleRechercheMycoplasmesChange(
+                      'naturePrelevement',
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="">Sélectionnez</option>
+                  <option value="cervical">Cervical</option>
+                  <option value="urine">Urine</option>
+                  <option value="sperme">Sperme</option>
+                  <option value="uretral">Urétal</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">
+                  Recherche d'Ureaplasma urealyticum
+                </label>
+                <select
+                  className="select select-bordered"
+                  value={rechercheMycoplasmes.rechercheUreaplasmaUrealyticum}
+                  onChange={(e) =>
+                    handleRechercheMycoplasmesChange(
+                      'rechercheUreaplasmaUrealyticum',
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="">Sélectionnez</option>
+                  <option value="négative">Négative</option>
+                  <option value="positive">Positive</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Recherche de Mycoplasma hominis</label>
+                <select
+                  className="select select-bordered"
+                  value={rechercheMycoplasmes.rechercheMycoplasmaHominis}
+                  onChange={(e) =>
+                    handleRechercheMycoplasmesChange(
+                      'rechercheMycoplasmaHominis',
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="">Sélectionnez</option>
+                  <option value="négative">Négative</option>
+                  <option value="positive">Positive</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Champs pour la Recherche de Mycoplasmes */}
+
+            <div className="divider"></div>
             {/* conclusion */}
             <div>
               <label className="label">Conclusion</label>

@@ -401,6 +401,7 @@ function GenerateResultatButton({ invoice }) {
           test?.gram ||
           test?.conclusion
         ) {
+          let positionX = 100
           if (test?.observations) {
             doc.text(
               ` ${test?.typePrelevement} ${test?.lieuPrelevement}  ${formattedDate}`,
@@ -635,7 +636,12 @@ function GenerateResultatButton({ invoice }) {
                 doc.text('Leucocytes:', 20, currentY)
                 doc.text(
                   `${test.observations.microscopique.leucocytes}`,
-                  65,
+                  positionX,
+                  currentY
+                )
+                doc.text(
+                  `${test.observations.microscopique.unite}`,
+                  positionX + 10,
                   currentY
                 )
                 currentY += 5
@@ -646,7 +652,12 @@ function GenerateResultatButton({ invoice }) {
                 doc.text('Hématies:', 20, currentY)
                 doc.text(
                   `${test.observations.microscopique.hematies}`,
-                  65,
+                  positionX,
+                  currentY
+                )
+                doc.text(
+                  `${test.observations.microscopique.unite}`,
+                  positionX + 10,
                   currentY
                 )
                 currentY += 5
@@ -655,7 +666,11 @@ function GenerateResultatButton({ invoice }) {
               // pH
               if (test?.observations?.microscopique?.ph) {
                 doc.text('pH:', 20, currentY)
-                doc.text(`${test.observations.microscopique.ph}`, 65, currentY)
+                doc.text(
+                  `${test.observations.microscopique.ph}`,
+                  positionX,
+                  currentY
+                )
                 currentY += 5
               }
 
@@ -664,7 +679,7 @@ function GenerateResultatButton({ invoice }) {
                 doc.text('Cellules épithéliales:', 20, currentY)
                 doc.text(
                   `${test.observations.microscopique.cellulesEpitheliales}`,
-                  65,
+                  positionX,
                   currentY
                 )
                 currentY += 5
@@ -675,7 +690,7 @@ function GenerateResultatButton({ invoice }) {
                 doc.text('Éléments levuriformes:', 20, currentY)
                 doc.text(
                   `${test.observations.microscopique.elementsLevuriforme}`,
-                  65,
+                  positionX,
                   currentY
                 )
                 currentY += 5
@@ -686,7 +701,7 @@ function GenerateResultatButton({ invoice }) {
                 doc.text('Filaments mycéliens:', 20, currentY)
                 doc.text(
                   `${test.observations.microscopique.filamentsMyceliens}`,
-                  65,
+                  positionX,
                   currentY
                 )
                 currentY += 5
@@ -697,7 +712,7 @@ function GenerateResultatButton({ invoice }) {
                 doc.text('Trichomonas vaginalis:', 20, currentY)
                 doc.text(
                   `${test.observations.microscopique.trichomonasVaginalis}`,
-                  65,
+                  positionX,
                   currentY
                 )
                 currentY += 5
@@ -708,7 +723,7 @@ function GenerateResultatButton({ invoice }) {
                 doc.text('Cristaux:', 20, currentY)
                 doc.text(
                   `${test.observations.microscopique.cristaux}`,
-                  65,
+                  positionX,
                   currentY
                 )
                 currentY += 5
@@ -719,7 +734,7 @@ function GenerateResultatButton({ invoice }) {
                 doc.text('Cylindres:', 20, currentY)
                 doc.text(
                   `${test.observations.microscopique.cylindres}`,
-                  65,
+                  positionX,
                   currentY
                 )
                 currentY += 7
@@ -730,7 +745,7 @@ function GenerateResultatButton({ invoice }) {
                 doc.text('Parasites:', 20, currentY)
                 doc.text(
                   `${test.observations.microscopique.parasites}`,
-                  65,
+                  positionX,
                   currentY
                 )
                 currentY += 5
@@ -741,7 +756,7 @@ function GenerateResultatButton({ invoice }) {
                 doc.text('Trichomonas intestinales:', 20, currentY)
                 doc.text(
                   `${test.observations.microscopique.trichomonasIntestinales}`,
-                  65,
+                  positionX,
                   currentY
                 )
                 currentY += 5
@@ -752,7 +767,7 @@ function GenerateResultatButton({ invoice }) {
                 doc.text('Œufs de Bilharzies:', 20, currentY)
                 doc.text(
                   `${test.observations.microscopique.oeufsDeBilharzies}`,
-                  65,
+                  positionX,
                   currentY
                 )
                 currentY += 5
@@ -763,7 +778,7 @@ function GenerateResultatButton({ invoice }) {
                 doc.text('Clue Cells:', 20, currentY)
                 doc.text(
                   `${test.observations.microscopique.clueCells}`,
-                  65,
+                  positionX,
                   currentY
                 )
                 currentY += 5
@@ -774,7 +789,7 @@ function GenerateResultatButton({ invoice }) {
                 doc.text('Gardnerella vaginalis:', 20, currentY)
                 doc.text(
                   `${test.observations.microscopique.gardnerellaVaginalis}`,
-                  65,
+                  positionX,
                   currentY
                 )
                 currentY += 5
@@ -785,7 +800,7 @@ function GenerateResultatButton({ invoice }) {
                 doc.text('Bacilles de Doderlein:', 20, currentY)
                 doc.text(
                   `${test.observations.microscopique.bacillesDeDoderlein}`,
-                  65,
+                  positionX,
                   currentY
                 )
                 currentY += 5
@@ -796,7 +811,7 @@ function GenerateResultatButton({ invoice }) {
                 doc.text('Type de Flore:', 20, currentY)
                 doc.text(
                   `${test.observations.microscopique.typeDeFlore}`,
-                  65,
+                  positionX,
                   currentY
                 )
                 currentY += 5
@@ -804,10 +819,10 @@ function GenerateResultatButton({ invoice }) {
 
               // Recherche de Streptocoque B
               if (test?.observations?.microscopique?.rechercheDeStreptocoqueB) {
-                doc.text('Recherche Streptocoque B:', 20, currentY)
+                doc.text('Recherche de Streptocoque B:', 20, currentY)
                 doc.text(
                   `${test.observations.microscopique.rechercheDeStreptocoqueB}`,
-                  65,
+                  positionX,
                   currentY
                 )
                 currentY += 5
@@ -817,11 +832,64 @@ function GenerateResultatButton({ invoice }) {
               if (test?.observations?.microscopique?.monocytes) {
                 doc.text('Monocytes:', 20, currentY)
                 doc.text(
-                  `${test.observations.microscopique.monocytes}`,
-                  65,
+                  `${test.observations.microscopique.monocytes}%`,
+                  positionX,
                   currentY
                 )
-                currentY += 7 // Peut-être un peu plus d'espace après le dernier élément
+                currentY += 5 // Peut-être un peu plus d'espace après le dernier élément
+              }
+              // Polynucléaires neutrophiles altérées
+              if (
+                test?.observations?.microscopique
+                  ?.polynucleairesNeutrophilesAlterees
+              ) {
+                doc.text('Polynucléaires neutrophiles altérées:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.polynucleairesNeutrophilesAlterees}%`,
+                  positionX, // Assurez-vous d'ajuster la position X selon la longueur du texte précédent
+                  currentY
+                )
+                currentY += 5 // Ajoute un espace après l'élément
+              }
+
+              // Polynucléaires neutrophiles non altérées
+              if (
+                test?.observations?.microscopique
+                  ?.polynucleairesNeutrophilesNonAlterees
+              ) {
+                doc.text(
+                  'Polynucléaires neutrophiles non altérées:',
+                  20,
+                  currentY
+                )
+                doc.text(
+                  `${test.observations.microscopique.polynucleairesNeutrophilesNonAlterees}%`,
+                  positionX, // Ajustez cette valeur comme nécessaire
+                  currentY
+                )
+                currentY += 5 // Ajoute un espace après l'élément
+              }
+
+              // Éosinophiles
+              if (test?.observations?.microscopique?.eosinophiles) {
+                doc.text('Éosinophiles:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.eosinophiles}%`,
+                  positionX, // Ajustez cette valeur comme nécessaire
+                  currentY
+                )
+                currentY += 5 // Ajoute un espace après l'élément
+              }
+
+              // Basophiles
+              if (test?.observations?.microscopique?.basophiles) {
+                doc.text('Basophiles:', 20, currentY)
+                doc.text(
+                  `${test.observations.microscopique.basophiles}%`,
+                  positionX, // Ajustez cette valeur comme nécessaire
+                  currentY
+                )
+                currentY += 7 // Ajoute un espace après l'élément
               }
             }
 
@@ -976,44 +1044,51 @@ function GenerateResultatButton({ invoice }) {
                 // Proteines Totales
                 if (proteinesTotales) {
                   doc.text('Proteines Totales:', 20, currentY)
-                  doc.text(proteinesTotales, 65, currentY)
+                  doc.text(proteinesTotales, positionX, currentY)
+                  doc.text('g/L', positionX + 10, currentY)
                   currentY += 5
                 }
 
                 // Proteines Arochies
                 if (proteinesArochies) {
                   doc.text('Proteines Arochies:', 20, currentY)
-                  doc.text(proteinesArochies, 65, currentY)
+                  doc.text(proteinesArochies, positionX, currentY)
+                  doc.text('g/L', positionX + 10, currentY)
+                  doc.text('(0,2-0,4)', positionX + 15, currentY)
                   currentY += 5
                 }
 
                 // Glycorachie
                 if (glycorachie) {
                   doc.text('Glycorachie:', 20, currentY)
-                  doc.text(glycorachie, 65, currentY)
+                  doc.text(glycorachie, positionX, currentY)
+                  doc.text('g/L', positionX + 10, currentY)
+                  doc.text('(0,2-0,4)', positionX + 15, currentY)
                   currentY += 5
                 }
 
                 // Acide Urique
                 if (acideUrique) {
                   doc.text('Acide Urique:', 20, currentY)
-                  doc.text(acideUrique, 65, currentY)
+                  doc.text(acideUrique, positionX, currentY)
+                  doc.text('mg/L', positionX + 10, currentY)
                   currentY += 5
                 }
 
                 // LDH
                 if (LDH) {
                   doc.text('LDH:', 20, currentY)
-                  doc.text(LDH, 65, currentY)
-                  currentY += 5
+                  doc.text(LDH, positionX, currentY)
+                  doc.text('U/I', positionX + 10, currentY)
+                  currentY += 7
                 }
               }
             }
 
-            // Vérifiez si vous avez besoin d'ajouter une nouvelle page si `currentY` est trop élevé
             if (currentY > 250) {
               doc.addPage()
-              currentY = 20 // Réinitialiser `currentY` pour la nouvelle page
+              currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
+              addFooter()
             }
           }
           if (test?.gram) {
@@ -1029,7 +1104,7 @@ function GenerateResultatButton({ invoice }) {
             doc.setFont('helvetica', 'normal')
             doc.text(`Gram:`, 20, currentY)
 
-            doc.text(`${test?.gram}`, 65, currentY)
+            doc.text(`${test?.gram}`, positionX, currentY)
             currentY += 8
           }
           // Vérification pour l'ajout d'une page avant le total et les informations bancaires
@@ -1047,13 +1122,13 @@ function GenerateResultatButton({ invoice }) {
               doc.setFontSize(10)
               doc.setFont('helvetica', 'normal')
               doc.text(`Culture:`, 20, currentY)
-              doc.text(`${test?.culture?.culture}`, 65, currentY)
+              doc.text(`${test?.culture?.culture}`, positionX, currentY)
               currentY += 5
               doc.text(` Germe Identifié: `, 20, currentY)
-              doc.text(` ${test?.culture?.germeIdentifie}`, 65, currentY)
+              doc.text(` ${test?.culture?.germeIdentifie}`, positionX, currentY)
               currentY += 5
               doc.text(` Numeration:`, 20, currentY)
-              doc.text(` ${test?.culture?.description}`, 65, currentY)
+              doc.text(` ${test?.culture?.description}`, positionX, currentY)
 
               currentY += 7
             }
@@ -1064,6 +1139,86 @@ function GenerateResultatButton({ invoice }) {
             doc.addPage()
             currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
             addFooter()
+          }
+
+          // Recherche de Chlamydia
+          if (test?.observations?.rechercheChlamydia) {
+            const { naturePrelevement, rechercheAntigeneChlamydiaTrochomatis } =
+              test.observations.rechercheChlamydia
+
+            if (naturePrelevement || rechercheAntigeneChlamydiaTrochomatis) {
+              doc.setFontSize(13)
+              doc.setFont('helvetica', 'bold')
+              doc.text('RECHERCHE DE CHLAMYDIA', 20, currentY)
+              currentY += 5
+              doc.setFontSize(10)
+              doc.setFont('helvetica', 'normal')
+
+              // Nature du prélèvement
+              if (naturePrelevement) {
+                doc.text('Nature du prélèvement:', 20, currentY)
+                doc.text(naturePrelevement, positionX, currentY)
+                currentY += 5
+              }
+
+              // Recherche d'antigène de Chlamydia trachomatis
+              if (rechercheAntigeneChlamydiaTrochomatis) {
+                doc.text(
+                  "Recherche d'antigène de Chlamydia trachomatis:",
+                  20,
+                  currentY
+                )
+                doc.text(
+                  rechercheAntigeneChlamydiaTrochomatis,
+                  positionX,
+                  currentY
+                )
+                currentY += 7
+              }
+            }
+          }
+
+          // Recherche de Mycoplasmes
+          if (test?.observations?.rechercheMycoplasmes) {
+            const {
+              naturePrelevement,
+              rechercheUreaplasmaUrealyticum,
+              rechercheMycoplasmaHominis,
+            } = test.observations.rechercheMycoplasmes
+
+            if (
+              naturePrelevement ||
+              rechercheUreaplasmaUrealyticum ||
+              rechercheMycoplasmaHominis
+            ) {
+              doc.setFontSize(13)
+              doc.setFont('helvetica', 'bold')
+              doc.text('RECHERCHE DE MYCOPLASMES', 20, currentY)
+              currentY += 5
+              doc.setFontSize(10)
+              doc.setFont('helvetica', 'normal')
+
+              // Nature du prélèvement
+              if (naturePrelevement) {
+                doc.text('Nature du prélèvement:', 20, currentY)
+                doc.text(naturePrelevement, positionX, currentY)
+                currentY += 5
+              }
+
+              // Recherche d'Ureaplasma urealyticum
+              if (rechercheUreaplasmaUrealyticum) {
+                doc.text("Recherche d'Ureaplasma urealyticum:", 20, currentY)
+                doc.text(rechercheUreaplasmaUrealyticum, positionX, currentY)
+                currentY += 5
+              }
+
+              // Recherche de Mycoplasma hominis
+              if (rechercheMycoplasmaHominis) {
+                doc.text('Recherche de Mycoplasma hominis:', 20, currentY)
+                doc.text(rechercheMycoplasmaHominis, positionX, currentY)
+                currentY += 7
+              }
+            }
           }
 
           if (test?.conclusion) {
@@ -1165,8 +1320,6 @@ function GenerateResultatButton({ invoice }) {
           day: '2-digit',
           month: '2-digit',
           year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
         })
       }
 
