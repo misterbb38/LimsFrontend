@@ -147,11 +147,11 @@ function GenerateResultatButton({ invoice }) {
       addFooter()
 
       doc.setFontSize(12)
-      doc.setFont('helvetica')
+      doc.setFont('Times')
       doc.text("LABORATOIRE D'ANALYSES MEDICALES", 65, 10)
 
       doc.setFontSize(7)
-      doc.setFont('helvetica')
+      doc.setFont('Times')
       doc.text(
         'Hématologie – Immuno-Hématologie – Biochimie – Immunologie – Bactériologie – Virologie – Parasitologie',
         52,
@@ -169,7 +169,7 @@ function GenerateResultatButton({ invoice }) {
       //doc.addImage(imgLeft, 'PNG', 20, 5, 35, 30)
       // doc.addImage(imgRight, 'PNG', 140, 5, 60, 30)
 
-      doc.setFont('helvetica')
+      doc.setFont('Times')
       doc.setTextColor(userColor)
 
       doc.setFontSize(14)
@@ -183,7 +183,7 @@ function GenerateResultatButton({ invoice }) {
       // Informations du client
       let currentY = 40 // Mise à jour pour utiliser currentY pour la position initiale
       doc.setFontSize(8) // Changez la taille à la valeur souhaitée
-      doc.setFont('helvetica', 'bold') // Définissez la police en Helvetica et le style en gras
+      doc.setFont('Times', 'bold') // Définissez la police en Times et le style en gras
       // doc.text(`Informations du patient`, 130, currentY)
       doc.text(`Nº Dossier: ${invoice?.identifiant}`, 135, currentY + 7)
       doc.text(
@@ -222,12 +222,12 @@ function GenerateResultatButton({ invoice }) {
 
       // En-tête de la facture
       doc.setFontSize(8)
-      doc.setFont('helvetica', 'bold') // Définissez la police en Helvetica et le style en gras
+      doc.setFont('Times', 'bold') // Définissez la police en Times et le style en gras
 
       doc.text(`NIP: ${invoice?.userId.nip}`, 35, currentY + 7)
       doc.setTextColor(0, 0, 0)
       doc.setFontSize(8)
-      doc.setFont('helvetica')
+      doc.setFont('Times')
       const date = new Date(invoice?.createdAt)
       const formattedDate =
         date.getDate().toString().padStart(2, '0') +
@@ -237,16 +237,16 @@ function GenerateResultatButton({ invoice }) {
         date.getFullYear()
 
       // Avant d'ajouter le texte, définissez la police sur 'bold' pour la partie "Date:"
-      doc.setFont('helvetica')
+      doc.setFont('Times')
       doc.text('Date: ', 35, currentY + 12)
 
       // Calculez la largeur du texte "Date:" pour positionner correctement la date elle-même
       const dateLabelWidth = doc.getTextWidth('Date: ')
 
       // Réinitialisez la police en style normal pour la date réelle
-      doc.setFont('helvetica', 'bold')
+      doc.setFont('Times', 'bold')
       doc.text(formattedDate, 35 + dateLabelWidth, currentY + 12)
-      doc.setFont('helvetica', 'normal')
+      doc.setFont('Times', 'normal')
 
       // doc.text(
       //   `Nature: ${invoice.partenaireId?.typePartenaire || 'paf'} `,
@@ -291,16 +291,22 @@ function GenerateResultatButton({ invoice }) {
 
         // Ajout des informations du test
         doc.setFontSize(10)
-        doc.setFont('helvetica', 'bold') // Utilisation de Helvetica en gras
-        doc.text(nomTestLines, 20, currentY)
+        doc.setFont('Times', 'bold') // Utilisation de Times en gras
+        // doc.text(nomTestLines, 20, currentY)
+        if (test?.observations) {
+          doc.text(nomTestLines, 65, currentY)
+        }
+        if (!test?.observations) {
+          doc.text(nomTestLines, 20, currentY)
+        }
         currentY += 5 * nomTestLines.length // Mise à jour de Y basée sur le nombre de lignes de nom
-        doc.setFont('helvetica', 'normal') // Réinitialisation à la police normale pour le reste du texte
+        doc.setFont('Times', 'normal') // Réinitialisation à la police normale pour le reste du texte
         doc.setFontSize(6) // Réduire la taille de la police pour les détails
         let formattedDate = formatDateAndTime(test?.datePrelevement)
         let formattedDateAnterieur = formatDateAndTime(
           test?.dernierResultatAnterieur?.date
         )
-        doc.setFont('helvetica', 'bold')
+        doc.setFont('Times', 'bold')
         doc.setFontSize(8)
         // if (test?.dernierResultatAnterieur) {
         //   doc.text(
@@ -321,7 +327,7 @@ function GenerateResultatButton({ invoice }) {
         if (!test?.observations) {
           doc.text(`${test?.valeur}`, 90, currentY + 5)
         }
-        doc.setFont('helvetica', 'normal')
+        doc.setFont('Times', 'normal')
         doc.setFontSize(8)
         if (!test?.observations) {
           // Affichage de la valeur de la machine A ou B en fonction de statutMachine
@@ -333,7 +339,7 @@ function GenerateResultatButton({ invoice }) {
           }
 
           doc.setFontSize(6)
-          doc.setFont('helvetica', 'bold')
+          doc.setFont('Times', 'bold')
           // Déterminer quelle machine afficher en fonction de statutMachine
           let machineText = test?.statutMachine
             ? test?.testId?.machineA
@@ -387,7 +393,7 @@ function GenerateResultatButton({ invoice }) {
           )
         }
         doc.setFontSize(8)
-        doc.setFont('helvetica', 'normal')
+        doc.setFont('Times', 'normal')
         currentY += 8 // Increment for one line
         if (test.statutInterpretation) {
           doc.text(interpretationLines, 20, currentY)
@@ -412,10 +418,10 @@ function GenerateResultatButton({ invoice }) {
 
           if (test?.observations) {
             doc.setFontSize(13)
-            doc.setFont('helvetica', 'bold')
+            doc.setFont('Times', 'bold')
             doc.text(`EXAMEN MACROSCOPIQUE`, 20, currentY)
             doc.setFontSize(10)
-            doc.setFont('helvetica', 'normal')
+            doc.setFont('Times', 'normal')
             currentY += 5 // Incrémentation de currentY après chaque élément
 
             // Leucocytes
@@ -427,12 +433,12 @@ function GenerateResultatButton({ invoice }) {
             currentY += 7
             // if (test?.observations?.microscopique) {
             //   doc.setFontSize(13)
-            //   doc.setFont('helvetica', 'bold')
+            //   doc.setFont('Times', 'bold')
             //   doc.text(`Examen microscopique`, 20, currentY)
             //   currentY += 5
             //   doc.text(`Etat Frais`, 25, currentY)
             //   doc.setFontSize(10)
-            //   doc.setFont('helvetica', 'normal')
+            //   doc.setFont('Times', 'normal')
             //   currentY += 5 // Incrémentation de currentY après chaque élément
             //   // Leucocytes
             //   if (test?.observations?.microscopique?.leucocytes) {
@@ -623,12 +629,12 @@ function GenerateResultatButton({ invoice }) {
 
             if (test?.observations?.microscopique) {
               doc.setFontSize(13)
-              doc.setFont('helvetica', 'bold')
+              doc.setFont('Times', 'bold')
               doc.text(`EXAMEN CYTOLOGIQUE`, 20, currentY)
               // currentY += 5
               // doc.text(`Etat Frais`, 25, currentY)
               doc.setFontSize(10)
-              doc.setFont('helvetica', 'normal')
+              doc.setFont('Times', 'normal')
               currentY += 5 // Incrémentation après chaque élément
 
               // Leucocytes
@@ -640,7 +646,7 @@ function GenerateResultatButton({ invoice }) {
                   currentY
                 )
                 doc.text(
-                  `${test.observations.microscopique.unite}`,
+                  `${test.observations.microscopique.unite}/`,
                   positionX + 10,
                   currentY
                 )
@@ -656,7 +662,7 @@ function GenerateResultatButton({ invoice }) {
                   currentY
                 )
                 doc.text(
-                  `${test.observations.microscopique.unite}`,
+                  `${test.observations.microscopique.unite}/`,
                   positionX + 10,
                   currentY
                 )
@@ -726,7 +732,40 @@ function GenerateResultatButton({ invoice }) {
                   positionX,
                   currentY
                 )
-                currentY += 5
+
+                // Vérifiez si des détails sur les cristaux sont disponibles et non vides
+                if (
+                  test.observations.microscopique.cristauxDetails &&
+                  test.observations.microscopique.cristauxDetails.length > 0
+                ) {
+                  // Concaténez tous les détails avec une virgule et un espace comme séparateur
+                  let detailsText =
+                    test.observations.microscopique.cristauxDetails.join(', ')
+
+                  // Réduire la taille de la police pour les détails
+                  doc.setFontSize(7)
+
+                  // Déterminer la largeur maximale pour le texte, ajuster selon les besoins
+                  let maxWidth = 85 // Ajustez cette valeur en fonction de la largeur disponible sur la page
+
+                  // Utilisez splitTextToSize pour gérer le débordement du texte
+                  let splitText = doc.splitTextToSize(
+                    `(${detailsText})`,
+                    maxWidth
+                  )
+
+                  // Imprime chaque ligne du texte divisé, ajustant la position Y pour chaque nouvelle ligne
+                  splitText.forEach((line) => {
+                    doc.text(line, positionX + 20, currentY) // Ajustez positionX + 20 si nécessaire
+                    currentY += 5 // Ajustez l'espacement entre les lignes si nécessaire
+                  })
+
+                  // Restaurez la taille de la police pour d'autres textes
+                  doc.setFontSize(10)
+                } else {
+                  // Augmenter currentY pour le prochain élément si aucun détail n'est ajouté
+                  currentY += 5
+                }
               }
 
               // Cylindres
@@ -748,7 +787,40 @@ function GenerateResultatButton({ invoice }) {
                   positionX,
                   currentY
                 )
-                currentY += 5
+
+                // Vérifiez si des détails sur les parasites sont disponibles et non vides
+                if (
+                  test.observations.microscopique.parasitesDetails &&
+                  test.observations.microscopique.parasitesDetails.length > 0
+                ) {
+                  // Concaténez tous les détails avec une virgule et un espace comme séparateur
+                  let detailsText =
+                    test.observations.microscopique.parasitesDetails.join(', ')
+
+                  // Réduire la taille de la police pour les détails
+                  doc.setFontSize(7)
+
+                  // Déterminer la largeur maximale pour le texte, ajuster selon les besoins
+                  let maxWidth = 85 // Ajustez cette valeur en fonction de la largeur disponible sur la page
+
+                  // Utilisez splitTextToSize pour gérer le débordement du texte
+                  let splitText = doc.splitTextToSize(
+                    `(${detailsText})`,
+                    maxWidth
+                  )
+
+                  // Imprime chaque ligne du texte divisé, ajustant la position Y pour chaque nouvelle ligne
+                  splitText.forEach((line) => {
+                    doc.text(line, positionX + 20, currentY) // Ajustez positionX + 20 si nécessaire
+                    currentY += 5 // Ajustez l'espacement entre les lignes si nécessaire
+                  })
+
+                  // Restaurez la taille de la police pour d'autres textes
+                  doc.setFontSize(10)
+                } else {
+                  // Augmenter currentY pour le prochain élément si aucun détail n'est ajouté
+                  currentY += 5
+                }
               }
 
               // Trichomonas intestinales
@@ -896,11 +968,11 @@ function GenerateResultatButton({ invoice }) {
             // // chimie
             // if (test?.observations?.chimie) {
             //   doc.setFontSize(13)
-            //   doc.setFont('helvetica', 'bold')
+            //   doc.setFont('Times', 'bold')
             //   doc.text(`Chimie`, 20, currentY)
             //   currentY += 5
             //   doc.setFontSize(10)
-            //   doc.setFont('helvetica', 'normal')
+            //   doc.setFont('Times', 'normal')
             //   // proteinesTotales
             //   if (test?.observations?.chimie?.proteinesTotales) {
             //     doc.text(
@@ -954,11 +1026,11 @@ function GenerateResultatButton({ invoice }) {
             // chimie
             // if (test?.observations?.chimie) {
             //   doc.setFontSize(13)
-            //   doc.setFont('helvetica', 'bold')
+            //   doc.setFont('Times', 'bold')
             //   doc.text(`Chimie`, 20, currentY)
             //   currentY += 5
             //   doc.setFontSize(10)
-            //   doc.setFont('helvetica', 'normal')
+            //   doc.setFont('Times', 'normal')
 
             //   // Proteines Totales
             //   if (test?.observations?.chimie?.proteinesTotales) {
@@ -1035,11 +1107,11 @@ function GenerateResultatButton({ invoice }) {
                 LDH
               ) {
                 doc.setFontSize(13)
-                doc.setFont('helvetica', 'bold')
+                doc.setFont('Times', 'bold')
                 doc.text(`CHIMIE`, 20, currentY)
                 currentY += 5
                 doc.setFontSize(10)
-                doc.setFont('helvetica', 'normal')
+                doc.setFont('Times', 'normal')
 
                 // Proteines Totales
                 if (proteinesTotales) {
@@ -1093,7 +1165,7 @@ function GenerateResultatButton({ invoice }) {
           }
           if (test?.gram) {
             doc.setFontSize(13)
-            doc.setFont('helvetica', 'bold')
+            doc.setFont('Times', 'bold')
             doc.text(
               `EXAMEN BACTERIOLOGIE DIRECT  (Coloration de gram)`,
               20,
@@ -1101,7 +1173,7 @@ function GenerateResultatButton({ invoice }) {
             )
             currentY += 8
             doc.setFontSize(10)
-            doc.setFont('helvetica', 'normal')
+            doc.setFont('Times', 'normal')
             doc.text(`Gram:`, 20, currentY)
 
             doc.text(`${test?.gram}`, positionX, currentY)
@@ -1116,11 +1188,11 @@ function GenerateResultatButton({ invoice }) {
           if (test?.observations) {
             if (test?.culture) {
               doc.setFontSize(13)
-              doc.setFont('helvetica', 'bold')
+              doc.setFont('Times', 'bold')
               doc.text(`CULTURES SUR MILIEUX SPECIFIQUES:`, 20, currentY)
               currentY += 5
               doc.setFontSize(10)
-              doc.setFont('helvetica', 'normal')
+              doc.setFont('Times', 'normal')
               doc.text(`Culture:`, 20, currentY)
               doc.text(`${test?.culture?.culture}`, positionX, currentY)
               currentY += 5
@@ -1148,11 +1220,11 @@ function GenerateResultatButton({ invoice }) {
 
             if (naturePrelevement || rechercheAntigeneChlamydiaTrochomatis) {
               doc.setFontSize(13)
-              doc.setFont('helvetica', 'bold')
+              doc.setFont('Times', 'bold')
               doc.text('RECHERCHE DE CHLAMYDIA', 20, currentY)
               currentY += 5
               doc.setFontSize(10)
-              doc.setFont('helvetica', 'normal')
+              doc.setFont('Times', 'normal')
 
               // Nature du prélèvement
               if (naturePrelevement) {
@@ -1192,11 +1264,11 @@ function GenerateResultatButton({ invoice }) {
               rechercheMycoplasmaHominis
             ) {
               doc.setFontSize(13)
-              doc.setFont('helvetica', 'bold')
+              doc.setFont('Times', 'bold')
               doc.text('RECHERCHE DE MYCOPLASMES', 20, currentY)
               currentY += 5
               doc.setFontSize(10)
-              doc.setFont('helvetica', 'normal')
+              doc.setFont('Times', 'normal')
 
               // Nature du prélèvement
               if (naturePrelevement) {
@@ -1223,13 +1295,13 @@ function GenerateResultatButton({ invoice }) {
 
           if (test?.conclusion) {
             doc.setFontSize(13)
-            doc.setFont('helvetica', 'bold')
+            doc.setFont('Times', 'bold')
             doc.text(`CONCLUSION`, 20, currentY)
             currentY += 5
 
             doc.text(` ${test?.conclusion}`, 20, currentY)
             doc.setFontSize(10)
-            doc.setFont('helvetica', 'normal')
+            doc.setFont('Times', 'normal')
             currentY += 5
           }
 
@@ -1253,14 +1325,14 @@ function GenerateResultatButton({ invoice }) {
             currentY += 5
 
             doc.setFontSize(10)
-            doc.setFont('helvetica', 'bold')
+            doc.setFont('Times', 'bold')
             doc.text(
               `ANTIBIOGRAMME : ${test?.culture?.germeIdentifie} `,
               42,
               currentY
             )
             currentY += 7
-            doc.setFont('helvetica', 'normal')
+            doc.setFont('Times', 'normal')
             // En-têtes de colonne avec bordures
             const columnWidthAntibiotique = 70 // Largeur de la colonne Antibiotique
             const columnWidthSensibilite = 30 // Largeur de la colonne Sensibilité
@@ -1271,7 +1343,7 @@ function GenerateResultatButton({ invoice }) {
             doc.rect(110, currentY, columnWidthSensibilite, lineHeight) // Bordure pour "Sensibilité"
 
             doc.setFontSize(10)
-            doc.setFont('helvetica', 'bold')
+            doc.setFont('Times', 'bold')
             doc.text('Antibiotique', 42, currentY + 5) // Position ajustée pour le texte dans la cellule
             doc.text('Sensibilité', 112, currentY + 5)
 
@@ -1281,7 +1353,7 @@ function GenerateResultatButton({ invoice }) {
             const antibiogramme = test?.observations?.antibiogramme
             if (antibiogramme) {
               doc.setFontSize(8)
-              doc.setFont('helvetica', 'normal')
+              doc.setFont('Times', 'normal')
               Object.entries(antibiogramme).forEach(
                 ([antibiotique, sensibilite]) => {
                   // Dessiner des cellules avec bordures pour chaque donnée
@@ -1330,9 +1402,9 @@ function GenerateResultatButton({ invoice }) {
       if (validatedHistory && validatedHistory.updatedBy) {
         validatedBy = `${validatedHistory.updatedBy.prenom} ${validatedHistory.updatedBy.nom}`
         doc.setFontSize(10)
-        doc.setFont('helvetica', 'bold')
+        doc.setFont('Times', 'bold')
         doc.text(`Validé par: ${validatedBy}`, 140, currentY)
-        doc.setFont('helvetica', 'normal')
+        doc.setFont('Times', 'normal')
         doc.setFontSize(8)
         doc.text(
           `${formatDateAndTime(validatedHistory.updatedBy.createdAt)}`,

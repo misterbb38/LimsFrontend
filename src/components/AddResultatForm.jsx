@@ -207,6 +207,8 @@
 
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
 function AddResultatForm({ analyseId, patientId, onResultatChange }) {
   const [testId, setTestId] = useState('')
@@ -281,6 +283,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     cristaux: '',
     cylindres: '',
     parasites: '',
+    parasitesDetails: [],
+    cristauxDetails: [],
     trichomonasIntestinales: '',
     oeufsDeBilharzies: '',
     clueCells: '',
@@ -439,6 +443,82 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     'Staphylococcus xylosus',
     'Acinetobacter baumannii',
     'Vibrio cholerae',
+  ]
+
+  //les options des cristeaux et parasites
+
+  const handleDetailAddition = (field, value) => {
+    setMicroscopique((prev) => ({
+      ...prev,
+      [field]: [...prev[field], value],
+    }))
+  }
+
+  const handleDetailRemoval = (field, index) => {
+    setMicroscopique((prev) => ({
+      ...prev,
+      [field]: prev[field].filter((_, idx) => idx !== index),
+    }))
+  }
+  const parasitesOptions = [
+    'Aucun parasite détecté',
+    "Rare présence d'œufs d'Ascaris lumbricoïdes",
+    "Nombreux œufs d'Ascaris lumbricoïdes observés",
+    "Peu d'œufs d'Ascaris lumbricoïdes détectés",
+    "Rare présence de larves d'Ankylostoma duodenale",
+    "Nombreuses larves d'Ankylostoma duodenale observées",
+    "Peu de larves d'Ankylostoma duodenale détectées",
+    "Rare présence d'œufs d'Ankylostoma duodenale",
+    "Nombreux œufs d'Ankylostoma duodenale observés",
+    "Peu d'œufs d'Ankylostoma duodenale détectés",
+    "Rare présence d'œufs d'Entamoeba hystolytica",
+    "Nombreux œufs d'Entamoeba hystolytica observés",
+    "Peu d'œufs d'Entamoeba hystolytica détectés",
+    "Rare présence d'œufs d'Entamoeba coli",
+    "Nombreux œufs d'Entamoeba coli observés",
+    "Peu d'œufs d'Entamoeba coli détectés",
+    "Rare présence de formes végétatives d'Entamoeba hystolytica",
+    "Nombreuses formes végétatives d'Entamoeba hystolytica observées",
+    "Peu de formes végétatives d'Entamoeba hystolytica détectées",
+    'Rare présence de Trichomonas intestinalis',
+    'Nombreux Trichomonas intestinalis observés',
+    'Peu de Trichomonas intestinalis détectés',
+    'Œufs de Strongyloides stercoralis détectés',
+    'Œufs de Schistosoma mansoni observés',
+    'Cystes de Giardia lamblia identifiés',
+    'Œufs de Taenia spp. observés',
+    'Larves de Strongyloides stercoralis présentes',
+    'Œufs de Hymenolepis nana détectés',
+    'Œufs de Enterobius vermicularis observés',
+    "Kystes d'Acanthamoeba détectés",
+  ]
+  const cristauxOptions = [
+    'Aucun cristal détecté',
+    'Absence de cristaux',
+    'Aucun signe de cristaux',
+    "Rare présence d'urates",
+    'Nombreux urates observés',
+    "Peu d'urates détectés",
+    "Rare présence de cristaux d'acide urique",
+    "Nombreux cristaux d'acide urique observés",
+    "Peu de cristaux d'acide urique détectés",
+    "Rare présence d'oxalate de calcium",
+    'Nombreux oxalates de calcium observés',
+    "Peu d'oxalates de calcium détectés",
+    'Rare présence de bilirubine',
+    'Nombreux cristaux de bilirubine observés',
+    'Peu de cristaux de bilirubine détectés',
+    'Rare présence de cristaux de Charcot',
+    'Nombreux cristaux de Charcot observés',
+    'Peu de cristaux de Charcot détectés',
+    'Cristaux de cystine détectés',
+    'Rare présence de cristaux de phosphate de calcium',
+    'Nombreux cristaux de phosphate de calcium observés',
+    'Peu de cristaux de phosphate de calcium détectés',
+    'Cristaux de cholestérol détectés',
+    "Rare présence de cristaux d'ammonium biurate",
+    'Cristaux de xanthine observés',
+    'Cristaux de tyrosine détectés',
   ]
 
   const isPredefined = predefinedGerms.includes(culture.germeIdentifie)
@@ -839,20 +919,128 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   />
                 </div>
               </div>
+              <div className="flex flex-wrap gap-4 items-center">
+                <div>
+                  <label className="label">Cristaux</label>
+                  <select
+                    className="select select-bordered"
+                    value={microscopique.cristaux}
+                    onChange={(e) => {
+                      handleMicroscopiqueChange('cristaux', e.target.value)
+                      if (e.target.value === 'Non concerner') {
+                        // Assurez-vous de nettoyer les détails des cristaux si 'Non concerner' est sélectionné
+                        handleDetailRemovalAll('cristauxDetails')
+                      }
+                    }}
+                  >
+                    <option value="">Non concerner</option>
+                    <option value="Absence">Absence</option>
+                    <option value="Présence">Présence</option>
+                  </select>
+                </div>
 
-              <div>
-                <label className="label">Cristaux</label>
-                <select
-                  className="select select-bordered"
-                  value={microscopique.cristaux}
-                  onChange={(e) =>
-                    handleMicroscopiqueChange('cristaux', e.target.value)
-                  }
-                >
-                  <option value="">Non concerner</option>
-                  <option value="Absence">Absence</option>
-                  <option value="Présence">Présence</option>
-                </select>
+                <div>
+                  <label className="label">Liste des cristaux:</label>
+                  <select
+                    className="select select-bordered w-[150px]"
+                    onChange={(e) =>
+                      handleDetailAddition('cristauxDetails', e.target.value)
+                    }
+                    defaultValue=""
+                    disabled={
+                      microscopique.cristaux === '' ||
+                      microscopique.cristaux === 'Non concerner'
+                    }
+                  >
+                    <option disabled value="">
+                      Choisir des cristaux
+                    </option>
+                    {cristauxOptions.map((option, index) => (
+                      <option key={index} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {microscopique.cristauxDetails &&
+                      microscopique.cristauxDetails.map((detail, index) => (
+                        <div
+                          key={index}
+                          className="badge badge-primary badge-outline w-full"
+                        >
+                          {detail}
+                          <FontAwesomeIcon
+                            icon={faTimes}
+                            className="ml-2 cursor-pointer"
+                            onClick={() =>
+                              handleDetailRemoval('cristauxDetails', index)
+                            }
+                          />
+                        </div>
+                      ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="label">Parasites</label>
+                  <select
+                    className="select select-bordered"
+                    value={microscopique.parasites}
+                    onChange={(e) => {
+                      handleMicroscopiqueChange('parasites', e.target.value)
+                      if (e.target.value === 'Non concerner') {
+                        // Nettoyer les détails des parasites si 'Non concerner' est sélectionné
+                        handleDetailRemovalAll('parasitesDetails')
+                      }
+                    }}
+                  >
+                    <option value="">Non concerner</option>
+                    <option value="Absence">Absence</option>
+                    <option value="Présence">Présence</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="label">Liste des parasites:</label>
+                  <select
+                    className="select select-bordered w-[150px]"
+                    onChange={(e) =>
+                      handleDetailAddition('parasitesDetails', e.target.value)
+                    }
+                    defaultValue=""
+                    disabled={
+                      microscopique.parasites === '' ||
+                      microscopique.parasites === 'Non concerner'
+                    }
+                  >
+                    <option disabled value="">
+                      Choisir des parasites
+                    </option>
+                    {parasitesOptions.map((option, index) => (
+                      <option key={index} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {microscopique.parasitesDetails &&
+                      microscopique.parasitesDetails.map((detail, index) => (
+                        <div
+                          key={index}
+                          className="badge badge-primary badge-outline w-full"
+                        >
+                          {detail}
+                          <FontAwesomeIcon
+                            icon={faTimes}
+                            className="ml-2 cursor-pointer"
+                            onClick={() =>
+                              handleDetailRemoval('parasitesDetails', index)
+                            }
+                          />
+                        </div>
+                      ))}
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -937,20 +1125,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <option value="Présence">Présence</option>
                 </select>
               </div>
-              <div>
-                <label className="label">Parasites</label>
-                <select
-                  className="select select-bordered"
-                  value={microscopique.parasites}
-                  onChange={(e) =>
-                    handleMicroscopiqueChange('parasites', e.target.value)
-                  }
-                >
-                  <option value="">Non concerner</option>
-                  <option value="Absence">Absence</option>
-                  <option value="Présence">Présence</option>
-                </select>
-              </div>
+
               <div>
                 <label className="label">Oeufs de Bilharzies</label>
                 <select
