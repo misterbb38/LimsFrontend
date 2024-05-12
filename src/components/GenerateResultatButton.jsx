@@ -640,16 +640,19 @@ function GenerateResultatButton({ invoice }) {
               // Leucocytes
               if (test?.observations?.microscopique?.leucocytes) {
                 doc.text('Leucocytes:', 20, currentY)
+
                 doc.text(
                   `${test.observations.microscopique.leucocytes}`,
                   positionX,
                   currentY
                 )
-                doc.text(
-                  `${test.observations.microscopique.unite}/`,
-                  positionX + 10,
-                  currentY
-                )
+                if (test.observations.microscopique.unite) {
+                  doc.text(
+                    `/${test.observations.microscopique.unite}`,
+                    positionX + 10,
+                    currentY
+                  )
+                }
                 currentY += 5
               }
 
@@ -661,11 +664,13 @@ function GenerateResultatButton({ invoice }) {
                   positionX,
                   currentY
                 )
-                doc.text(
-                  `${test.observations.microscopique.unite}/`,
-                  positionX + 10,
-                  currentY
-                )
+                if (test.observations.microscopique.unite) {
+                  doc.text(
+                    `/${test.observations.microscopique.unite}`,
+                    positionX + 10,
+                    currentY
+                  )
+                }
                 currentY += 5
               }
 
