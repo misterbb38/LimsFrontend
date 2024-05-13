@@ -639,38 +639,27 @@ function GenerateResultatButton({ invoice }) {
 
               // Leucocytes
               if (test?.observations?.microscopique?.leucocytes) {
-                doc.text('Leucocytes:', 20, currentY)
-
-                doc.text(
-                  `${test.observations.microscopique.leucocytes}`,
-                  positionX,
-                  currentY
-                )
+                let leucocytesText = `${test.observations.microscopique.leucocytes}`
                 if (test.observations.microscopique.unite) {
-                  doc.text(
-                    `/${test.observations.microscopique.unite}`,
-                    positionX + 10,
-                    currentY
-                  )
+                  leucocytesText += `/${test.observations.microscopique.unite}`
                 }
+
+                doc.text('Leucocytes:', 20, currentY)
+                doc.text(leucocytesText, positionX, currentY)
+
                 currentY += 5
               }
 
               // Hématies
               if (test?.observations?.microscopique?.hematies) {
-                doc.text('Hématies:', 20, currentY)
-                doc.text(
-                  `${test.observations.microscopique.hematies}`,
-                  positionX,
-                  currentY
-                )
+                let hematiesText = `${test.observations.microscopique.hematies}`
                 if (test.observations.microscopique.unite) {
-                  doc.text(
-                    `/${test.observations.microscopique.unite}`,
-                    positionX + 10,
-                    currentY
-                  )
+                  hematiesText += `/${test.observations.microscopique.unite}`
                 }
+
+                doc.text('Hématies:', 20, currentY)
+                doc.text(hematiesText, positionX, currentY)
+
                 currentY += 5
               }
 
@@ -970,124 +959,6 @@ function GenerateResultatButton({ invoice }) {
               }
             }
 
-            // // chimie
-            // if (test?.observations?.chimie) {
-            //   doc.setFontSize(13)
-            //   doc.setFont('Times', 'bold')
-            //   doc.text(`Chimie`, 20, currentY)
-            //   currentY += 5
-            //   doc.setFontSize(10)
-            //   doc.setFont('Times', 'normal')
-            //   // proteinesTotales
-            //   if (test?.observations?.chimie?.proteinesTotales) {
-            //     doc.text(
-            //       `proteinesTotales: ${test?.observations?.chimie?.proteinesTotales}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // proteinesArochies
-            //   if (test?.observations?.chimie?.proteinesArochies) {
-            //     doc.text(
-            //       `proteinesArochies: ${test?.observations?.chimie?.proteinesArochies}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // glycorachie
-            //   if (test?.observations?.chimie?.glycorachie) {
-            //     doc.text(
-            //       `glycorachie: ${test?.observations?.chimie?.glycorachie}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // acideUrique
-            //   if (test?.observations?.chimie?.acideUrique) {
-            //     doc.text(
-            //       `acideUrique: ${test?.observations?.chimie?.acideUrique}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // LDH
-            //   if (test?.observations?.chimie?.LDH) {
-            //     doc.text(
-            //       `LDH: ${test?.observations?.chimie?.LDH}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-            // }
-            // chimie
-            // if (test?.observations?.chimie) {
-            //   doc.setFontSize(13)
-            //   doc.setFont('Times', 'bold')
-            //   doc.text(`Chimie`, 20, currentY)
-            //   currentY += 5
-            //   doc.setFontSize(10)
-            //   doc.setFont('Times', 'normal')
-
-            //   // Proteines Totales
-            //   if (test?.observations?.chimie?.proteinesTotales) {
-            //     doc.text('Proteines Totales:', 20, currentY)
-            //     doc.text(
-            //       `${test.observations.chimie.proteinesTotales}`,
-            //       65,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // Proteines Arochies
-            //   if (test?.observations?.chimie?.proteinesArochies) {
-            //     doc.text('Proteines Arochies:', 20, currentY)
-            //     doc.text(
-            //       `${test.observations.chimie.proteinesArochies}`,
-            //       65,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // Glycorachie
-            //   if (test?.observations?.chimie?.glycorachie) {
-            //     doc.text('Glycorachie:', 20, currentY)
-            //     doc.text(
-            //       `${test.observations.chimie.glycorachie}`,
-            //       65,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // Acide Urique
-            //   if (test?.observations?.chimie?.acideUrique) {
-            //     doc.text('Acide Urique:', 20, currentY)
-            //     doc.text(
-            //       `${test.observations.chimie.acideUrique}`,
-            //       65,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // LDH
-            //   if (test?.observations?.chimie?.LDH) {
-            //     doc.text('LDH:', 20, currentY)
-            //     doc.text(`${test.observations.chimie.LDH}`, 65, currentY)
-            //     currentY += 5
-            //   }
-            // }
             // Vérification pour l'ajout d'une page avant le total et les informations bancaires
             if (currentY > 250) {
               doc.addPage()
@@ -1190,24 +1061,36 @@ function GenerateResultatButton({ invoice }) {
             currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
             addFooter()
           }
-          if (test?.observations) {
-            if (test?.culture) {
+          if (test?.observations?.culture) {
+            const { culture, germeIdentifie, description } =
+              test.observations.culture
+
+            if (culture || germeIdentifie || description) {
+              // Vérifier si au moins un des champs est présent
               doc.setFontSize(13)
               doc.setFont('Times', 'bold')
               doc.text(`CULTURES SUR MILIEUX SPECIFIQUES:`, 20, currentY)
               currentY += 5
               doc.setFontSize(10)
               doc.setFont('Times', 'normal')
-              doc.text(`Culture:`, 20, currentY)
-              doc.text(`${test?.culture?.culture}`, positionX, currentY)
-              currentY += 5
-              doc.text(` Germe Identifié: `, 20, currentY)
-              doc.text(` ${test?.culture?.germeIdentifie}`, positionX, currentY)
-              currentY += 5
-              doc.text(` Numeration:`, 20, currentY)
-              doc.text(` ${test?.culture?.description}`, positionX, currentY)
 
-              currentY += 7
+              if (culture) {
+                doc.text(`Culture:`, 20, currentY)
+                doc.text(culture, positionX, currentY)
+                currentY += 5
+              }
+
+              if (germeIdentifie) {
+                doc.text(`Germe Identifié:`, 20, currentY)
+                doc.text(germeIdentifie, positionX, currentY)
+                currentY += 5
+              }
+
+              if (description) {
+                doc.text(`Numeration:`, 20, currentY)
+                doc.text(description, positionX, currentY)
+                currentY += 7
+              }
             }
           }
 

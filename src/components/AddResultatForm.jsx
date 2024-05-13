@@ -272,7 +272,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     'Teicoplanine',
   ])
 
-  const [macroscopique, setMacroscopique] = useState('')
+  const [macroscopique, setMacroscopique] = useState([])
   const [microscopique, setMicroscopique] = useState({
     leucocytes: '',
     hematies: '',
@@ -520,6 +520,14 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     'Cristaux de xanthine observés',
     'Cristaux de tyrosine détectés',
   ]
+
+  const handleMacroscopiqueAddition = (value) => {
+    setMacroscopique([...macroscopique, value])
+  }
+
+  const handleMacroscopiqueRemoval = (index) => {
+    setMacroscopique(macroscopique.filter((_, idx) => idx !== index))
+  }
 
   const isPredefined = predefinedGerms.includes(culture.germeIdentifie)
 
@@ -833,34 +841,47 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
           <div id="complexe">
             {/* macroscopie */}
             <div>
-              <label className="label">Macroscopique</label>
+              <label className="label">Observations Macroscopiques:</label>
               <select
-                className="select select-bordered"
-                value={macroscopique}
-                onChange={(e) => setMacroscopique(e.target.value)}
+                className="select select-bordered w-full max-w-xs"
+                onChange={(e) => handleMacroscopiqueAddition(e.target.value)}
+                defaultValue=""
               >
-                <option value="">Sélectionner un état</option>
+                <option disabled value="">
+                  Sélectionner une observation
+                </option>
                 <option value="Claires">Claires</option>
-                <option value="Legerement troubles">Légèrement troubles</option>
+                <option value="Légèrement troubles">Légèrement troubles</option>
                 <option value="Troubles">Troubles</option>
                 <option value="Abondantes">Abondantes</option>
                 <option value="Peu abondantes">Peu abondantes</option>
-                <option value="Fetides">Fétides</option>
-                <option value="Peu fetides">Peu fétides</option>
-                <option value="Tres fetides">Très fétides</option>
+                <option value="Fétides">Fétides</option>
                 <option value="Laiteuses">Laiteuses</option>
-                <option value="Epaisses">Épaisses</option>
-                <option value="Lies">Lies</option>
-                <option value="Non lie">Non lié</option>
-                <option value="Ospalescent">Opalescent</option>
-                <option value="Irrite">Irrité</option>
-                <option value="Verdates">Verdâtres</option>
-                <option value="Dures">Dures</option>
-                <option value="Brunatres">Brunâtres</option>
-                <option value="Molles">Molles</option>
+                <option value="Épaisses">Épaisses</option>
                 <option value="Odorantes">Odorantes</option>
+                <option value="Verdâtres">Verdâtres</option>
+                <option value="Brunâtres">Brunâtres</option>
+                <option value="Molles">Molles</option>
+                // Ajoutez d'autres options selon besoin
               </select>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {Array.isArray(macroscopique) &&
+                  macroscopique.map((item, index) => (
+                    <div
+                      key={index}
+                      className="badge badge-primary badge-outline"
+                    >
+                      {item}
+                      <FontAwesomeIcon
+                        icon={faTimes}
+                        className="ml-2 cursor-pointer"
+                        onClick={() => handleMacroscopiqueRemoval(index)}
+                      />
+                    </div>
+                  ))}
+              </div>
             </div>
+
             <div className="divider"></div>
             <h2 className="bold">Microscopie</h2>
             {/* microscopie */}
