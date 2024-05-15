@@ -21,12 +21,27 @@ function AddTestForm({ onTestChange }) {
   const [machineA, setMachineA] = useState('')
   const [machineB, setMachineB] = useState('')
 
+  // conclusion
+  const [conclusions, setConclusions] = useState([]) // Pour stocker les conclusions
+  const [newConclusion, setNewConclusion] = useState('') // Pour ajouter une nouvelle conclusion
+
   const [isLoading, setIsLoading] = useState(false)
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
   const [isSuccess, setIsSuccess] = useState(true)
 
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
+
+  const handleAddConclusion = () => {
+    if (newConclusion.trim() !== '') {
+      setConclusions([...conclusions, newConclusion])
+      setNewConclusion('') // Réinitialiser après l'ajout
+    }
+  }
+
+  const handleRemoveConclusion = (index) => {
+    setConclusions(conclusions.filter((_, idx) => idx !== index))
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -59,6 +74,7 @@ function AddTestForm({ onTestChange }) {
           valeurMachineB,
           machineA,
           machineB,
+          conclusions,
         }),
       })
 
@@ -96,7 +112,7 @@ function AddTestForm({ onTestChange }) {
     setPrixSococim('')
     setInterpretationA('')
     setInterpretationB('')
-
+    setConclusions([])
     // Réinitialisation des nouveaux champs
     setValeurMachineA('')
     setValeurMachineB('')
@@ -193,7 +209,7 @@ function AddTestForm({ onTestChange }) {
           <input
             type="number"
             value={prixClinique}
-            onChange={(e) => setPrixSococim(e.target.value)}
+            onChange={(e) => setPrixClinique(e.target.value)}
             className="input input-bordered input-primary w-full max-w-xs"
           />
         </div>
@@ -208,7 +224,7 @@ function AddTestForm({ onTestChange }) {
           />
         </div>
         <div>
-          <label className="text-sm font-medium base-content">Methode</label>
+          <label className="text-sm font-medium base-content">Categorie</label>
           <br></br>
           <input
             type="text"
@@ -283,6 +299,40 @@ function AddTestForm({ onTestChange }) {
             onChange={(e) => setMachineB(e.target.value)}
             className="input input-bordered input-primary w-full max-w-xs"
           />
+        </div>
+        <div>
+          <label className="text-sm font-medium base-content">
+            Conclusions
+          </label>
+          <div>
+            <input
+              type="text"
+              value={newConclusion}
+              onChange={(e) => setNewConclusion(e.target.value)}
+              className="input input-bordered input-primary w-full max-w-xs"
+            />
+            <button
+              type="button"
+              onClick={handleAddConclusion}
+              className="btn btn-sm btn-primary ml-2"
+            >
+              Ajouter Conclusion
+            </button>
+          </div>
+          {conclusions.map((conclusion, index) => (
+            <div key={index} className="flex justify-between items-center mt-2">
+              <span className="text-base-content text-opacity-80">
+                {conclusion}
+              </span>
+              <button
+                type="button"
+                onClick={() => handleRemoveConclusion(index)}
+                className="btn btn-error btn-sm"
+              >
+                Supprimer
+              </button>
+            </div>
+          ))}
         </div>
         {isLoading && (
           <div className="flex justify-center items-center">

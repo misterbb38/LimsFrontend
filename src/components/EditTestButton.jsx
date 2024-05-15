@@ -23,7 +23,9 @@ function EditTestButton({ testId, ontestUpdated }) {
     interpretationA: '',
     interpretationB: '',
     prixSococim: '',
+    conclusions: [], // Ajouter ce champ pour gérer les conclusions
   })
+  const [newConclusion, setNewConclusion] = useState('') // Pour ajouter de nouvelles conclusions
   const [formErrors, setFormErrors] = useState({})
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
 
@@ -46,11 +48,30 @@ function EditTestButton({ testId, ontestUpdated }) {
       })
       const data = await response.json()
       if (data.success) {
-        setFormData(data.data)
+        setFormData({ ...data.data, conclusions: data.data.conclusions || [] })
       }
     } catch (error) {
       console.error('Erreur lors de la récupération du test:', error)
     }
+  }
+
+  // Ajouter une conclusion
+  const handleAddConclusion = () => {
+    if (newConclusion.trim() !== '') {
+      setFormData({
+        ...formData,
+        conclusions: [...formData.conclusions, newConclusion],
+      })
+      setNewConclusion('')
+    }
+  }
+
+  // Supprimer une conclusion
+  const handleRemoveConclusion = (index) => {
+    const updatedConclusions = formData.conclusions.filter(
+      (_, idx) => idx !== index
+    )
+    setFormData({ ...formData, conclusions: updatedConclusions })
   }
 
   const handleChange = (e) => {
@@ -295,6 +316,40 @@ function EditTestButton({ testId, ontestUpdated }) {
                   onChange={handleChange}
                 />
               </div>
+
+              <div className="form-control">
+                <label className="label">Conclusions</label>
+                <div>
+                  <input
+                    type="text"
+                    value={newConclusion}
+                    onChange={(e) => setNewConclusion(e.target.value)}
+                    className="input input-bordered input-primary w-full max-w-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddConclusion}
+                    className="btn btn-primary ml-2"
+                  >
+                    Ajouter Conclusion
+                  </button>
+                </div>
+                {formData.conclusions.map((conclusion, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center mt-2"
+                  >
+                    <span>{conclusion}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveConclusion(index)}
+                      className="btn btn-error btn-sm"
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                ))}
+              </div>
               <div className="form-control">
                 <label className="label">Statut</label>
                 <select
@@ -307,6 +362,7 @@ function EditTestButton({ testId, ontestUpdated }) {
                   <option value="false">Inactif</option>
                 </select>
               </div>
+
               {/* Autres champs existants */}
 
               <div className="modal-action">

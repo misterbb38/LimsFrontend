@@ -182,7 +182,7 @@ function GenerateResultatButton({ invoice }) {
 
       // Informations du client
       let currentY = 40 // Mise à jour pour utiliser currentY pour la position initiale
-      doc.setFontSize(8) // Changez la taille à la valeur souhaitée
+      doc.setFontSize(10) // Changez la taille à la valeur souhaitée
       doc.setFont('Times', 'bold') // Définissez la police en Times et le style en gras
       // doc.text(`Informations du patient`, 130, currentY)
       doc.text(`Nº Dossier: ${invoice?.identifiant}`, 135, currentY + 7)
@@ -221,12 +221,12 @@ function GenerateResultatButton({ invoice }) {
       doc.text(`Tel: ${invoice.userId.telephone}`, 135, currentY + 22)
 
       // En-tête de la facture
-      doc.setFontSize(8)
+      doc.setFontSize(10)
       doc.setFont('Times', 'bold') // Définissez la police en Times et le style en gras
 
       doc.text(`NIP: ${invoice?.userId.nip}`, 35, currentY + 7)
       doc.setTextColor(0, 0, 0)
-      doc.setFontSize(8)
+      doc.setFontSize(10)
       doc.setFont('Times')
       const date = new Date(invoice?.createdAt)
       const formattedDate =
@@ -265,7 +265,7 @@ function GenerateResultatButton({ invoice }) {
         const maxLineWidth = 100
         const maxvaluWidth = 50 // Largeur maximale du texte dans le PDF
         let nomTestLines = doc.splitTextToSize(
-          `${test.testId.nom}`,
+          `${test.testId.nom.toUpperCase()}`,
           maxLineWidth
         )
 
@@ -294,7 +294,9 @@ function GenerateResultatButton({ invoice }) {
         doc.setFont('Times', 'bold') // Utilisation de Times en gras
         // doc.text(nomTestLines, 20, currentY)
         if (test?.observations) {
-          doc.text(nomTestLines, 65, currentY)
+          doc.setFontSize(13)
+          doc.setFont('Times', 'bold')
+          doc.text(nomTestLines, 60, currentY)
         }
         if (!test?.observations) {
           doc.text(nomTestLines, 20, currentY)
@@ -308,14 +310,7 @@ function GenerateResultatButton({ invoice }) {
         )
         doc.setFont('Times', 'bold')
         doc.setFontSize(8)
-        // if (test?.dernierResultatAnterieur) {
-        //   doc.text(
-        //     `${test?.dernierResultatAnterieur?.valeur}`,
-        //     90,
-        //     currentY + 2
-        //   )
-        //   doc.text(`${formattedDateAnterieur}`, 150, currentY + 2)
-        // }
+
         // Ne pas afficher les informations si test?.observations existe
         if (!test?.observations && test?.dernierResultatAnterieur) {
           const valeurAnterieure = test.dernierResultatAnterieur.valeur ?? ''
@@ -417,218 +412,32 @@ function GenerateResultatButton({ invoice }) {
           }
 
           if (test?.observations) {
-            doc.setFontSize(13)
+            doc.setFontSize(10)
             doc.setFont('Times', 'bold')
             doc.text(`EXAMEN MACROSCOPIQUE`, 20, currentY)
             doc.setFontSize(10)
             doc.setFont('Times', 'normal')
             currentY += 5 // Incrémentation de currentY après chaque élément
 
-            // Leucocytes
-            doc.text(
-              ` ${test?.typePrelevement} ${test?.observations?.macroscopique} `,
-              20,
-              currentY
-            )
-            currentY += 7
-            // if (test?.observations?.microscopique) {
-            //   doc.setFontSize(13)
-            //   doc.setFont('Times', 'bold')
-            //   doc.text(`Examen microscopique`, 20, currentY)
-            //   currentY += 5
-            //   doc.text(`Etat Frais`, 25, currentY)
-            //   doc.setFontSize(10)
-            //   doc.setFont('Times', 'normal')
-            //   currentY += 5 // Incrémentation de currentY après chaque élément
-            //   // Leucocytes
-            //   if (test?.observations?.microscopique?.leucocytes) {
-            //     // Position fixe pour le texte "Leucocytes:"
-            //     doc.text('Leucocytes:', 20, currentY)
+            if (
+              Array.isArray(test?.observations?.macroscopique) &&
+              test.observations.macroscopique.length > 0
+            ) {
+              // Convertir le tableau en une chaîne de caractères, séparée par des virgules et des espaces
+              const macroscopiqueText =
+                test.observations.macroscopique.join(', ')
 
-            //     // Position fixe pour la valeur variable à l'axe X de 45
-            //     doc.text(
-            //       `${test.observations.microscopique.leucocytes}`,
-            //       45,
-            //       currentY
-            //     )
-
-            //     // Incrémentation de currentY après chaque élément
-            //     currentY += 5
-            //   }
-
-            //   // Hématies
-            //   if (test?.observations?.microscopique?.hematies) {
-            //     doc.text(
-            //       `Hématies: ${test?.observations?.microscopique?.hematies}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // pH
-            //   if (test?.observations?.microscopique?.ph) {
-            //     doc.text(
-            //       `pH: ${test?.observations?.microscopique?.ph}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // Cellules Epithéliales
-            //   if (test?.observations?.microscopique?.cellulesEpitheliales) {
-            //     doc.text(
-            //       `Cellules épithéliales: ${test?.observations?.microscopique?.cellulesEpitheliales}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // Éléments Levuriformes
-            //   if (test?.observations?.microscopique?.elementsLevuriforme) {
-            //     doc.text(
-            //       `Éléments levuriformes: ${test?.observations?.microscopique?.elementsLevuriforme}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // Filaments Mycéliens
-            //   if (test?.observations?.microscopique?.filamentsMyceliens) {
-            //     doc.text(
-            //       `Filaments mycéliens: ${test?.observations?.microscopique?.filamentsMyceliens}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // Trichomonas Vaginalis
-            //   if (test?.observations?.microscopique?.trichomonasVaginalis) {
-            //     doc.text(
-            //       `Trichomonas vaginalis: ${test?.observations?.microscopique?.trichomonasVaginalis}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // Cristaux
-            //   if (test?.observations?.microscopique?.cristaux) {
-            //     doc.text(
-            //       `Cristaux: ${test?.observations?.microscopique?.cristaux}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // Cylindres
-            //   if (test?.observations?.microscopique?.cylindres) {
-            //     doc.text(
-            //       `Cylindres: ${test?.observations?.microscopique?.cylindres}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 7
-            //   }
-
-            //   // Parasites
-            //   if (test?.observations?.microscopique?.parasites) {
-            //     doc.text(
-            //       `Parasites: ${test?.observations?.microscopique?.parasites}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // Trichomonas intestinales
-            //   if (test?.observations?.microscopique?.trichomonasIntestinales) {
-            //     doc.text(
-            //       `Trichomonas intestinales: ${test?.observations?.microscopique?.trichomonasIntestinales}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // Oeufs de Bilharzies
-            //   if (test?.observations?.microscopique?.oeufsDeBilharzies) {
-            //     doc.text(
-            //       `Oeufs de Bilharzies: ${test?.observations?.microscopique?.oeufsDeBilharzies}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // Clue Cells
-            //   if (test?.observations?.microscopique?.clueCells) {
-            //     doc.text(
-            //       `Clue Cells: ${test?.observations?.microscopique?.clueCells}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // Gardnerella Vaginalis
-            //   if (test?.observations?.microscopique?.gardnerellaVaginalis) {
-            //     doc.text(
-            //       `Gardnerella Vaginalis: ${test?.observations?.microscopique?.gardnerellaVaginalis}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // Bacilles de Doderlein
-            //   if (test?.observations?.microscopique?.bacillesDeDoderlein) {
-            //     doc.text(
-            //       `Bacilles de Doderlein: ${test?.observations?.microscopique?.bacillesDeDoderlein}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // Type de Flore
-            //   if (test?.observations?.microscopique?.typeDeFlore) {
-            //     doc.text(
-            //       `Type de Flore: ${test?.observations?.microscopique?.typeDeFlore}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // Recherche de Streptocoque B
-            //   if (test?.observations?.microscopique?.rechercheDeStreptocoqueB) {
-            //     doc.text(
-            //       `Recherche de Streptocoque B: ${test?.observations?.microscopique?.rechercheDeStreptocoqueB}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 5
-            //   }
-
-            //   // Monocytes
-            //   if (test?.observations?.microscopique?.monocytes) {
-            //     doc.text(
-            //       `Monocytes: ${test?.observations?.microscopique?.monocytes}`,
-            //       20,
-            //       currentY
-            //     )
-            //     currentY += 7 // Peut-être un peu plus d'espace après le dernier élément
-            //   }
-            // }
+              // Afficher le texte formaté dans le PDF
+              doc.text(
+                `${test?.typePrelevement} : ${macroscopiqueText}`,
+                20,
+                currentY
+              )
+              currentY += 7 // Incrémenter currentY pour la prochaine section ou le prochain élément
+            }
 
             if (test?.observations?.microscopique) {
-              doc.setFontSize(13)
+              doc.setFontSize(10)
               doc.setFont('Times', 'bold')
               doc.text(`EXAMEN CYTOLOGIQUE`, 20, currentY)
               // currentY += 5
@@ -963,6 +772,14 @@ function GenerateResultatButton({ invoice }) {
             if (currentY > 250) {
               doc.addPage()
               currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
+              doc.text(`Nº Dossier: ${invoice?.identifiant}`, 75, currentY)
+              currentY
+              doc.text(
+                `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
+                42,
+                currentY
+              )
+              currentY += 5
               addFooter()
             }
             if (test?.observations?.chimie) {
@@ -982,7 +799,7 @@ function GenerateResultatButton({ invoice }) {
                 acideUrique ||
                 LDH
               ) {
-                doc.setFontSize(13)
+                doc.setFontSize(10)
                 doc.setFont('Times', 'bold')
                 doc.text(`CHIMIE`, 20, currentY)
                 currentY += 5
@@ -1001,8 +818,8 @@ function GenerateResultatButton({ invoice }) {
                 if (proteinesArochies) {
                   doc.text('Proteines Arochies:', 20, currentY)
                   doc.text(proteinesArochies, positionX, currentY)
-                  doc.text('g/L', positionX + 10, currentY)
-                  doc.text('(0,2-0,4)', positionX + 15, currentY)
+                  doc.text(`g/L `, positionX + 10, currentY)
+                  doc.text(`(0,2-0,4)`, positionX + 17, currentY)
                   currentY += 5
                 }
 
@@ -1010,8 +827,8 @@ function GenerateResultatButton({ invoice }) {
                 if (glycorachie) {
                   doc.text('Glycorachie:', 20, currentY)
                   doc.text(glycorachie, positionX, currentY)
-                  doc.text('g/L', positionX + 10, currentY)
-                  doc.text('(0,2-0,4)', positionX + 15, currentY)
+                  doc.text(`g/L `, positionX + 10, currentY)
+                  doc.text(`(0,2-0,4)`, positionX + 17, currentY)
                   currentY += 5
                 }
 
@@ -1036,11 +853,19 @@ function GenerateResultatButton({ invoice }) {
             if (currentY > 250) {
               doc.addPage()
               currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
+              doc.text(`Nº Dossier: ${invoice?.identifiant}`, 75, currentY)
+              currentY
+              doc.text(
+                `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
+                42,
+                currentY
+              )
+              currentY += 5
               addFooter()
             }
           }
           if (test?.gram) {
-            doc.setFontSize(13)
+            doc.setFontSize(10)
             doc.setFont('Times', 'bold')
             doc.text(
               `EXAMEN BACTERIOLOGIE DIRECT  (Coloration de gram)`,
@@ -1059,15 +884,27 @@ function GenerateResultatButton({ invoice }) {
           if (currentY > 250) {
             doc.addPage()
             currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
+            doc.text(`Nº Dossier: ${invoice?.identifiant}`, 75, currentY)
+            currentY
+            doc.text(
+              `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
+              42,
+              currentY
+            )
+            currentY += 5
             addFooter()
           }
-          if (test?.observations?.culture) {
-            const { culture, germeIdentifie, description } =
-              test.observations.culture
 
-            if (culture || germeIdentifie || description) {
+          if (test?.culture) {
+            const { culture, germeIdentifie, description } = test?.culture
+
+            if (
+              culture ||
+              (Array.isArray(germeIdentifie) && germeIdentifie.length > 0) ||
+              description
+            ) {
               // Vérifier si au moins un des champs est présent
-              doc.setFontSize(13)
+              doc.setFontSize(10)
               doc.setFont('Times', 'bold')
               doc.text(`CULTURES SUR MILIEUX SPECIFIQUES:`, 20, currentY)
               currentY += 5
@@ -1080,10 +917,33 @@ function GenerateResultatButton({ invoice }) {
                 currentY += 5
               }
 
-              if (germeIdentifie) {
-                doc.text(`Germe Identifié:`, 20, currentY)
-                doc.text(germeIdentifie, positionX, currentY)
-                currentY += 5
+              if (
+                Array.isArray(test.culture.germeIdentifie) &&
+                test.culture.germeIdentifie.length > 0
+              ) {
+                // Extraire uniquement les noms des germes
+                const germeIdentifieText = test.culture.germeIdentifie
+                  .map((germe) => germe.nom)
+                  .join(', ')
+
+                // Définir la largeur maximale pour le texte (85 caractères dans votre cas)
+                const maxWidth = 95 // Ajuster cette valeur en fonction de la largeur disponible sur votre page PDF
+
+                // Utiliser splitTextToSize pour gérer les retours à la ligne automatiquement
+                let splitText = doc.splitTextToSize(
+                  germeIdentifieText,
+                  maxWidth
+                )
+
+                // Appliquer le texte avec des retours à la ligne
+                doc.setFont('Times', 'italic') // Changer la police en italique
+                doc.text(`Germe(s) Identifié(s):`, 20, currentY)
+                splitText.forEach((line) => {
+                  doc.text(line, positionX, currentY)
+                  currentY += 5 // Incrémenter la position Y pour chaque nouvelle ligne
+                })
+                doc.setFont('Times', 'normal') // Revenir à la police normale
+                currentY += 5 // Espace supplémentaire après la liste des germes
               }
 
               if (description) {
@@ -1098,6 +958,14 @@ function GenerateResultatButton({ invoice }) {
           if (currentY > 250) {
             doc.addPage()
             currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
+            doc.text(`Nº Dossier: ${invoice?.identifiant}`, 75, currentY)
+            currentY
+            doc.text(
+              `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
+              42,
+              currentY
+            )
+            currentY += 5
             addFooter()
           }
 
@@ -1107,7 +975,7 @@ function GenerateResultatButton({ invoice }) {
               test.observations.rechercheChlamydia
 
             if (naturePrelevement || rechercheAntigeneChlamydiaTrochomatis) {
-              doc.setFontSize(13)
+              doc.setFontSize(10)
               doc.setFont('Times', 'bold')
               doc.text('RECHERCHE DE CHLAMYDIA', 20, currentY)
               currentY += 5
@@ -1151,7 +1019,7 @@ function GenerateResultatButton({ invoice }) {
               rechercheUreaplasmaUrealyticum ||
               rechercheMycoplasmaHominis
             ) {
-              doc.setFontSize(13)
+              doc.setFontSize(10)
               doc.setFont('Times', 'bold')
               doc.text('RECHERCHE DE MYCOPLASMES', 20, currentY)
               currentY += 5
@@ -1182,7 +1050,7 @@ function GenerateResultatButton({ invoice }) {
           }
 
           if (test?.conclusion) {
-            doc.setFontSize(13)
+            doc.setFontSize(10)
             doc.setFont('Times', 'bold')
             doc.text(`CONCLUSION`, 20, currentY)
             currentY += 5
@@ -1193,85 +1061,61 @@ function GenerateResultatButton({ invoice }) {
             currentY += 5
           }
 
-          if (
-            test?.observations?.antibiogramme &&
-            Object.keys(test.observations.antibiogramme).length > 0
-          ) {
-            doc.addPage()
-            currentY = 15 // Réinitialiser la position Y pour le contenu de la nouvelle page
-            addFooter()
-            // En-têtes de colonne
-
-            doc.text(`Nº Dossier: ${invoice?.identifiant}`, 42, currentY)
-            currentY += 5
-            doc.text(
-              `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
-              42,
-              currentY
-            )
-
-            currentY += 5
-
-            doc.setFontSize(10)
-            doc.setFont('Times', 'bold')
-            doc.text(
-              `ANTIBIOGRAMME : ${test?.culture?.germeIdentifie} `,
-              42,
-              currentY
-            )
-            currentY += 7
-            doc.setFont('Times', 'normal')
-            // En-têtes de colonne avec bordures
-            const columnWidthAntibiotique = 70 // Largeur de la colonne Antibiotique
-            const columnWidthSensibilite = 30 // Largeur de la colonne Sensibilité
-            const lineHeight = 7 // Hauteur de ligne standard
-
-            // Dessiner les bordures pour les en-têtes
-            doc.rect(40, currentY, columnWidthAntibiotique, lineHeight) // Bordure pour "Antibiotique"
-            doc.rect(110, currentY, columnWidthSensibilite, lineHeight) // Bordure pour "Sensibilité"
-
-            doc.setFontSize(10)
-            doc.setFont('Times', 'bold')
-            doc.text('Antibiotique', 42, currentY + 5) // Position ajustée pour le texte dans la cellule
-            doc.text('Sensibilité', 112, currentY + 5)
-
-            currentY += lineHeight // Déplacer currentY pour les données
-
-            // Données de l'antibiogramme
-            const antibiogramme = test?.observations?.antibiogramme
-            if (antibiogramme) {
-              doc.setFontSize(8)
-              doc.setFont('Times', 'normal')
-              Object.entries(antibiogramme).forEach(
-                ([antibiotique, sensibilite]) => {
-                  // Dessiner des cellules avec bordures pour chaque donnée
-                  doc.rect(40, currentY, columnWidthAntibiotique, lineHeight)
-                  doc.rect(110, currentY, columnWidthSensibilite, lineHeight)
-
-                  // Ajouter du texte avec un petit padding horizontal
-                  doc.text(antibiotique, 42, currentY + 5)
-                  doc.text(sensibilite, 112, currentY + 5)
-
-                  currentY += lineHeight // Incrément pour la prochaine ligne
-                }
-              )
-              currentY += 5
-              doc.text(
-                'S : sensible    I : intermédiaire     R : résistant ',
-                42,
+          // Gérer les antibiogrammes
+          if (test.culture && Array.isArray(test.culture.germeIdentifie)) {
+            test.culture.germeIdentifie.forEach((germe) => {
+              // Vérifier si l'antibiogramme n'est pas vide
+              if (Object.keys(germe.antibiogramme).length > 0) {
+                doc.addPage() // Démarre chaque antibiogramme sur une nouvelle page
+                let currentY = 15 // Position Y initiale pour chaque nouvelle page
+                doc.text(`Nº Dossier: ${invoice?.identifiant}`, 75, currentY)
                 currentY
-              )
-              doc.addPage()
-              currentY = 15 // Réinitialiser la position Y pour le contenu de la nouvelle page
-              addFooter()
-            } else {
-              doc.text(
-                "Aucune donnée d'antibiogramme disponible.",
-                42,
-                currentY
-              )
-            }
+                doc.text(
+                  `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
+                  42,
+                  currentY
+                )
+                currentY += 5
+
+                doc.setFontSize(10)
+                doc.setFont('Times', 'bold')
+                doc.text(`ANTIBIOGRAMME : ${germe.nom}`, 42, currentY)
+                currentY += 7
+
+                doc.setFont('Times', 'normal')
+                // En-têtes de colonne avec bordures
+                const columnWidthAntibiotique = 70
+                const columnWidthSensibilite = 30
+                const lineHeight = 7
+
+                // Dessiner les bordures pour les en-têtes
+                doc.rect(40, currentY, columnWidthAntibiotique, lineHeight)
+                doc.rect(110, currentY, columnWidthSensibilite, lineHeight)
+                doc.text('Antibiotique', 42, currentY + 5)
+                doc.text('Sensibilité', 112, currentY + 5)
+                currentY += lineHeight
+
+                // Données de l'antibiogramme
+                Object.entries(germe.antibiogramme).forEach(
+                  ([antibiotique, sensibilite]) => {
+                    doc.rect(40, currentY, columnWidthAntibiotique, lineHeight)
+                    doc.rect(110, currentY, columnWidthSensibilite, lineHeight)
+                    doc.text(antibiotique, 42, currentY + 5)
+                    doc.text(sensibilite, 112, currentY + 5)
+                    currentY += lineHeight
+                  }
+                )
+
+                currentY += 5
+                doc.text(
+                  'S : Sensible    I : Intermédiaire     R : Résistant',
+                  42,
+                  currentY
+                )
+              }
+            })
           }
+          currentY += 15
         }
       })
       function formatDateAndTime(dateString) {
