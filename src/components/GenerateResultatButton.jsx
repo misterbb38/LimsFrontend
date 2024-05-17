@@ -293,12 +293,15 @@ function GenerateResultatButton({ invoice }) {
         doc.setFontSize(10)
         doc.setFont('Times', 'bold') // Utilisation de Times en gras
         // doc.text(nomTestLines, 20, currentY)
-        if (test?.observations) {
+        if (
+          test?.observations &&
+          test?.observations?.macroscopique.length > 0
+        ) {
           doc.setFontSize(13)
           doc.setFont('Times', 'bold')
           doc.text(nomTestLines, 60, currentY)
         }
-        if (!test?.observations) {
+        if (test?.observations?.macroscopique.length === 0) {
           doc.text(nomTestLines, 20, currentY)
         }
         currentY += 5 * nomTestLines.length // Mise à jour de Y basée sur le nombre de lignes de nom
@@ -319,12 +322,13 @@ function GenerateResultatButton({ invoice }) {
           doc.text(valeurAnterieure, 160, currentY + 5)
           doc.text(dateAnterieure, 170, currentY)
         }
-        if (!test?.observations) {
+        if (test?.observations?.macroscopique.length === 0) {
           doc.text(`${test?.valeur}`, 90, currentY + 5)
         }
+
         doc.setFont('Times', 'normal')
         doc.setFontSize(8)
-        if (!test?.observations) {
+        if (test?.observations?.macroscopique.length === 0) {
           // Affichage de la valeur de la machine A ou B en fonction de statutMachine
           let machineValue = test.statutMachine
             ? test.testId.valeurMachineA
@@ -380,7 +384,7 @@ function GenerateResultatButton({ invoice }) {
         if (test?.methode) {
           doc.text(`(${test.methode})`, methodStartPos, currentY)
         }
-        if (!test?.observations) {
+        if (test?.observations?.macroscopique.length === 0) {
           doc.text(
             `Prélèvement: ${formattedDate} ${test?.typePrelevement}`,
             20,
@@ -400,10 +404,14 @@ function GenerateResultatButton({ invoice }) {
           test?.observations ||
           test?.culture ||
           test?.gram ||
-          test?.conclusion
+          test?.conclusion ||
+          test?.observations?.macroscopique.length > 0
         ) {
           let positionX = 100
-          if (test?.observations) {
+          if (
+            test?.observations &&
+            test?.observations?.macroscopique.length > 0
+          ) {
             doc.text(
               ` ${test?.typePrelevement} ${test?.lieuPrelevement}  ${formattedDate}`,
               20,
@@ -411,7 +419,10 @@ function GenerateResultatButton({ invoice }) {
             )
           }
 
-          if (test?.observations) {
+          if (
+            test?.observations &&
+            test?.observations?.macroscopique.length > 0
+          ) {
             doc.setFontSize(10)
             doc.setFont('Times', 'bold')
             doc.text(`EXAMEN MACROSCOPIQUE`, 20, currentY)
@@ -436,7 +447,10 @@ function GenerateResultatButton({ invoice }) {
               currentY += 7 // Incrémenter currentY pour la prochaine section ou le prochain élément
             }
 
-            if (test?.observations?.microscopique) {
+            if (
+              test?.observations?.microscopique &&
+              test?.observations?.macroscopique.length > 0
+            ) {
               doc.setFontSize(10)
               doc.setFont('Times', 'bold')
               doc.text(`EXAMEN CYTOLOGIQUE`, 20, currentY)

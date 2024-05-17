@@ -422,6 +422,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
                         <div className="flex justify-around space-x-1">
                           <EditResultatButton
                             resultatId={resul._id}
+                            analyseId={analyseId}
                             onResultatUpdated={() =>
                               fetchAnalyseData(analyseId)
                             }
