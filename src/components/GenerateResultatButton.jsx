@@ -302,11 +302,12 @@ function GenerateResultatButton({ invoice }) {
           doc.text(nomTestLines, 60, currentY)
         }
         if (test?.observations?.macroscopique.length === 0) {
+          doc.setFontSize(13)
           doc.text(nomTestLines, 20, currentY)
         }
         currentY += 5 * nomTestLines.length // Mise à jour de Y basée sur le nombre de lignes de nom
         doc.setFont('Times', 'normal') // Réinitialisation à la police normale pour le reste du texte
-        doc.setFontSize(6) // Réduire la taille de la police pour les détails
+        doc.setFontSize(8) // Réduire la taille de la police pour les détails
         let formattedDate = formatDateAndTime(test?.datePrelevement)
         let formattedDateAnterieur = formatDateAndTime(
           test?.dernierResultatAnterieur?.date
@@ -337,7 +338,7 @@ function GenerateResultatButton({ invoice }) {
             doc.text(`${machineValue}`, 120, currentY + 5)
           }
 
-          doc.setFontSize(6)
+          doc.setFontSize(8)
           doc.setFont('Times', 'bold')
           // Déterminer quelle machine afficher en fonction de statutMachine
           let machineText = test?.statutMachine
@@ -393,7 +394,13 @@ function GenerateResultatButton({ invoice }) {
         }
         doc.setFontSize(8)
         doc.setFont('Times', 'normal')
-        currentY += 8 // Increment for one line
+        currentY += 12 // Increment for one line
+        if (test?.observations?.macroscopique.length === 0) {
+          if (test?.remarque) {
+            doc.text(`${test.remarque}`, 20, currentY)
+          }
+        }
+        currentY += 5 // Increment for one line
         if (test.statutInterpretation) {
           doc.text(interpretationLines, 20, currentY)
           currentY += 5 * interpretationLines.length // Mise à jour de Y basée sur le nombre de lignes d'interprétation
@@ -1066,14 +1073,29 @@ function GenerateResultatButton({ invoice }) {
           if (test?.conclusion) {
             doc.setFontSize(10)
             doc.setFont('Times', 'bold')
-            doc.text(`CONCLUSION`, 20, currentY)
+            doc.text('CONCLUSION', 20, currentY)
             currentY += 5
 
-            doc.text(` ${test?.conclusion}`, 20, currentY)
+            const maxLineWidth = 100
+            const conclusionLines = doc.splitTextToSize(
+              test?.conclusion,
+              maxLineWidth
+            )
+            doc.text(conclusionLines, 20, currentY)
+
+            currentY += conclusionLines.length * 5 // Mise à jour de currentY basée sur le nombre de lignes de la conclusion
             doc.setFontSize(10)
             doc.setFont('Times', 'normal')
             currentY += 5
           }
+
+          if (test?.observations?.macroscopique.length > 0) {
+            if (test?.remarque) {
+              doc.text(`Remarque: ${test.remarque}`, 20, currentY)
+            }
+          }
+
+          currentY += 5
 
           // Gérer les antibiogrammes
           if (test.culture && Array.isArray(test.culture.germeIdentifie)) {

@@ -54,7 +54,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
     const token = userInfo?.token
     try {
-      const response = await fetch(`${apiUrl}/api/test`, {
+      const response = await fetch(`${apiUrl}/api/test/analyse`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -251,7 +251,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
           </div>
           <div className="form-control">
             <label className="label">
-              <span className="label-text">Filtre tests</span>
+              <span className="label-text">Filtre Parametre</span>
             </label>
             <input
               type="text"
@@ -261,7 +261,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
               className="input input-bordered input-primary w-full max-w-xs"
             />
             <label className="label">
-              <span className="label-text">Tests</span>
+              <span className="label-text">Paramettre</span>
             </label>
             <select
               className="select select-primary w-full max-w-xs"
@@ -269,7 +269,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
               defaultValue=""
             >
               <option disabled value="">
-                Choisir des tests
+                Choisir des paramettres
               </option>
               {filteredTests.map((test) => (
                 <option key={test._id} value={test._id}>

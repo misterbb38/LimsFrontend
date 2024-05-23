@@ -741,15 +741,26 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
               </select>
             </div>
 
-            {/* <div>
+            <div>
               <label className="label">Methode</label>
-              <input
-                type="text"
+              <select
                 value={methode}
                 onChange={(e) => setMethode(e.target.value)}
-                className="input input-bordered"
-              />
-            </div> */}
+                className="select select-bordered"
+              >
+                <option value="">Sélectionner une méthode</option>
+                <option value="PCR">PCR</option>
+                <option value="Turbidimétrie">Turbidimétrie</option>
+                <option value="Colorimétrie">Colorimétrie</option>
+                <option value="Enzymatique">Enzymatique</option>
+                <option value="Turbidimétrie/colorimétrie">
+                  Turbidimétrie/colorimétrie
+                </option>
+                <option value="Gazométrie">Gazométrie</option>
+                <option value="ELFA">ELFA</option>
+                <option value="CLIA">CLIA</option>
+              </select>
+            </div>
           </div>
         )}
 

@@ -3,6 +3,8 @@ import EditPatientButton from '../components/EditPatientButton' // Ajustez le ch
 import NavigationBreadcrumb from '../components/NavigationBreadcrumb'
 import Chatbot from '../components/Chatbot'
 import SignUp from '../components/Auth/SignUp'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTrash } from '@fortawesome/free-solid-svg-icons'
 
 function Personnel() {
   const [personnel, setpersonnel] = useState([])
@@ -64,11 +66,11 @@ function Personnel() {
   }
 
   // Fonction pour supprimer un patient
-  const deletepatient = async (patientId) => {
+  const deletePatient = async (patientId) => {
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'))
       const token = userInfo?.token
-      const response = await fetch(`${apiUrl}/api/patient/${patientId}`, {
+      const response = await fetch(`${apiUrl}/api/user/${patientId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -77,6 +79,7 @@ function Personnel() {
       const data = await response.json()
       if (data.success) {
         // Rafraîchir la liste des personnel après la suppression
+        alert('Personnel supprimé avec succès.')
         fetchpersonnel()
       } else {
         console.error('Failed to delete patient')
@@ -188,12 +191,12 @@ function Personnel() {
                         userId={patient._id}
                         onuserUpdated={refreshpersonnel}
                       />
-                      {/* <button
+                      <button
                         className="btn btn-error"
-                        onClick={() => deletepatient(patient._id)}
+                        onClick={() => deletePatient(patient._id)}
                       >
-                        Supprimer
-                      </button> */}
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
                     </div>
                   </td>
                 </tr>

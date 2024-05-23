@@ -11,6 +11,7 @@ import EditPatientButton from './EditPatientButton'
 import GenerateBarcodeButton from './GenerateBarcodeButton'
 
 function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
+  const [isLoading, setIsLoading] = useState(false)
   const [analyseData, setAnalyseData] = useState(null)
 
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
@@ -55,17 +56,29 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
   }
 
   const deleteHistorique = async (historiqueId) => {
+    const userConfirmed = window.confirm(
+      'Êtes-vous sûr de vouloir supprimer cet historique ?'
+    )
+
+    if (!userConfirmed) {
+      return
+    }
+
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'))
       const token = userInfo?.token
+      const apiUrl = import.meta.env.VITE_APP_API_BASE_URL // Ensure this is set in your environment variables
+
       const response = await fetch(`${apiUrl}/api/hist/${historiqueId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
+
       const data = await response.json()
       if (data.success) {
+        alert('Historique supprimé avec succès.')
         // Rafraîchir la liste des tests après la suppression
         fetchAnalyseData(analyseId)
       } else {
@@ -77,6 +90,14 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
   }
 
   const deleteResultat = async (resultatId) => {
+    const userConfirmed = window.confirm(
+      'Êtes-vous sûr de vouloir supprimer ce résultat ?'
+    )
+
+    if (!userConfirmed) {
+      return
+    }
+
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'))
       const token = userInfo?.token
@@ -94,6 +115,8 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
 
       if (data.success) {
         // Optionally refresh data if needed, adjust based on your application structure
+
+        alert('Resultat supprimé avec succès.') // Afficher une alerte de succès
         fetchAnalyseData(analyseId)
         // You might want to trigger a refresh of the resultats displayed, e.g., by calling a fetch function or updating state
       } else {
@@ -430,8 +453,13 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
                           <button
                             className="btn btn-error"
                             onClick={() => deleteResultat(resul._id)}
+                            disabled={isLoading}
                           >
-                            <FontAwesomeIcon icon={faTrash} />
+                            {isLoading ? (
+                              <span className="loading loading-spinner text-error"></span>
+                            ) : (
+                              <FontAwesomeIcon icon={faTrash} />
+                            )}
                           </button>
                         </div>
                       </td>
