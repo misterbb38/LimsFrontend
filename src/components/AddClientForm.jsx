@@ -14,7 +14,7 @@ function AddClientForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setIsLoading(true) // Commencer le chargement
+    setIsLoading(true) // Commencer le chargement pour  donner
     const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {}
     const token = userInfo?.token
 
