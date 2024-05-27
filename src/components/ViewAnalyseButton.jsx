@@ -63,6 +63,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
     if (!userConfirmed) {
       return
     }
+    setIsLoading(true) // Commencer le chargement
 
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'))
@@ -86,6 +87,8 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
       }
     } catch (error) {
       console.error('Error deleting historique:', error)
+    } finally {
+      setIsLoading(false) // Arrêter le chargement
     }
   }
 
@@ -97,6 +100,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
     if (!userConfirmed) {
       return
     }
+    setIsLoading(true) // Commencer le chargement
 
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'))
@@ -124,6 +128,8 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
       }
     } catch (error) {
       console.error('Error deleting resultat:', error)
+    } finally {
+      setIsLoading(false) // Arrêter le chargement
     }
   }
 
@@ -392,8 +398,13 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
                           <button
                             className="btn btn-error"
                             onClick={() => deleteHistorique(historique._id)}
+                            disabled={isLoading}
                           >
-                            <FontAwesomeIcon icon={faTrash} />
+                            {isLoading ? (
+                              <span className="loading loading-spinner text-error"></span>
+                            ) : (
+                              <FontAwesomeIcon icon={faTrash} />
+                            )}
                           </button>
                         </div>
                       </td>

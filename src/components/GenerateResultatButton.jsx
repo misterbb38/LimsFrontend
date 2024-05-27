@@ -1103,7 +1103,8 @@ function GenerateResultatButton({ invoice }) {
               // Vérifier si l'antibiogramme n'est pas vide
               if (Object.keys(germe.antibiogramme).length > 0) {
                 doc.addPage() // Démarre chaque antibiogramme sur une nouvelle page
-                let currentY = 15 // Position Y initiale pour chaque nouvelle page
+                addFooter()
+                currentY = 15 // Position Y initiale pour chaque nouvelle page
                 doc.text(`Nº Dossier: ${invoice?.identifiant}`, 75, currentY)
                 currentY
                 doc.text(
@@ -1152,6 +1153,8 @@ function GenerateResultatButton({ invoice }) {
             })
           }
           currentY += 15
+          
+          
         }
       })
       function formatDateAndTime(dateString) {
@@ -1171,18 +1174,19 @@ function GenerateResultatButton({ invoice }) {
         validatedBy = `${validatedHistory.updatedBy.prenom} ${validatedHistory.updatedBy.nom}`
         doc.setFontSize(10)
         doc.setFont('Times', 'bold')
-        doc.text(`Validé par: ${validatedBy}`, 140, currentY)
+        doc.text(`Validé par: ${validatedBy}`, 110, currentY)
+        
         doc.setFont('Times', 'normal')
         doc.setFontSize(8)
-        doc.text(
-          `${formatDateAndTime(validatedHistory.updatedBy.createdAt)}`,
-          150,
-          currentY + 4
-        )
+        // doc.text(
+        //   `${formatDateAndTime(validatedHistory.updatedBy.createdAt)}`,
+        //   150,
+        //   currentY + 4
+        // )
       }
       // Affichage du médecin qui a validé l'analyse
 
-      currentY += 10 // Incrément pour passer à la section suivante
+      currentY += 5 // Incrément pour passer à la section suivante
       // Positionnement initial pour les détails
 
       const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
@@ -1199,28 +1203,28 @@ function GenerateResultatButton({ invoice }) {
 
         const doctorLogo = await loadImage(fullLogoPath)
         const doctorLogoHeight = 50 * (doctorLogo.height / doctorLogo.width)
-        doc.addImage(doctorLogo, 'PNG', 150, currentY, 50, doctorLogoHeight)
+        doc.addImage(doctorLogo, 'PNG', 110, currentY, 50, doctorLogoHeight)
       }
 
-      // Vérification pour l'ajout d'une page avant le total et les informations bancaires
-      if (currentY > 250) {
-        doc.addPage()
-        currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
-        addFooter()
-      }
-      if (invoice?.observations?.antibiogramme) {
-        doc.addPage()
-        currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
-        addFooter()
-      }
+      // // Vérification pour l'ajout d'une page avant le total et les informations bancaires
+      // if (currentY > 250) {
+      //   doc.addPage()
+      //   currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
+      //   addFooter()
+      // }
+      // if (invoice?.observations?.antibiogramme) {
+      //   doc.addPage()
+      //   currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
+      //   addFooter()
+      // }
 
       // Dernière ligne verte
-      if (currentY > 250) {
-        // Encore une vérification avant d'ajouter la ligne finale
-        doc.addPage()
-        currentY = 10
-        addFooter()
-      }
+      // if (currentY > 250) {
+      //   // Encore une vérification avant d'ajouter la ligne finale
+      //   doc.addPage()
+      //   currentY = 10
+      //   addFooter()
+      // }
 
       // Continuer avec la logique de création du PDF comme avant
 

@@ -143,6 +143,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setIsLoading(true)
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
     const token = userInfo?.token
     const userconnect = userInfo?._id
@@ -455,16 +456,17 @@ function CreateAnalyseForm({ onAnalyseChange }) {
             />
           </div>
 
-          {isLoading && (
-            <div className="flex justify-center items-center">
-              <span className="loading loading-spinner text-primary"></span>
-            </div>
-          )}
+          {isLoading ? (
+          <div className="flex justify-center items-center">
+            <span className="loading loading-spinner text-primary"></span>
+          </div>
+        ) : (
           <div className="actions">
-            <button type="submit" className="btn btn-primary mt-1">
+            <button type="submit" className="btn btn-primary mt-1" disabled={isLoading}>
               Enregistrer
             </button>
           </div>
+        )}
         </form>
       </div>
     </>

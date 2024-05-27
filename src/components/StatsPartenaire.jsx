@@ -16,12 +16,17 @@ const StatsPartenaire = () => {
   const [partners, setPartners] = useState([])
   const [selectedPartner, setSelectedPartner] = useState('')
   const [chartData, setChartData] = useState({
-    labels: Array.from({ length: 12 }, (_, i) => `Month ${i + 1}`),
+    labels: [],
     datasets: [],
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
+
+  const monthNames = [
+    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+  ]
 
   useEffect(() => {
     fetchPartners()
@@ -71,7 +76,7 @@ const StatsPartenaire = () => {
         }
       })
       const formattedData = {
-        labels: Array.from({ length: 12 }, (_, i) => `Mois ${i + 1}`),
+        labels: monthNames, // Utilise les noms des mois
         datasets: [
           {
             label: 'Total',
