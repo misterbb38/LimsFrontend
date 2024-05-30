@@ -43,6 +43,7 @@ function Facture() {
   const paymentStatusClasses = {
     Payée: 'badge badge-success text-white font-bold px-2 py-1',
     Impayée: 'badge badge-error text-white font-bold px-2 py-1',
+    Reliquat: 'badge badge-warning text-white font-bold px-2 py-1',
   }
 
   const facturesPerPage = 8

@@ -12,12 +12,13 @@ function CreateAnalyseForm({ onAnalyseChange }) {
   const [selectedUserId, setSelectedUserId] = useState('')
   const [hasInsurance, setHasInsurance] = useState('')
   const [selectedPartenaireId, setSelectedPartenaireId] = useState('')
+  const [statusPayement, setStatusPayement] = useState('')
   const [pourcentageCouverture, setPourcentageCouverture] = useState('')
   const [pc1, setPc1] = useState(false)
   const [pc2, setPc2] = useState(false)
   const [deplacement, setDeplacement] = useState(0)
   const [dateDeRecuperation, setDateDeRecuperation] = useState('')
-
+  const [avance, setAvance] = useState() // Nouvel état pour l'avance
   const [partenaires, setPartenaires] = useState([])
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
@@ -104,6 +105,17 @@ function CreateAnalyseForm({ onAnalyseChange }) {
     setOrdonnancePdf(event.target.files[0])
   }
 
+  // Assurez-vous que handleStatusPayementChange et handleSubmit sont corrects
+  const handleStatusPayementChange = (e) => {
+    setStatusPayement(e.target.value)
+  }
+
+  const handleAvanceChange = (e) => {
+    const value = parseFloat(e.target.value) || 0 // Utilisez parseFloat
+    setAvance(value)
+    console.log('Avance mise à jour:', value) // Ajoutez un log pour vérifier
+  }
+
   const handleUserChange = (e) => {
     setSelectedUserId(e.target.value)
   }
@@ -160,6 +172,12 @@ function CreateAnalyseForm({ onAnalyseChange }) {
     formData.append('userOwn', userconnect)
     if (pc1) formData.append('pc1', 2000)
     if (pc2) formData.append('pc2', 4000)
+    formData.append('statusPayement', statusPayement || 'Impayée')
+
+    if (statusPayement === 'Reliquat') {
+      formData.append('avance', avance) // Ajouter l'avance au formData
+      console.log('Avance ajoutée au formData:', avance) // Vérification
+    }
     formData.append('deplacement', deplacement)
     formData.append('dateDeRecuperation', dateDeRecuperation)
 
@@ -185,6 +203,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
         body: formData, // Passer FormData comme corps de la requête
       })
       const data = await response.json()
+      console.log(data)
       if (data.success) {
         setToastMessage('Analyse ajoutée avec succès')
         setIsSuccess(true)
@@ -444,6 +463,39 @@ function CreateAnalyseForm({ onAnalyseChange }) {
               onChange={handleOrdonnanceChange}
             />
           </div>
+
+          {/* // Dans le formulaire de soumission */}
+          <div className="form-control">
+            <label className="label">Status du paiement</label>
+            <select
+              className="select select-bordered"
+              value={statusPayement}
+              onChange={handleStatusPayementChange}
+            >
+              <option value="" disabled>
+                Choisissez
+              </option>
+              {/* option */}
+              <option value="Impayée">Impayée</option>
+              <option value="Payée">Payée</option>
+              <option value="Reliquat">Sous reliquat</option>
+            </select>
+          </div>
+
+          {statusPayement === 'Reliquat' && (
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Avance</span>
+              </label>
+              <input
+                type="number"
+                value={avance}
+                onChange={handleAvanceChange}
+                className="input input-bordered input-primary w-full max-w-xs"
+              />
+            </div>
+          )}
+
           <div className="form-control">
             <label className="label">
               <span className="label-text">Date de récupération</span>
@@ -457,16 +509,20 @@ function CreateAnalyseForm({ onAnalyseChange }) {
           </div>
 
           {isLoading ? (
-          <div className="flex justify-center items-center">
-            <span className="loading loading-spinner text-primary"></span>
-          </div>
-        ) : (
-          <div className="actions">
-            <button type="submit" className="btn btn-primary mt-1" disabled={isLoading}>
-              Enregistrer
-            </button>
-          </div>
-        )}
+            <div className="flex justify-center items-center">
+              <span className="loading loading-spinner text-primary"></span>
+            </div>
+          ) : (
+            <div className="actions">
+              <button
+                type="submit"
+                className="btn btn-primary mt-1"
+                disabled={isLoading}
+              >
+                Enregistrer
+              </button>
+            </div>
+          )}
         </form>
       </div>
     </>

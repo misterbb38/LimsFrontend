@@ -115,12 +115,12 @@ function TestList() {
 
   return (
     <div className="base-content bg-base-100 mx-auto p-4 min-h-[800px]">
-      <NavigationBreadcrumb pageName="Test" />
+      <NavigationBreadcrumb pageName="Paramettre" />
       <button
         className="btn"
         onClick={() => document.getElementById('my_modal_3').showModal()}
       >
-        Ajouter un nouveau test
+        Ajouter un nouveau paramettre
       </button>
       <br></br>
       <div className="">
@@ -128,7 +128,7 @@ function TestList() {
         <input
           id="search"
           type="text"
-          placeholder="Entrer le nom du test"
+          placeholder="Entrer le nom du paramettre"
           className="input input-borderedinput input-bordered input-primary w-full max-w-xs"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}

@@ -13,6 +13,10 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
   const [pc2, setPc2] = useState(false)
   const [deplacement, setDeplacement] = useState(0)
   const [dateDeRecuperation, setDateDeRecuperation] = useState('')
+  const [avance, setAvance] = useState(0) // Nouvel état pour l'avance
+  const [reliquat, setReliquat] = useState(0) // Nouvel état pour le reliquat
+
+  const [avancePatient, setAvancePatient] = useState(0) // Nouvel état pour l'avance
 
   const [hasInsurance, setHasInsurance] = useState(false)
   const [selectedPartenaireId, setSelectedPartenaireId] = useState('')
@@ -72,6 +76,59 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
     }
   }
 
+  // const fetchAnalyseData = async () => {
+  //   const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+  //   const token = userInfo?.token
+  //   try {
+  //     const response = await fetch(`${apiUrl}/api/analyse/${analyseId}`, {
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     })
+  //     const data = await response.json()
+  //     if (data.success && data.data) {
+  //       console.log(data)
+  //       setSelectedTests(data.data.tests || [])
+  //       setOrdonnancePdf(data.data.ordonnancePdf  || null)
+  //       setHasInsurance(data.data.partenaireId._id ? true : false)
+  //       const partenaireId = data.data.partenaireId ? data.data.partenaireId._id : ''
+  //     setHasInsurance(partenaireId ? true : false)
+  //       setPourcentageCouverture(data.data.pourcentageCouverture || 0)
+  //       setHasReduction(data.data.reduction ? true : false)
+  //       setReductionType(data.data.typeReduction || 'pourcentage')
+  //       setReductionValue(data.data.reduction || 0)
+  //       setPc1(data.data.pc1 === 2000) // true si pc1 est 2000, sinon false
+  //       setPc2(data.data.pc2 === 4000)
+  //       setStatusPayement(data.data.statusPayement || 'Impayée') // Utilisez la valeur par défaut si aucune donnée n'est disponible
+  //       // Other state initializations
+  //       setAvance(data.data.avance || 0) // Récupération de l'avance
+  //       setAvancePatient(data.data.avance || 0) // Récupération de l'avance
+  //       setReliquat(data.data.reliquat || 0) // Récupération du reliquat
+  //       setDeplacement(data.data.deplacement || 0)
+  //       console.log('Avance initiale:', data.data.avance)
+  //       console.log('Reliquat initial:', data.data.reliquat)
+  //       // Conversion de la date de récupération de format "jj/mm/année" à "YYYY-MM-DD"
+  //       if (data.data.dateDeRecuperation) {
+  //         const parts = data.data.dateDeRecuperation.split('/')
+  //         // Assurez-vous que les parties de la date sont correctement extraites
+  //         console.log('Parts of the date: ', parts)
+  //         if (parts.length === 3) {
+  //           const formattedDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}` // Conversion en format YYYY-MM-DD
+  //           console.log('Formatted Date: ', formattedDate)
+  //           setDateDeRecuperation(formattedDate)
+  //         }
+  //       } else {
+  //         setDateDeRecuperation('')
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error(
+  //       "Erreur lors de la récupération des données de l'analyse:",
+  //       error
+  //     )
+  //   }
+  // }
   const fetchAnalyseData = async () => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
     const token = userInfo?.token
@@ -85,19 +142,28 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
       const data = await response.json()
       if (data.success && data.data) {
         console.log(data)
-        setSelectedTests(data.data.tests || [])
-        setOrdonnancePdf(data.data.ordonnancePdf)
-        setHasInsurance(data.data.partenaireId._id ? true : false)
-        setSelectedPartenaireId(data.data.partenaireId._id || '')
+        setSelectedTests(Array.isArray(data.data.tests) ? data.data.tests : [])
+        setOrdonnancePdf(data.data.ordonnancePdf || null)
+        const partenaireId =
+          data.data.partenaireId && data.data.partenaireId._id
+            ? data.data.partenaireId._id
+            : ''
+        setHasInsurance(!!partenaireId)
+        setSelectedPartenaireId(partenaireId)
         setPourcentageCouverture(data.data.pourcentageCouverture || 0)
-        setHasReduction(data.data.reduction ? true : false)
+        setHasReduction(!!data.data.reduction)
         setReductionType(data.data.typeReduction || 'pourcentage')
         setReductionValue(data.data.reduction || 0)
         setPc1(data.data.pc1 === 2000) // true si pc1 est 2000, sinon false
         setPc2(data.data.pc2 === 4000)
         setStatusPayement(data.data.statusPayement || 'Impayée') // Utilisez la valeur par défaut si aucune donnée n'est disponible
         // Other state initializations
+        setAvance(data.data.avance || 0) // Récupération de l'avance
+        setAvancePatient(data.data.avance || 0) // Récupération de l'avance
+        setReliquat(data.data.reliquat || 0) // Récupération du reliquat
         setDeplacement(data.data.deplacement || 0)
+        console.log('Avance initiale:', data.data.avance)
+        console.log('Reliquat initial:', data.data.reliquat)
         // Conversion de la date de récupération de format "jj/mm/année" à "YYYY-MM-DD"
         if (data.data.dateDeRecuperation) {
           const parts = data.data.dateDeRecuperation.split('/')
@@ -137,6 +203,11 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
     setOrdonnancePdf(event.target.files[0])
   }
 
+  const handleAvanceChange = (e) => {
+    const value = parseFloat(e.target.value) || 0 // Utiliser parseFloat
+    setAvance(value)
+  }
+
   // Fonction pour filtrer les tests basée sur la recherche
   const filteredTests =
     searchTerm.length > 0
@@ -145,45 +216,6 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
         )
       : availableTests
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault()
-  //   const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-  //   const token = userInfo?.token
-
-  //   const formData = new FormData()
-  //   formData.append(
-  //     'tests',
-  //     JSON.stringify(selectedTests.map((test) => test._id))
-  //   )
-  //   if (ordonnancePdf) {
-  //     formData.append('ordonnancePdf', ordonnancePdf)
-  //   }
-  //   if (hasInsurance) {
-  //     formData.append('partenaireId', selectedPartenaireId)
-  //     formData.append('pourcentageCouverture', pourcentageCouverture)
-  //   }
-  //   if (hasReduction) {
-  //     formData.append('reduction', reductionValue)
-  //     formData.append('typeReduction', reductionType)
-  //   }
-
-  //   try {
-  //     const response = await fetch(`${apiUrl}/api/analyse/${analyseId}`, {
-  //       method: 'PUT',
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //       body: formData,
-  //     })
-  //     const data = await response.json()
-  //     if (data.success) {
-  //       setShowModal(false)
-  //       onAnalyseUpdated()
-  //     }
-  //   } catch (error) {
-  //     console.error("Erreur lors de la mise à jour de l'analyse:", error)
-  //   }
-  // }
   const handleSubmit = async (e) => {
     e.preventDefault()
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
@@ -213,6 +245,10 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
       formData.append('typeReduction', reductionType)
     }
     formData.append('statusPayement', statusPayement)
+    if (statusPayement === 'Reliquat') {
+      formData.append('avance', avance) // Ajouter l'avance au formData
+      console.log('Avance ajoutée au formData:', avance) // Vérification
+    }
 
     try {
       const response = await fetch(`${apiUrl}/api/analyse/${analyseId}`, {
@@ -450,8 +486,28 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
                   {/* option */}
                   <option value="Impayée">Impayée</option>
                   <option value="Payée">Payée</option>
+                  <option value="Reliquat">Sous reliquat</option>
                 </select>
               </div>
+
+              {statusPayement === 'Reliquat' && (
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Avance</span>
+                  </label>
+                  <input
+                    type="number"
+                    value={avance}
+                    onChange={handleAvanceChange}
+                    className="input input-bordered input-primary w-full max-w-xs"
+                  />
+                  <h6 className="label-text mt-2">
+                  *Si le patient donne une avance additionnelle, additionnez-la avec son dernier avance: {avance} CFA
+                </h6>
+                  <p>Le patient a déjà avancé : {avancePatient} CFA</p>
+                  <p>Le patient doit donner : {reliquat} CFA</p>
+                </div>
+              )}
 
               <div className="form-control">
                 <label className="label">
