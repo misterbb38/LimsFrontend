@@ -255,7 +255,7 @@ function GeneratePDFButton({ invoice }) {
       // Vérifie si 'typePartenaire' est 'ipm' ou 'assurance'
       if (
         invoice.partenaireId?.typePartenaire === 'ipm' ||
-      invoice.partenaireId?.typePartenaire === 'assurance'
+        invoice.partenaireId?.typePartenaire === 'assurance' || invoice.partenaireId?.typePartenaire === 'sococim' || invoice.partenaireId?.typePartenaire === 'clinique' 
       ) {
         doc.setTextColor(255, 255, 255)
         doc.text('Analyse', 42, currentY + 4)
@@ -282,8 +282,8 @@ function GeneratePDFButton({ invoice }) {
         if (!test) return
         // Votre logique existante ici pour afficher les détails de chaque test...
 
-        // Additionner les coeficiantB si le type de partenaire est "ipm" ou "assurance"
-        if (['ipm', 'assurance'].includes(invoice.partenaireId?.typePartenaire)) {
+        // Additionner les coeficiantB si le type de partenaire est "ipm" ou "assurance"....
+        if (['ipm', 'assurance', 'sococim', 'clinique'].includes(invoice.partenaireId?.typePartenaire)) {
           totalCoefB += test.coeficiantB || 0 // Ajouter le coeficiantB à totalCoefB, en assumant 0 si non spécifié
         }
 
@@ -299,7 +299,7 @@ function GeneratePDFButton({ invoice }) {
         const textY = currentY
 
         // Choix du prix selon le type de partenaire
-        let prixChoisi = test.prixIpm // Valeur par défaut si aucune correspondance n'est trouvée
+        let prixChoisi = test.prixPaf // Valeur par défaut si aucune correspondance n'est trouvée
         let afficherCoefB = false // Détermine si le coefficient B doit être affiché
 
         if (
@@ -314,8 +314,21 @@ function GeneratePDFButton({ invoice }) {
         ) {
           prixChoisi = test.prixIpm
           afficherCoefB = true // Afficher CoefB pour 'ipm'
-        } else if (test.PrixPaf !== undefined) {
-          prixChoisi = test.PrixPaf
+        } else if (
+          invoice.partenaireId?.typePartenaire === 'sococim' &&
+        test.prixSococim !== undefined
+        ) {
+          prixChoisi = test.prixSococim
+          afficherCoefB = true // Afficher CoefB pour 'ipm'
+        } else if (
+          invoice.partenaireId?.typePartenaire === 'clinique' &&
+        test.prixClinique !== undefined
+        ) {
+          prixChoisi = test.prixClinique
+          afficherCoefB = true // Afficher CoefB pour 'ipm'
+        }
+         else if (test.PrixPaf !== undefined) {
+          prixChoisi = test.prixPaf
         // Ne pas afficher CoefB si 'paf', ajustez selon votre logique
         }
 
@@ -374,7 +387,7 @@ function GeneratePDFButton({ invoice }) {
       // Ajouter un espace avant le Total B si nécessaire
       if (
         invoice.partenaireId?.typePartenaire === 'ipm' ||
-      invoice.partenaireId?.typePartenaire === 'assurance'
+        invoice.partenaireId?.typePartenaire === 'assurance' || invoice.partenaireId?.typePartenaire === 'sococim' || invoice.partenaireId?.typePartenaire === 'clinique' 
       ) {
         doc.text(`Total B: ${totalCoefB.toFixed(0)}`, 97, currentY) // Ajustez la position Y selon vos besoins
       }
@@ -401,7 +414,9 @@ function GeneratePDFButton({ invoice }) {
       // Vérifie si 'typePartenaire' n'est ni 'ipm' ni 'assurance'
       if (
         invoice.partenaireId?.typePartenaire !== 'ipm' &&
-      invoice.partenaireId?.typePartenaire !== 'assurance'
+      invoice.partenaireId?.typePartenaire !== 'assurance' &&
+      invoice.partenaireId?.typePartenaire !== 'sococim' &&
+      invoice.partenaireId?.typePartenaire !== 'clinique'
       ) {
       // currentY += 2 // Ajuster selon vos besoins
         doc.text(
@@ -443,7 +458,7 @@ function GeneratePDFButton({ invoice }) {
       // Vérifie si 'typePartenaire' est 'ipm' ou 'assurance'
       if (
         invoice.partenaireId?.typePartenaire === 'ipm' ||
-      invoice.partenaireId?.typePartenaire === 'assurance'
+      invoice.partenaireId?.typePartenaire === 'assurance' || invoice.partenaireId?.typePartenaire === 'sococim' || invoice.partenaireId?.typePartenaire === 'clinique' 
       ) {
       // Coordonnées initiales
         let startX = 25 // Position de départ X
@@ -538,12 +553,15 @@ function GeneratePDFButton({ invoice }) {
         // Ajustement de currentY pour continuer le document après cette ligne
         currentY = startY + cellHeight
       }
-      currentY += 5
+      currentY += 10
       // doc.text(
       //   `Facture ${invoice.statusPayement}`,
       //   152,
       //   currentY
       // )
+
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'bold')
       const text = invoice.statusPayement === 'Reliquat' ? `Facture sous ${invoice.statusPayement}` : `Facture ${invoice.statusPayement}`
 
 
@@ -560,11 +578,25 @@ function GeneratePDFButton({ invoice }) {
       doc.setLineWidth(0.5) // Épaisseur de la bordure
       doc.rect(152 - padding, currentY - textHeight - padding, textWidth + 2 * padding, textHeight + 2 * padding)
 
-      doc.text(
-        `Reliquat: ${invoice?.reliquat.toFixed(0)} `,
-        122,
-        currentY
-      )
+      // Afficher le reliquat si l'état de la facture est "Reliquat"
+if (invoice.statusPayement === 'Reliquat') {
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(8)
+  currentY += textHeight + 10; // Ajuster la position Y pour le reliquat
+  doc.text(
+    `Reliquat: ${invoice?.reliquat.toFixed(0)} CFA`,
+    152,
+    currentY
+  )
+
+  currentY += 5
+
+  doc.text(
+    `Acompte: ${invoice?.avance.toFixed(0)} CFA`,
+    152,
+    currentY
+  )
+}
 
       // Dernière ligne verte
       if (currentY > 250) {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState , useEffect} from 'react'
 import PropTypes from 'prop-types'
 
 import LogoText from '../../images/bioramlogo.png'
@@ -16,6 +16,7 @@ const SignUp = ({ onUser }) => {
     age: '',
     userType: '',
     adresse: '',
+    partenaireId: '', // Ajouter partenaireId
   })
   const {
     nom,
@@ -29,6 +30,7 @@ const SignUp = ({ onUser }) => {
     adresse,
     age,
     sexe,
+    partenaireId, // Ajouter partenaireId
   } = formData
   // const [passwordError, setPasswordError] = useState(false)
   // const [passwordLengthError, setPasswordLengthError] = useState(false)
@@ -37,12 +39,31 @@ const SignUp = ({ onUser }) => {
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
   const [toastType, setToastType] = useState('')
+  const [partenaires, setPartenaires] = useState([]) // État pour les partenaires
 
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
 
   // useEffect(() => {
   //   setPasswordError(password !== confirmPassword && confirmPassword.length > 0)
   // }, [password, confirmPassword])
+
+  useEffect(() => {
+    // Charger les partenaires
+    const fetchPartenaires = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/api/partenaire`)
+        const data = await response.json()
+        if (response.ok) {
+          setPartenaires(data.data)
+        } else {
+          console.error(data.message)
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération des partenaires:', error)
+      }
+    }
+    fetchPartenaires()
+  }, [apiUrl])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -94,6 +115,7 @@ const SignUp = ({ onUser }) => {
           userType,
           adresse,
           sexe,
+          partenaireId: userType === 'partenaire' ? partenaireId : undefined, // Inclure partenaireId si userType est partenaire
         }),
       })
 
@@ -118,6 +140,7 @@ const SignUp = ({ onUser }) => {
           adresse: '',
           age: '',
           sexe: '',
+          partenaireId: '',
         })
         onUser()
       }
@@ -314,8 +337,36 @@ const SignUp = ({ onUser }) => {
                     <option value="preleveur">Preleveur</option>
                     <option value="accueil">Accueil</option>
                     <option value="superadmin">Superadmin</option>
+                    <option value="partenaire">Partenaire</option>
                   </select>
                 </div>
+
+                {/* Sélection du Partenaire si le type d'utilisateur est partenaire */}
+                {userType === 'partenaire' && (
+                  <div className="mb-4">
+                    <label
+                      htmlFor="partenaireId"
+                      className="mb-2.5 block font-medium base-content"
+                    >
+                      Partenaire
+                    </label>
+                    <select
+                      id="partenaireId"
+                      name="partenaireId"
+                      value={partenaireId}
+                      onChange={handleChange}
+                      required
+                      className="input"
+                    >
+                      <option value="">Sélectionnez un partenaire</option>
+                      {partenaires.map((partenaire) => (
+                        <option key={partenaire._id} value={partenaire._id}>
+                          {partenaire.nom}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 {/* Sélection du Type de sexe */}
                 <div className="mb-4">

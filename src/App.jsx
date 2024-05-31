@@ -5,11 +5,13 @@ import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
 import TopBar from './components/TopBar'
 import Sidebar from './components/Sidebar'
 import SidebarPatient from './components/SidebarPatient'
+import SidebarPartenaire from './components/SidebarPartenaire'
 import SignIn from './components/Auth/SignIn'
 import SignUp from './components/Auth/SignUp'
 import HomeContent from './components/index'
 import Analyse from './pages/Analyse'
 import PatientHome from './pages/PatientHome'
+import PartenaireClinique from './pages/partenaireClinique'
 import Ettiquette from './pages/Ettiquette'
 import Devis from './pages/Devis'
 import Formulaire from './pages/Formulaire'
@@ -63,6 +65,29 @@ function PatientDashboardLayout() {
   )
 }
 
+
+function PartenaireDashboardLayout() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen)
+  return (
+    <div className="flex h-screen bg-blue-100">
+      {' '}
+      {/* Changez le style comme vous le souhaitez */}
+      <SidebarPartenaire toggleSidebar={toggleSidebar} />{' '}
+      {/* Supposons que vous voulez garder la sidebar, sinon créez une nouvelle */}
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <TopBar />{' '}
+        {/* Vous pourriez vouloir personnaliser cette barre pour les patients */}
+        <div className="flex-1 overflow-y-auto">
+          <Outlet />{' '}
+          {/* Ici, les composants enfants spécifiques aux patients seront rendus */}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function App() {
   useEffect(() => themeChange(false), [])
 
@@ -92,6 +117,16 @@ function App() {
 
         <Route path="/patient-dash" element={<PatientDashboardLayout />}>
           <Route index element={<PatientHome />} />{' '}
+          {/* Page d'accueil des patients */}
+          {/* <Route path="profile" element={<PatientProfile />} />{' '} */}
+          {/* Profil du patient */}
+          <Route path="parametre" element={<Parametre />} />{' '}
+          {/* Rendez-vous du patient */}
+          {/* Ajoutez d'autres sous-routes spécifiques aux patients ici */}
+        </Route>
+
+        <Route path="/partenaire-dash" element={<PartenaireDashboardLayout />}>
+          <Route index element={<PartenaireClinique />} />{' '}
           {/* Page d'accueil des patients */}
           {/* <Route path="profile" element={<PatientProfile />} />{' '} */}
           {/* Profil du patient */}

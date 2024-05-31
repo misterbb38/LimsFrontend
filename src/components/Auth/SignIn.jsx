@@ -37,6 +37,8 @@ const SignIn = () => {
       if (data.userType === 'patient') {
         // Si l'abonnement expire dans 7 jours ou moins, rediriger vers /key
         navigate('/patient-dash')
+      }else if(data.userType === 'partenaire'){
+        navigate('/partenaire-dash')
       } else {
         // Pour les autres types d'utilisateurs, rediriger vers /KeyGen
         navigate('/dash')

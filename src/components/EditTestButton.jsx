@@ -85,22 +85,7 @@ function EditTestButton({ testId, ontestUpdated }) {
   const validateForm = () => {
     let errors = {}
 
-    if (!formData.prixAssurance.toString().trim())
-      errors.prix = 'Le prix  est obligatoire.'
-    if (!formData.prixIpm.toString().trim())
-      errors.prix = 'Le prix  est obligatoire.'
-    if (!formData.prixPaf.toString().trim())
-      errors.prix = 'Le prix  est obligatoire.'
-    if (!formData.prixSococim.toString().trim())
-      errors.prix = 'Le prix  est obligatoire.'
-    if (!formData.prixClinique.toString().trim())
-      errors.prix = 'Le prix  est obligatoire.'
-    if (!formData.coeficiantB.toString().trim())
-      errors.prix = 'Le coeficiant B  est obligatoire.'
-    if (!formData.nom.trim()) errors.nom = 'La nom est obligatoire.'
-    if (!formData.description.trim())
-      errors.description = 'La description est obligatoire.'
-    return errors
+    
   }
 
   const handleSubmit = async (e) => {
@@ -108,7 +93,7 @@ function EditTestButton({ testId, ontestUpdated }) {
     const errors = validateForm()
     setFormErrors(errors)
 
-    if (Object.keys(errors).length === 0) {
+   
       try {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'))
         const token = userInfo?.token
@@ -132,7 +117,7 @@ function EditTestButton({ testId, ontestUpdated }) {
       } catch (error) {
         console.error('Erreur lors de la mise à jour du test:', error)
       }
-    }
+    
   }
 
   const renderError = (fieldref) => {
@@ -162,8 +147,9 @@ function EditTestButton({ testId, ontestUpdated }) {
                   name="nom"
                   value={formData.nom}
                   onChange={handleChange}
+                  required
                 />
-                {renderError('status')}
+                
               </div>
               <div className="form-control">
                 <label className="label">Prix assurance</label>
@@ -173,8 +159,9 @@ function EditTestButton({ testId, ontestUpdated }) {
                   name="prixAssurance"
                   value={formData.prixAssurance}
                   onChange={handleChange}
+                  required
                 />
-                {renderError('prixAssurance')}
+               
               </div>
               <div className="form-control">
                 <label className="label">Prix IPM</label>
@@ -184,8 +171,9 @@ function EditTestButton({ testId, ontestUpdated }) {
                   name="prixIpm"
                   value={formData.prixIpm}
                   onChange={handleChange}
+                  required
                 />
-                {renderError('prixIpm')}
+                
               </div>
               <div className="form-control">
                 <label className="label">Prix Sococim</label>
@@ -195,8 +183,9 @@ function EditTestButton({ testId, ontestUpdated }) {
                   name="prixSococim"
                   value={formData.prixSococim}
                   onChange={handleChange}
+                  required
                 />
-                {renderError('prixSococim')}
+                
               </div>
               <div className="form-control">
                 <label className="label">Prix Clinique</label>
@@ -206,8 +195,9 @@ function EditTestButton({ testId, ontestUpdated }) {
                   name="prixClinique"
                   value={formData.prixClinique}
                   onChange={handleChange}
+                  required
                 />
-                {renderError('prixClinique')}
+                
               </div>
               <div className="form-control">
                 <label className="label">Prix Paf</label>
@@ -217,8 +207,9 @@ function EditTestButton({ testId, ontestUpdated }) {
                   name="prixPaf"
                   value={formData.prixPaf}
                   onChange={handleChange}
+                  required
                 />
-                {renderError('prixPaf')}
+                
               </div>
               <div className="form-control">
                 <label className="label">Coeficiant B</label>
@@ -228,8 +219,9 @@ function EditTestButton({ testId, ontestUpdated }) {
                   name="coeficiantB"
                   value={formData.coeficiantB}
                   onChange={handleChange}
+                  required
                 />
-                {renderError('coeficiantB')}
+                
               </div>
               <div className="form-control">
                 <label className="label">Description</label>
@@ -240,7 +232,7 @@ function EditTestButton({ testId, ontestUpdated }) {
                   value={formData.description}
                   onChange={handleChange}
                 />
-                {renderError('description')}
+                
               </div>
               {/* Elements de formulaire pour saisir et modifier ces nouvelles valeurs */}
               <div className="form-control">
