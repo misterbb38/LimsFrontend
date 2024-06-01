@@ -91,53 +91,7 @@ function Facture() {
     }
   }
 
-  // const handleFilter = (filters) => {
-  //   setLoading(true)
 
-  //   const filteredFactures = allFactures.filter((facture) => {
-  //     // Filtrage par nom du client
-  //     if (
-  //       filters.name &&
-  //       !facture.userId.prenom
-  //         .toLowerCase()
-  //         .includes(filters.name.toLowerCase())
-  //     ) {
-  //       return false
-  //     }
-
-  //     // Filtrage par date
-  //     if (
-  //       filters.date &&
-  //       new Date(facture.createdAt).toLocaleDateString() !==
-  //         new Date(filters.date).toLocaleDateString()
-  //     ) {
-  //       return false
-  //     }
-
-  //     // Filtrage par identifiant
-  //     // if (
-  //     //   filters.identifiant &&
-  //     //   !facture.identifiant.includes(filters.identifiant)
-  //     // ) {
-  //     //   return false
-  //     // }
-  //     // Filtrage par statut
-  //     // Filtrage par statut
-  //     if (
-  //       filters.status &&
-  //       facture.historiques[facture.historiques.length - 1].status !==
-  //         filters.status
-  //     ) {
-  //       return false
-  //     }
-
-  //     return true
-  //   })
-
-  //   setDisplayedFactures(filteredFactures)
-  //   setCurrentPage(1)
-  //   setLoading(false)
-  // }
   const handleFilter = (filters) => {
     setLoading(true)
 
@@ -236,7 +190,7 @@ function Facture() {
 
   // Vérifier si le type d'utilisateur est autorisé
   if (
-    !['superadmin', 'medecin', 'technicien', 'preleveur', 'docteur'].includes(
+    !['superadmin', 'medecin', 'technicien', 'preleveur', 'docteur', 'acceuil'].includes(
       userInfo?.userType
     )
   ) {
@@ -276,7 +230,7 @@ function Facture() {
       {/* You can open the modal using document.getElementById('ID').showModal() method */}
       <button
         className="btn"
-        onClick={() => document.getElementById('my_modal_3').showModal()}
+        onClick={() => document.getElementById('my_modal_3').showModal() }
       >
         Ajouter une Analyse
       </button>
@@ -289,7 +243,10 @@ function Facture() {
             </button>
           </form>
 
-          <CreateAnalyseForm onAnalyseChange={refreshFactures} />
+          <CreateAnalyseForm onAnalyseChange={() => {
+        refreshFactures();
+        document.getElementById('my_modal_3').close(); // Ferme le modal
+      }} />
         </div>
       </dialog>
       <div className="divider"></div>

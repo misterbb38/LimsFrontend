@@ -211,7 +211,7 @@ function GeneratePDFButton({ invoice }) {
       doc.text(`Tel: ${invoice.userId.telephone}`, 135, currentY + 22)
 
       // En-tête de la facture
-      doc.setFontSize(8)
+      doc.setFontSize(9)
       doc.setFont('helvetica') // Définissez la police en Helvetica et le style en gras
       // doc.text(`${user.nomEntreprise}`, 30, currentY)
       // doc.text(`Informations generale`, 30, currentY)
@@ -418,13 +418,16 @@ function GeneratePDFButton({ invoice }) {
       invoice.partenaireId?.typePartenaire !== 'sococim' &&
       invoice.partenaireId?.typePartenaire !== 'clinique'
       ) {
+      doc.setFont('helvetica', 'bold')
       // currentY += 2 // Ajuster selon vos besoins
         doc.text(
-          `MONTANT TOTAL HT: ${invoice.montantRecus.toFixed(0)} `,
+          `MONTANT TOTAL HT: ${invoice.prixPatient.toFixed(0)} `,
           122,
           currentY
         )
       }
+
+      doc.setFont('helvetica', 'normal')
 
       // Ajouter un espace avant la réduction si nécessaire
       if (invoice.reduction > 0) {
@@ -477,7 +480,7 @@ function GeneratePDFButton({ invoice }) {
         // Valeurs pour la troisième ligne
         let values = [
           'Total en Cfa (Xof)',
-          `${invoice.montantRecus.toFixed(0)} `,
+          `${invoice.prixTotal.toFixed(0)} `,
           `${invoice.prixPartenaire.toFixed(0)} `,
           `${invoice.prixPatient.toFixed(0)} `,
         ]
@@ -553,12 +556,29 @@ function GeneratePDFButton({ invoice }) {
         // Ajustement de currentY pour continuer le document après cette ligne
         currentY = startY + cellHeight
       }
+
+  
+      // Afficher le reliquat si l'état de la facture est "Reliquat"
+if (invoice.statusPayement === 'Reliquat') {
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9)
+  currentY +=  5; // Ajuster la position Y pour le reliquat
+  doc.text(
+    `Reliquat: ${invoice?.reliquat.toFixed(0)} CFA`,
+    138,
+    currentY
+  )
+
+  currentY += 5
+
+  doc.text(
+    `Acompte: ${invoice?.avance.toFixed(0)} CFA`,
+    138,
+    currentY
+  )
+}
       currentY += 10
-      // doc.text(
-      //   `Facture ${invoice.statusPayement}`,
-      //   152,
-      //   currentY
-      // )
+      
 
       doc.setFontSize(10)
       doc.setFont('helvetica', 'bold')
@@ -567,7 +587,7 @@ function GeneratePDFButton({ invoice }) {
 
 
       // Dessiner le texte
-      doc.text(text, 152, currentY)
+      doc.text(text, 135, currentY)
 
       // Calculer la largeur et la hauteur du texte pour dessiner un rectangle autour
       const textWidth = doc.getStringUnitWidth(text) * doc.internal.getFontSize() / doc.internal.scaleFactor
@@ -576,27 +596,9 @@ function GeneratePDFButton({ invoice }) {
       // Ajouter un rectangle autour du texte (avec une bordure plus épaisse)
       const padding = 2 // Ajouter un peu d'espace entre le texte et le rectangle
       doc.setLineWidth(0.5) // Épaisseur de la bordure
-      doc.rect(152 - padding, currentY - textHeight - padding, textWidth + 2 * padding, textHeight + 2 * padding)
+      doc.rect(135 - padding, currentY - textHeight - padding, textWidth + 2 * padding, textHeight + 2 * padding)
 
-      // Afficher le reliquat si l'état de la facture est "Reliquat"
-if (invoice.statusPayement === 'Reliquat') {
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(8)
-  currentY += textHeight + 10; // Ajuster la position Y pour le reliquat
-  doc.text(
-    `Reliquat: ${invoice?.reliquat.toFixed(0)} CFA`,
-    152,
-    currentY
-  )
-
-  currentY += 5
-
-  doc.text(
-    `Acompte: ${invoice?.avance.toFixed(0)} CFA`,
-    152,
-    currentY
-  )
-}
+      
 
       // Dernière ligne verte
       if (currentY > 250) {

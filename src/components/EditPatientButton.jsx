@@ -37,7 +37,15 @@ function EditPatientButton({ userId, onuserUpdated }) {
       })
       const data = await response.json()
       if (data.success) {
-        setFormData(data.data)
+        setFormData({
+          telephone: data.data.telephone,
+          prenom: data.data.prenom,
+          nom: data.data.nom,
+          adresse: data.data.adresse,
+          password: '', // Ne pas remplir pour des raisons de sécurité
+          userType: data.data.userType,
+          sexe: data.data.sexe, // Assurez-vous que cette ligne est présente
+        })
       }
     } catch (error) {
       console.error('Erreur lors de la récupération du user:', error)
@@ -184,15 +192,15 @@ function EditPatientButton({ userId, onuserUpdated }) {
                   htmlFor="userType"
                   className="mb-2.5 block font-medium base-content"
                 >
-                  Type d'Utilisateur
+                  Sexe
                 </label>
                 <select
                   id="sexe"
                   name="sexe"
                   value={formData.sexe}
                   onChange={handleChange}
-                  required
-                  className="input"
+                  
+                  className="input input-bordered"
                 >
                   <option value="">Sélectionnez le sexe</option>
                   <option value="homme">homme</option>
@@ -214,7 +222,7 @@ function EditPatientButton({ userId, onuserUpdated }) {
                   value={formData.userType}
                   onChange={handleChange}
                   required
-                  className="input"
+                  className="input input-bordered"
                 >
                   <option value="">Sélectionnez un type</option>
                   <option value="patient">Patient</option>
@@ -223,6 +231,7 @@ function EditPatientButton({ userId, onuserUpdated }) {
                   <option value="preleveur">Preleveur</option>
                   <option value="accueil">Accueil</option>
                   <option value="superadmin">Superadmin</option>
+                  <option value="partenaire">Partenaire</option>
                 </select>
               </div>
 

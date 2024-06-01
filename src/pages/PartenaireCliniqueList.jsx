@@ -19,7 +19,7 @@ function Personnel() {
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'))
       const token = userInfo?.token
-      const response = await fetch(`${apiUrl}/api/user/personnel`, {
+      const response = await fetch(`${apiUrl}/api/user/partenaireclinique`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -129,14 +129,14 @@ function Personnel() {
   return (
     <div className="base-content bg-base-100 mx-auto p-4 min-h-[800px]">
       <Chatbot />
-      <NavigationBreadcrumb pageName="Personnel" />
+      <NavigationBreadcrumb pageName="Partenaire" />
       {/* You can open the modal using document.getElementById('ID').showModal() method */}
 
       <button
         className="btn"
         onClick={() => document.getElementById('my_modal_4').showModal()}
       >
-        Ajouter un nouveau personnel
+        Ajouter un compte Partenaire/clinique
       </button>
       <br></br>
 
@@ -171,7 +171,7 @@ function Personnel() {
               <tr>
                 <th className="font-bold text-lg text-base-content">Nom</th>
                 <th className="font-bold text-lg text-base-content">Email</th>
-                <th className="font-bold text-lg text-base-content">Profile</th>
+               
                 <th className="font-bold text-lg text-base-content">
                   Téléphone
                 </th>
@@ -182,9 +182,9 @@ function Personnel() {
             <tbody>
               {personnel.map((patient) => (
                 <tr key={patient._id}>
-                  <td>{patient.nom}</td>
+                 <td>{patient.partenaireId.nom}</td>
                   <td>{patient.email}</td>
-                  <td>{patient.userType}</td>
+                 
                   <td>{patient.telephone}</td>
                   <td>{patient.nip}</td>
                   <td>

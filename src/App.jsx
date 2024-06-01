@@ -6,12 +6,13 @@ import TopBar from './components/TopBar'
 import Sidebar from './components/Sidebar'
 import SidebarPatient from './components/SidebarPatient'
 import SidebarPartenaire from './components/SidebarPartenaire'
+import PartenaireCliniqueList from './pages/PartenaireCliniqueList'
 import SignIn from './components/Auth/SignIn'
 import SignUp from './components/Auth/SignUp'
 import HomeContent from './components/index'
 import Analyse from './pages/Analyse'
 import PatientHome from './pages/PatientHome'
-import PartenaireClinique from './pages/partenaireClinique'
+import PartenaireClinique from './pages/partenaireCliniqueHome'
 import Ettiquette from './pages/Ettiquette'
 import Devis from './pages/Devis'
 import Formulaire from './pages/Formulaire'
@@ -106,6 +107,7 @@ function App() {
           <Route path="Devis" element={<Devis />} />
           <Route path="patient" element={<PatientList />} />
           <Route path="personnel" element={<Personnel />} />
+          <Route path="partenaireclinique" element={<PartenaireCliniqueList />} />
           <Route path="test" element={<TestList />} />
           <Route path="partenaire" element={<PartenaireList />} />
           <Route path="ettiquette" element={<Ettiquette />} />

@@ -11,6 +11,7 @@ import {
   faBook, // Icone pour Instruction
   faCog,
   faTag, // Icone pour Paramètre
+  faFileMedical, faBuilding
 } from '@fortawesome/free-solid-svg-icons'
 import logo from '../images/bioramlogo.png'
 
@@ -25,11 +26,13 @@ function Sidebar() {
       route: '/dash/Analyse',
       icon: faFileInvoiceDollar,
     },
+    { id: 3, label: 'Parametre', route: '/dash/test', icon: faTag },
     // { id: 3, label: 'Devis', route: '/dash/Devis', icon: faFileAlt },
     { id: 4, label: 'Patient', route: '/dash/patient', icon: faUsers },
     { id: 5, label: 'Personnel', route: '/dash/personnel', icon: faUsers },
-    { id: 6, label: 'Parametre', route: '/dash/test', icon: faTag },
-    { id: 7, label: 'Partenaire', route: '/dash/partenaire', icon: faTag },
+   { id: 6, label: 'Partenaire', route: '/dash/partenaireclinique', icon: faBuilding },
+    { id: 7, label: 'Assurance/IPM', route: '/dash/partenaire', icon: faFileMedical},
+    
     {
       id: 8,
       label: 'Ettiquette',
@@ -38,7 +41,7 @@ function Sidebar() {
     },
     // { id: 8, label: 'Instructions', route: '/dash/instruction', icon: faBook },
     // { id: 9, label: 'Message', route: '/dash/notification', icon: faEnvelope },
-    { id: 10, label: 'Profile', route: '/dash/parametre', icon: faCog },
+    { id: 9, label: 'Profile', route: '/dash/parametre', icon: faCog },
   ]
 
   const handleMenuItemClick = (id) => {
@@ -59,7 +62,7 @@ function Sidebar() {
             {menuItems.map((menuItem) => (
               <li
                 key={menuItem.id}
-                className={`p-2 mt-4 cursor-pointer flex justify-center items-center text-center font-bold text-lg ${selectedMenuItem === menuItem.id ? 'bg-primary text-white' : ''}`}
+                className={`p-1 mt-2 cursor-pointer flex justify-center items-center text-center font-bold text-lg ${selectedMenuItem === menuItem.id ? 'bg-primary text-white' : ''}`}
                 onClick={() => handleMenuItemClick(menuItem.id)}
               >
                 <Link

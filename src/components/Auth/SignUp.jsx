@@ -1,4 +1,4 @@
-import { useState , useEffect} from 'react'
+import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 import LogoText from '../../images/bioramlogo.png'
@@ -42,6 +42,8 @@ const SignUp = ({ onUser }) => {
   const [partenaires, setPartenaires] = useState([]) // État pour les partenaires
 
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
+  const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {}
+  const usertype = userInfo?.userType
 
   // useEffect(() => {
   //   setPasswordError(password !== confirmPassword && confirmPassword.length > 0)
@@ -183,42 +185,45 @@ const SignUp = ({ onUser }) => {
                 {/* Champs du formulaire */}
                 {/* Nom */}
                 <div className="mb-4">
-                  <label
-                    htmlFor="nom"
-                    className="mb-2.5 block font-medium base-content"
-                  >
-                    Nom
-                  </label>
-                  <input
-                    id="nom"
-                    name="nom"
-                    type="text"
-                    value={nom}
-                    onChange={handleChange}
-                    placeholder="Entrez votre nom"
-                    required
-                    className="input"
-                  />
-                </div>
+                  <div className="flex space-x-4">
+                    <div>
+                      <label
+                        htmlFor="nom"
+                        className="mb-2.5 block font-medium base-content"
+                      >
+                        Nom
+                      </label>
+                      <input
+                        id="nom"
+                        name="nom"
+                        type="text"
+                        value={nom}
+                        onChange={handleChange}
+                        placeholder="Entrez votre nom"
+                        required
+                        className="input input-bordered input-primary w-full max-w-xs"
+                      />
+                    </div>
 
-                {/* Prénom */}
-                <div className="mb-4">
-                  <label
-                    htmlFor="prenom"
-                    className="mb-2.5 block font-medium base-content"
-                  >
-                    Prénom
-                  </label>
-                  <input
-                    id="prenom"
-                    name="prenom"
-                    type="text"
-                    value={prenom}
-                    onChange={handleChange}
-                    placeholder="Entrez votre prénom"
-                    required
-                    className="input"
-                  />
+                    <div>
+                      <label
+                        htmlFor="prenom"
+                        className="mb-2.5 block font-medium base-content"
+                      >
+                        Prénom
+                      </label>
+                      <input
+                        id="prenom"
+                        name="prenom"
+                        type="text"
+                        value={prenom}
+                        onChange={handleChange}
+                        placeholder="Entrez votre prénom"
+                        required
+                        className="input input-bordered input-primary w-full max-w-xs"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* telephone */}
@@ -237,7 +242,7 @@ const SignUp = ({ onUser }) => {
                     onChange={handleChange}
                     placeholder="Entrez votre telephone"
                     required
-                    className="input"
+                    className="input input-bordered input-primary w-full max-w-xs"
                   />
                 </div>
                 {/* Adresse */}
@@ -256,7 +261,7 @@ const SignUp = ({ onUser }) => {
                     onChange={handleChange}
                     placeholder="Entrez votre adresse"
                     required
-                    className="input"
+                    className="input input-bordered input-primary w-full max-w-xs"
                   />
                 </div>
 
@@ -274,7 +279,7 @@ const SignUp = ({ onUser }) => {
                     type="date"
                     value={dateNaissance}
                     onChange={handleChange}
-                    className="input"
+                    className="input input-bordered input-primary w-full max-w-xs"
                   />
                 </div>
 
@@ -291,7 +296,7 @@ const SignUp = ({ onUser }) => {
                     type="number"
                     value={age}
                     onChange={handleChange}
-                    className="input"
+                    className="input input-bordered input-primary w-full max-w-xs"
                   />
                 </div>
 
@@ -310,12 +315,12 @@ const SignUp = ({ onUser }) => {
                     value={email}
                     onChange={handleChange}
                     placeholder="Entrez votre email"
-                    className="input"
+                    className="input input-bordered input-primary w-full max-w-xs"
                   />
                 </div>
 
                 {/* Sélection du Type d'Utilisateur */}
-                <div className="mb-4">
+                {/* <div className="mb-4">
                   <label
                     htmlFor="userType"
                     className="mb-2.5 block font-medium base-content"
@@ -328,7 +333,7 @@ const SignUp = ({ onUser }) => {
                     value={userType}
                     onChange={handleChange}
                     required
-                    className="input"
+                    className="select select-primary w-full max-w-xs"
                   >
                     <option value="">Sélectionnez un type</option>
                     <option value="patient">Patient</option>
@@ -339,7 +344,35 @@ const SignUp = ({ onUser }) => {
                     <option value="superadmin">Superadmin</option>
                     <option value="partenaire">Partenaire</option>
                   </select>
-                </div>
+                </div> */}
+
+                {usertype !== 'accueil' && (
+                  <div className="mb-4">
+                    <label
+                      htmlFor="userType"
+                      className="mb-2.5 block font-medium base-content"
+                    >
+                      Type d'Utilisateur
+                    </label>
+                    <select
+                      id="userType"
+                      name="userType"
+                      value={userType}
+                      onChange={handleChange}
+                      required
+                      className="select select-primary w-full max-w-xs"
+                    >
+                      <option value="">Sélectionnez un type</option>
+                      <option value="patient">Patient</option>
+                      <option value="medecin">Medecin</option>
+                      <option value="technicien">Technicien</option>
+                      <option value="preleveur">Preleveur</option>
+                      <option value="accueil">Accueil</option>
+                      <option value="superadmin">Superadmin</option>
+                      <option value="partenaire">Partenaire</option>
+                    </select>
+                  </div>
+                )}
 
                 {/* Sélection du Partenaire si le type d'utilisateur est partenaire */}
                 {userType === 'partenaire' && (
@@ -356,7 +389,7 @@ const SignUp = ({ onUser }) => {
                       value={partenaireId}
                       onChange={handleChange}
                       required
-                      className="input"
+                      className="select select-primary w-full max-w-xs"
                     >
                       <option value="">Sélectionnez un partenaire</option>
                       {partenaires.map((partenaire) => (
@@ -369,81 +402,33 @@ const SignUp = ({ onUser }) => {
                 )}
 
                 {/* Sélection du Type de sexe */}
-                <div className="mb-4">
-                  <label
-                    htmlFor="userType"
-                    className="mb-2.5 block font-medium base-content"
-                  >
-                    Sexe
-                  </label>
-                  <select
-                    id="sexe"
-                    name="sexe"
-                    value={sexe}
-                    onChange={handleChange}
-                    required
-                    className="input"
-                  >
-                    <option value="">Sélectionnez</option>
-                    <option value="homme">homme</option>
-                    <option value="femme">femme</option>
-                  </select>
-                </div>
-
-                {/* Mot de passe
-                <div className="mb-4">
-                  <label
-                    htmlFor="password"
-                    className="mb-2.5 block font-medium base-content"
-                  >
-                    Mot de passe
-                  </label>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    value={password}
-                    onChange={handleChange}
-                    placeholder="Entrez votre mot de passe"
-                    required
-                    className="input"
-                  />
-                  {passwordLengthError && (
-                    <span className="text-red-500 text-xs">
-                      Le mot de passe doit contenir au moins 8 caractères.
-                    </span>
-                  )}
-                </div>
-
-                Confirmation du mot de passe
-                <div className="mb-6">
-                  <label
-                    htmlFor="confirmPassword"
-                    className="mb-2.5 block font-medium base-content"
-                  >
-                    Confirmez votre mot de passe
-                  </label>
-                  <input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={handleChange}
-                    placeholder="Confirmez votre mot de passe"
-                    required
-                    className="input"
-                  />
-                  {passwordError && (
-                    <span className="text-red-500 text-xs">
-                      Les mots de passe ne correspondent pas.
-                    </span>
-                  )}
-                </div> */}
+                {userType !== 'partenaire' && (
+                  <div className="mb-4">
+                    <label
+                      htmlFor="sexe"
+                      className="mb-2.5 block font-medium base-content"
+                    >
+                      Sexe
+                    </label>
+                    <select
+                      id="sexe"
+                      name="sexe"
+                      value={sexe}
+                      onChange={handleChange}
+                      required
+                      className="select select-primary w-full max-w-xs"
+                    >
+                      <option value="">Sélectionnez</option>
+                      <option value="homme">homme</option>
+                      <option value="femme">femme</option>
+                    </select>
+                  </div>
+                )}
 
                 <button
                   type="submit"
                   disabled={loading || password !== confirmPassword}
-                  className="btn"
+                  className="btn btn-primary"
                 >
                   {loading ? 'Chargement...' : "S'inscrire"}
                 </button>

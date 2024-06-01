@@ -210,6 +210,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
         onAnalyseChange()
 
         fetchAvailableTests()
+        
         resetForm() // Réinitialiser le formulaire
       } else {
         setToastMessage(data.message || "Échec de l'ajout de l'analyse")
@@ -260,6 +261,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
               id="userSelect"
               onChange={handleUserChange}
               value={selectedUserId}
+              required
             >
               <option value="">Sélectionner un patient</option>
               {filteredPatients.map((user) => (
@@ -287,6 +289,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
               className="select select-primary w-full max-w-xs"
               onChange={(e) => handleTestSelection(e.target.value)}
               defaultValue=""
+              required
             >
               <option disabled value="">
                 Choisir des paramettres
