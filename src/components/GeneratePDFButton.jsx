@@ -255,7 +255,7 @@ function GeneratePDFButton({ invoice }) {
       // Vérifie si 'typePartenaire' est 'ipm' ou 'assurance'
       if (
         invoice.partenaireId?.typePartenaire === 'ipm' ||
-        invoice.partenaireId?.typePartenaire === 'assurance' || invoice.partenaireId?.typePartenaire === 'sococim' || invoice.partenaireId?.typePartenaire === 'clinique' 
+        invoice.partenaireId?.typePartenaire === 'assurance' || invoice.partenaireId?.typePartenaire === 'sococim'
       ) {
         doc.setTextColor(255, 255, 255)
         doc.text('Analyse', 42, currentY + 4)
@@ -283,7 +283,7 @@ function GeneratePDFButton({ invoice }) {
         // Votre logique existante ici pour afficher les détails de chaque test...
 
         // Additionner les coeficiantB si le type de partenaire est "ipm" ou "assurance"....
-        if (['ipm', 'assurance', 'sococim', 'clinique'].includes(invoice.partenaireId?.typePartenaire)) {
+        if (['ipm', 'assurance', 'sococim'].includes(invoice.partenaireId?.typePartenaire)) {
           totalCoefB += test.coeficiantB || 0 // Ajouter le coeficiantB à totalCoefB, en assumant 0 si non spécifié
         }
 
@@ -387,7 +387,7 @@ function GeneratePDFButton({ invoice }) {
       // Ajouter un espace avant le Total B si nécessaire
       if (
         invoice.partenaireId?.typePartenaire === 'ipm' ||
-        invoice.partenaireId?.typePartenaire === 'assurance' || invoice.partenaireId?.typePartenaire === 'sococim' || invoice.partenaireId?.typePartenaire === 'clinique' 
+        invoice.partenaireId?.typePartenaire === 'assurance' || invoice.partenaireId?.typePartenaire === 'sococim'
       ) {
         doc.text(`Total B: ${totalCoefB.toFixed(0)}`, 97, currentY) // Ajustez la position Y selon vos besoins
       }
@@ -415,8 +415,8 @@ function GeneratePDFButton({ invoice }) {
       if (
         invoice.partenaireId?.typePartenaire !== 'ipm' &&
       invoice.partenaireId?.typePartenaire !== 'assurance' &&
-      invoice.partenaireId?.typePartenaire !== 'sococim' &&
-      invoice.partenaireId?.typePartenaire !== 'clinique'
+      invoice.partenaireId?.typePartenaire !== 'sococim'
+     
       ) {
       doc.setFont('helvetica', 'bold')
       // currentY += 2 // Ajuster selon vos besoins
@@ -461,7 +461,7 @@ function GeneratePDFButton({ invoice }) {
       // Vérifie si 'typePartenaire' est 'ipm' ou 'assurance'
       if (
         invoice.partenaireId?.typePartenaire === 'ipm' ||
-      invoice.partenaireId?.typePartenaire === 'assurance' || invoice.partenaireId?.typePartenaire === 'sococim' || invoice.partenaireId?.typePartenaire === 'clinique' 
+      invoice.partenaireId?.typePartenaire === 'assurance' || invoice.partenaireId?.typePartenaire === 'sococim'
       ) {
       // Coordonnées initiales
         let startX = 25 // Position de départ X

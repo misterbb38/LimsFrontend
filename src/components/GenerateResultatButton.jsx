@@ -1246,6 +1246,8 @@ function GenerateResultatButton({ invoice }) {
     }
   }
 
+  
+
   return (
     <button className="btn btn-primary" onClick={generatePDF}>
       <FontAwesomeIcon icon={faDownload} />
