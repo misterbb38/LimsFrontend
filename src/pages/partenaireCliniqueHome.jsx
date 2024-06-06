@@ -25,6 +25,7 @@ function PartenaireClinique() {
     'Livré au laboratoire': 'badge badge-accent text-white font-bold', // Cyan ou une couleur spécifique pour "Livré au laboratoire"
     Fait: 'badge badge-success text-white font-bold', // Vert pour "Fait"
     Annulé: 'badge badge-error text-white font-bold', // Rouge pour "Annulé"
+    Validé: 'badge badge-sucess text-white font-bold', // Rouge pour "Validé"
   }
 
   const facturesPerPage = 8
@@ -71,53 +72,7 @@ function PartenaireClinique() {
     }
   }
 
-  // const handleFilter = (filters) => {
-  //   setLoading(true)
-
-  //   const filteredFactures = allFactures.filter((facture) => {
-  //     // Filtrage par nom du client
-  //     if (
-  //       filters.name &&
-  //       !facture.userId.prenom
-  //         .toLowerCase()
-  //         .includes(filters.name.toLowerCase())
-  //     ) {
-  //       return false
-  //     }
-
-  //     // Filtrage par date
-  //     if (
-  //       filters.date &&
-  //       new Date(facture.createdAt).toLocaleDateString() !==
-  //         new Date(filters.date).toLocaleDateString()
-  //     ) {
-  //       return false
-  //     }
-
-  //     // Filtrage par identifiant
-  //     // if (
-  //     //   filters.identifiant &&
-  //     //   !facture.identifiant.includes(filters.identifiant)
-  //     // ) {
-  //     //   return false
-  //     // }
-  //     // Filtrage par statut
-  //     // Filtrage par statut
-  //     if (
-  //       filters.status &&
-  //       facture.historiques[facture.historiques.length - 1].status !==
-  //         filters.status
-  //     ) {
-  //       return false
-  //     }
-
-  //     return true
-  //   })
-
-  //   setDisplayedFactures(filteredFactures)
-  //   setCurrentPage(1)
-  //   setLoading(false)
-  // }
+ 
   const handleFilter = (filters) => {
     setLoading(true)
 

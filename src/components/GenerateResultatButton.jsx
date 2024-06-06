@@ -1243,7 +1243,8 @@ function GenerateResultatButton({ invoice }) {
 
           // Naviguez vers la nouvelle page avec l'URL du blob en tant qu'état
           //corriger
-      navigate('/pdf-viewer', { state: { pdfBlobUrl: url } })
+      // Ouvrez le PDF dans un nouvel onglet avec l'état
+    window.open(`/pdf-viewer?pdfBlobUrl=${encodeURIComponent(url)}`, '_blank')
 
       // window.open(url, '_blank')
       // Optionnel : libérez l'URL du blob après ouverture

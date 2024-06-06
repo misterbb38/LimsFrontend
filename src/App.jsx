@@ -23,7 +23,7 @@ import PatientList from './pages/patientList'
 import Personnel from './pages/Personnel'
 import TestList from './pages/TestList'
 import PartenaireList from './pages/PartenaireList'
-import Home from './pages/home'
+
 import KeyExpired from './components/KeyExpired'
 import Notifications from './components/Notifications'
 
