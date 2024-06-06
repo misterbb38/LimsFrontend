@@ -5,6 +5,9 @@ import jsPDF from 'jspdf'
 import PropTypes from 'prop-types'
 import logoLeft from '../images/bioramlogo.png'
 import logoRight from '../images/logo2.png'
+import { useNavigate } from 'react-router-dom' // Importez useNavigate
+
+
 
 function GenerateResultatButton({ invoice }) {
   const [user, setUser] = useState({
@@ -17,6 +20,7 @@ function GenerateResultatButton({ invoice }) {
     logo: '',
   })
 
+  const navigate = useNavigate() // Utilisez useNavigate pour la navigation
   // const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
 
   useEffect(() => {
@@ -1236,9 +1240,13 @@ function GenerateResultatButton({ invoice }) {
       // Créez une URL à partir du blob
       const url = URL.createObjectURL(blob)
       // Ouvrez le PDF dans un nouvel onglet
-      window.open(url, '_blank')
+
+          // Naviguez vers la nouvelle page avec l'URL du blob en tant qu'état
+      navigate('/dash/pdf-viewer', { state: { pdfBlobUrl: url } })
+
+      // window.open(url, '_blank')
       // Optionnel : libérez l'URL du blob après ouverture
-      URL.revokeObjectURL(url)
+      // URL.revokeObjectURL(url)
       console.log(invoice)
     } catch (error) {
       console.error('Erreur lors de la génération du PDF:', error)

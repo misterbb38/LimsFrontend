@@ -8,7 +8,7 @@ const NavigationBreadcrumb = ({ pageName }) => {
       <nav>
         <ol className="flex items-center gap-2">
           <li>
-            <Link to="/">Dashboard /</Link>
+            <Link to="/dash">Dashboard /</Link>
           </li>
           <li className="base-content">{pageName}</li>
         </ol>

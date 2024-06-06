@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
 
 import TopBar from './components/TopBar'
 import Sidebar from './components/Sidebar'
+import PDFViewer from './components/PDFViewer'
 import SidebarPatient from './components/SidebarPatient'
 import SidebarPartenaire from './components/SidebarPartenaire'
 import PartenaireCliniqueList from './pages/PartenaireCliniqueList'
@@ -114,6 +115,7 @@ function App() {
           <Route path="Formulaire" element={<Formulaire />} />
           <Route path="instruction" element={<Instruction />} />
           <Route path="notification" element={<Notifications />} />
+          <Route path="pdf-viewer" element={<PDFViewer />} />
           <Route path="parametre" element={<Parametre />} />
         </Route>
 
