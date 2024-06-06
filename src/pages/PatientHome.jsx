@@ -25,7 +25,7 @@ function PatientHome() {
     'Livré au laboratoire': 'badge badge-accent text-white font-bold', // Cyan ou une couleur spécifique pour "Livré au laboratoire"
     Fait: 'badge badge-success text-white font-bold', // Vert pour "Fait"
     Annulé: 'badge badge-error text-white font-bold', // Rouge pour "Annulé"
-    Validé: 'badge badge-sucess text-white font-bold', // Rouge pour "Validé"
+    Validé: 'badge badge-success text-white font-bold', // Rouge pour "Validé"
   }
 
   const facturesPerPage = 8

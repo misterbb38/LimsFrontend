@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import LogoText from '../../images/bioramlogo.png'
 // import Logo from '../../images/logo/logo.png';
 
@@ -8,7 +10,13 @@ const SignIn = () => {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false) // Ajout d'un état pour le chargement
+  const [showPassword, setShowPassword] = useState(false)
+
   const navigate = useNavigate()
+
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword)
+  }
 
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
   const handleSubmit = async (e) => {
@@ -37,7 +45,7 @@ const SignIn = () => {
       if (data.userType === 'patient') {
         // Si l'abonnement expire dans 7 jours ou moins, rediriger vers /key
         navigate('/patient-dash')
-      }else if(data.userType === 'partenaire'){
+      } else if (data.userType === 'partenaire') {
         navigate('/partenaire-dash')
       } else {
         // Pour les autres types d'utilisateurs, rediriger vers /KeyGen
@@ -87,17 +95,27 @@ const SignIn = () => {
                   />
                 </div>
 
-                <div className="mb-6">
+                <div className="mb-6 relative">
                   <label className="mb-2.5 block font-medium base-content">
                     Mot de passe
                   </label>
-                  <input
-                    type="password"
-                    placeholder="Entrez votre mot de passe"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="input input-bordered input-primary w-full max-w-xs"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Entrez votre mot de passe"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="input input-bordered input-primary w-full max-w-xs pr-10 pl-4"
+                    />
+                    <span
+                      onClick={toggleShowPassword}
+                      className="absolute inset-y-0 left-0 pl-70 flex items-center cursor-pointer"
+                    >
+                      <FontAwesomeIcon
+                        icon={showPassword ? faEyeSlash : faEye}
+                      />
+                    </span>
+                  </div>
                 </div>
 
                 {error && <div className="mb-4 text-red-500">{error}</div>}
