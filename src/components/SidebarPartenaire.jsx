@@ -41,7 +41,7 @@ function SidebarPatient() {
     {
       id: 10,
       label: 'Paramètres',
-      route: '/patient-dash/parametre',
+      route: '/partenaire-dash/parametre',
       icon: faCog,
     },
   ]
