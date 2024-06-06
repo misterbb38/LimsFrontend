@@ -1,3 +1,5 @@
+
+
 import React, { useEffect, useState } from 'react'
 import { Bar } from 'react-chartjs-2'
 import {
@@ -34,7 +36,11 @@ const AnalysesPerMonthChart = () => {
         const response = await fetch(`${apiUrl}/api/analyse/analyseparmois`)
         const data = await response.json()
         if (data.success) {
-          const labels = data.data.map((item) => `Mois ${item._id}`)
+          const monthNames = [
+            'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+            'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+          ]
+          const labels = data.data.map((item) => monthNames[item._id - 1])
           const counts = data.data.map((item) => item.count)
 
           setChartData({
@@ -58,7 +64,6 @@ const AnalysesPerMonthChart = () => {
 
   return (
     <div>
-      {/* <h2>Analyses Par Mois</h2> */}
       <Bar
         data={chartData}
         options={{
