@@ -190,7 +190,7 @@ function Facture() {
 
   // Vérifier si le type d'utilisateur est autorisé
   if (
-    !['superadmin', 'medecin', 'technicien', 'preleveur', 'docteur', 'acceuil'].includes(
+    !['superadmin', 'medecin', 'technicien', 'preleveur', 'docteur', 'accueil', ].includes(
       userInfo?.userType
     )
   ) {
