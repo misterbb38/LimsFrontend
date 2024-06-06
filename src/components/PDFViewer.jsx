@@ -37,7 +37,7 @@ const PDFViewer = () => {
 
   return (
     <div className=" bg-base-100">
-         <NavigationBreadcrumb pageName="Resultats" />
+         {/* <NavigationBreadcrumb pageName="Resultats" /> */}
       <div className="pdf-toolbar">
         <button className="btn btn-primary ml-1 mb-1" onClick={handlePrint}>
           <FontAwesomeIcon icon={faPrint} /> 

@@ -115,7 +115,7 @@ function App() {
           <Route path="Formulaire" element={<Formulaire />} />
           <Route path="instruction" element={<Instruction />} />
           <Route path="notification" element={<Notifications />} />
-          <Route path="pdf-viewer" element={<PDFViewer />} />
+          
           <Route path="parametre" element={<Parametre />} />
         </Route>
 
@@ -138,6 +138,7 @@ function App() {
           {/* Rendez-vous du patient */}
           {/* Ajoutez d'autres sous-routes spécifiques aux patients ici */}
         </Route>
+        <Route path="pdf-viewer" element={<PDFViewer />} />
       </Routes>
     </BrowserRouter>
   )
