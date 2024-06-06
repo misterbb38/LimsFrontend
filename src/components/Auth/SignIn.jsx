@@ -109,7 +109,7 @@ const SignIn = () => {
                     />
                     <span
                       onClick={toggleShowPassword}
-                      className="absolute inset-y-0 left-0 pl-70 flex items-center cursor-pointer"
+                      className="absolute inset-y-0 left-0 pl-0 flex items-center cursor-pointer"
                     >
                       <FontAwesomeIcon
                         icon={showPassword ? faEyeSlash : faEye}
