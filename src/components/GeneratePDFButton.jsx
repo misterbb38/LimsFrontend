@@ -670,9 +670,9 @@ if (invoice.statusPayement === 'Reliquat') {
   }
 
   return (
-    <button className="btn btn-primary" onClick={generatePDF}>
-      <FontAwesomeIcon icon={faFilePdf} />
-    </button>
+   
+      <FontAwesomeIcon icon={faFilePdf} onClick={generatePDF} />
+    
   )
 }
 

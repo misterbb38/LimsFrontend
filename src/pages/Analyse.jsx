@@ -304,11 +304,14 @@ function Facture() {
                     </td>
                     <td>{facture.tests.map((test) => test.nom).join(', ')}</td>
                     <td>
+                    <GeneratePDFButton invoice={facture} />
                       <span
                         className={paymentStatusClasses[facture.statusPayement]}
                       >
                         {facture.statusPayement}
+                        
                       </span>
+                     
                     </td>
                     {/* <td>{facture.status}</td> */}
 
@@ -341,7 +344,7 @@ function Facture() {
 
                     <td>
                       <div className="flex justify-around space-x-1">
-                        <GeneratePDFButton invoice={facture} />
+                       
                         
                         <GenerateResultatButton invoice={facture} />
                         <ViewAnalyseButton
