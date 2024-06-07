@@ -111,14 +111,14 @@ function TopBar({ toggleSidebar, isSidebarOpen }) {
       </button>
 
       {/* Champ de recherche uniquement visible sur les écrans plus grands */}
-      <div className="hidden md:flex flex-grow mx-4">
+      {/* <div className="hidden md:flex flex-grow mx-4">
         <FiSearch className="text-base-content mr-2" size={20} />
         <input
           className="flex-grow border-2 border-base-300 bg-base-200 h-10 px-5 rounded-lg text-sm focus:outline-none"
           type="search"
           placeholder="Type to search..."
         />
-      </div>
+      </div> */}
 
       <div className="flex items-center">
         <div className="relative mx-4 indicator">

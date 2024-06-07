@@ -177,7 +177,7 @@ function GeneratePDFButton({ invoice }) {
       // doc.text(`Informations du patient`, 130, currentY)
       doc.text(`Nº Dossier: ${invoice?.identifiant}`, 135, currentY + 7)
       doc.text(
-        `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
+        `Nom: ${invoice.userId.prenom.toUpperCase()} ${invoice.userId.nom.toUpperCase()}`,
         135,
         currentY + 12
       )

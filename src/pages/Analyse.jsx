@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import EditAnalyseButton from '../components/EditAnalyseButton'
 import GeneratePDFButton from '../components/GeneratePDFButton'
 import GenerateResultatButton from '../components/GenerateResultatButton'
+import GenerateTicketButton from '../components/GenerateTicketButton'
 import CreateAnalyseForm from '../components/CreateAnalyseForm'
 import ViewAnalyseButton from '../components/ViewAnalyseButton'
 import FiltreAnalyse from '../components/AnalyseFilter'
@@ -291,7 +292,8 @@ function Facture() {
                 {currentFactures.map((facture) => (
                   <tr key={facture._id}>
                     <td>{formatDate(facture.createdAt)}</td>
-                    <td>{facture.identifiant}</td>
+                    <td>{facture.identifiant}<GenerateTicketButton invoice={facture} /></td>
+                    
                     <td>
                       {facture.userId
                         ? `${facture.userId.prenom} ${facture.userId.nom}`
@@ -340,6 +342,7 @@ function Facture() {
                     <td>
                       <div className="flex justify-around space-x-1">
                         <GeneratePDFButton invoice={facture} />
+                        
                         <GenerateResultatButton invoice={facture} />
                         <ViewAnalyseButton
                           analyseId={facture._id}

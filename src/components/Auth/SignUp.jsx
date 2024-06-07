@@ -367,7 +367,7 @@ const SignUp = ({ onUser }) => {
                       <option value="medecin">Medecin</option>
                       <option value="technicien">Technicien</option>
                       <option value="preleveur">Preleveur</option>
-                      <option value="accueil">Accueil</option>
+                      <option value="acceuil">Accueil</option>
                       <option value="superadmin">Superadmin</option>
                       <option value="partenaire">Partenaire</option>
                     </select>
