@@ -306,7 +306,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
             <div className="divider"></div>
 
             <div className="mb-4 overflow-x-auto">
-              <h3 className="font-bold text-lg mb-2">Liste des Analyses</h3>
+              <h3 className="font-bold text-lg mb-2">Liste des paramettres</h3>
               <table className="table w-full">
                 {/* Entête du tableau */}
                 <thead className="bg-primary font-bold text-primary-content">

@@ -274,7 +274,7 @@ function Facture() {
                     Patient
                   </th>
                   <th className="font-bold text-lg text-base-content">NIP</th>
-                  <th className="font-bold text-lg text-base-content">Test</th>
+                  <th className="font-bold text-lg text-base-content">Paramettre</th>
                   <th className="font-bold text-lg text-base-content">
                     Facture
                   </th>
