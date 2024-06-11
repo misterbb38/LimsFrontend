@@ -382,7 +382,7 @@ function GenerateTicketButton({ invoice }) {
         }
       }
 
-      const currentY = verticalMargin + 3 * (stickerHeight + verticalMargin) + 10; // Position juste après les autocollants
+      const currentY = verticalMargin + 3 * (stickerHeight + verticalMargin) + 5; // Position juste après les autocollants
 
       // Ticket Content (original code)
       doc.setFont('helvetica');
@@ -393,14 +393,14 @@ function GenerateTicketButton({ invoice }) {
 
       doc.setFillColor(userColor);
 
-      let newY = currentY + 10;
-      doc.setFontSize(10);
+      let newY = currentY + 2;
+      doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(128, 128, 128); // Gris
       doc.text(`Nº Dossier: ${invoice?.identifiant}`, 18, newY, null, null, 'center');
       doc.setTextColor(0, 0, 0); // Retour au noir pour le reste du texte
 
-      doc.setFontSize(7);
+      doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
       doc.text(
         `Nom: ${invoice.userId.prenom.toUpperCase()} ${invoice.userId.nom.toUpperCase()}`,
@@ -429,7 +429,7 @@ function GenerateTicketButton({ invoice }) {
       doc.text(`Âge: ${ageDisplay} ans`, 5, newY + 10);
       doc.text(`Tel: ${invoice.userId.telephone}`, 5, newY + 15);
 
-      doc.setFontSize(6);
+      doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
       doc.text(`Paramètres:`, 5, newY + 20);
 
