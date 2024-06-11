@@ -165,27 +165,6 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     }
   }
 
-  // const handleAddAntibiogramme = (e) => {
-  //   e.preventDefault() // Prevent form submission when adding antibiogram
-  //   if (antibiogrammes.length < antibiotiques.length) {
-  //     setAntibiogrammes([
-  //       ...antibiogrammes,
-  //       { antibiotique: '', sensibilite: '' },
-  //     ])
-  //   }
-  // }
-
-  // const handleUpdateAntibiogramme = (index, field, value) => {
-  //   const updated = antibiogrammes.map((item, idx) =>
-  //     idx === index ? { ...item, [field]: value } : item
-  //   )
-  //   setAntibiogrammes(updated)
-  // }
-
-  // const handleRemoveAntibiogramme = (index) => {
-  //   setAntibiogrammes(antibiogrammes.filter((_, idx) => idx !== index))
-  // }
-
   const handleMicroscopiqueChange = (field, value) => {
     setMicroscopique((prev) => ({ ...prev, [field]: value }))
   }
@@ -246,6 +225,17 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     'Rifampicine',
     'Vancomycine',
     'Teicoplanine',
+    'Azithromycine',
+    'Doxycycline',
+    'Moxifloxacine',
+    'Clarithromycine',
+    'Metronidazole',
+    'Meropenem',
+    'Ertapenem',
+    'Colistine',
+    'Chloramphénicol',
+    'Daptomycine',
+    'Tigécycline',
   ]
 
   // Détecter si la valeur actuelle de germeIdentifie est parmi les options prédéfinies
@@ -281,6 +271,26 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     'Staphylococcus xylosus',
     'Acinetobacter baumannii',
     'Vibrio cholerae',
+    'Listeria monocytogenes',
+    'Bacteroides fragilis',
+    'Campylobacter jejuni',
+    'Clostridium difficile',
+    'Helicobacter pylori',
+    'Legionella pneumophila',
+    'Mycobacterium tuberculosis',
+    'Pseudomonas putida',
+    'Streptococcus pneumoniae',
+    'Streptococcus pyogenes',
+    'Bordetella pertussis',
+    'Brucella spp',
+    'Yersinia enterocolitica',
+    'Yersinia pestis',
+    'Corynebacterium diphtheriae',
+    'Francisella tularensis',
+    'Haemophilus ducreyi',
+    'Treponema pallidum',
+    'Borrelia burgdorferi',
+    'Leptospira interrogans',
   ]
 
   const handleGermeAddition = (germeName) => {
@@ -640,7 +650,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
               <option value="Pus">Pus</option>
               <option value="Culot urinaire">Culot urinaire</option>
               <option value="Soude urinaire">Sonde urinaire</option>
-              <option value="Amydales">Amygdales</option>
+              <option value="Amygdales">Amygdales</option>
               <option value="LCR">LCR</option>
               <option value="Ascite">Ascite</option>
               <option value="Pleural">Pleural</option>
@@ -648,6 +658,26 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
               <option value="Sang">Sang</option>
               <option value="Seringue">Seringue</option>
               <option value="Ballon">Ballon</option>
+              <option value="Expectorations">Expectorations</option>
+              <option value="Biopsie">Biopsie</option>
+              <option value="Lavage broncho-alvéolaire">
+                Lavage broncho-alvéolaire
+              </option>
+              <option value="Ecouvillon nasal">Écouvillon nasal</option>
+              <option value="Écouvillon pharyngé">Écouvillon pharyngé</option>
+              <option value="Lait maternel">Lait maternel</option>
+              <option value="Peau">Peau</option>
+              <option value="Tissu">Tissu</option>
+              <option value="Cavité buccale">Cavité buccale</option>
+              <option value="Cordon ombilical">Cordon ombilical</option>
+              <option value="Épanchement pleural">Épanchement pleural</option>
+              <option value="Liquide synovial">Liquide synovial</option>
+              <option value="Expectorations induites">
+                Expectorations induites
+              </option>
+              <option value="Liquide péritonéal">Liquide péritonéal</option>
+              <option value="Cathéter">Cathéter</option>
+              <option value="LCR">Liquide cérébrospinal (LCR)</option>
             </select>
           </div>
 
@@ -1359,8 +1389,6 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <option value="Non contributives">Non contributives</option>
                 </select>
               </div>
-
-              
 
               <div>
                 <label className="label">
