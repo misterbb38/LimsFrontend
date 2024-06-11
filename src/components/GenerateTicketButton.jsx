@@ -5,6 +5,7 @@
 // import PropTypes from 'prop-types';
 // import logoLeft from '../images/bioramlogo.png';
 // import logoRight from '../images/logo2.png';
+// import JsBarcode from 'jsbarcode';
 
 // function GenerateTicketButton({ invoice }) {
 //   const [user, setUser] = useState({
@@ -76,6 +77,12 @@
 //     return colorMap[colorName.toLowerCase()] || '#000000';
 //   };
 
+//   const generateBarcode = (text) => {
+//     const canvas = document.createElement('canvas');
+//     JsBarcode(canvas, text, { format: 'CODE128' });
+//     return canvas.toDataURL('image/png');
+//   };
+
 //   const generateTicketPDF = async () => {
 //     const doc = new jsPDF('portrait', 'mm', 'a4'); // A4 size
 //     const userColor = getColorValue(user.couleur);
@@ -93,10 +100,7 @@
 //       const maxWidth = 10;
 //       const leftHeight = maxWidth * (imgLeft.height / imgLeft.width);
 
-     
-     
-        
-//               //addFooter()
+//       // addFooter()
 //       const stickerWidth = 38;
 //       const stickerHeight = 21.1;
 //       const stickersPerRow = 5;
@@ -107,22 +111,22 @@
 //       for (let row = 0; row < stickersPerColumn; row++) {
 //         let ageDisplay;
 //         if (invoice.userId.age) {
-//             ageDisplay = invoice.userId.age.toString();
-//           } else if (invoice.userId.dateNaissance) {
-//             const birthDate = new Date(invoice.userId.dateNaissance);
-//             const today = new Date();
-//             let age = today.getFullYear() - birthDate.getFullYear();
-//             const m = today.getMonth() - birthDate.getMonth();
-    
-//             if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-//               age--;
-//             }
-    
-//             ageDisplay = age.toString();
-//           } else {
-//             ageDisplay = 'Non disponible';
+//           ageDisplay = invoice.userId.age.toString();
+//         } else if (invoice.userId.dateNaissance) {
+//           const birthDate = new Date(invoice.userId.dateNaissance);
+//           const today = new Date();
+//           let age = today.getFullYear() - birthDate.getFullYear();
+//           const m = today.getMonth() - birthDate.getMonth();
+
+//           if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+//             age--;
 //           }
-    
+
+//           ageDisplay = age.toString();
+//         } else {
+//           ageDisplay = 'Non disponible';
+//         }
+
 //         for (let col = 0; col < stickersPerRow; col++) {
 //           const x = horizontalMargin + col * (stickerWidth + horizontalMargin);
 //           const y = verticalMargin + row * (stickerHeight + verticalMargin);
@@ -134,18 +138,18 @@
 
 //           doc.setFontSize(7);
 //           doc.setTextColor(0, 0, 0);
-//           doc.text(`N° Dossier: ${invoice.identifiant}`, centerX, y + 7, null, null, 'center');
-//           doc.text(`Nom:${invoice.userId.prenom.toUpperCase()} ${invoice.userId.nom.toUpperCase()}`, centerX, y + 12, null, null, 'center');
-//           doc.text(`Sexe: ${invoice.userId.sexe}, Âge: ${ageDisplay} ans `, centerX, y + 17, null, null, 'center');
-          
+//           doc.text(`N° Dossier: ${invoice.identifiant}`, centerX, y + 5, null, null, 'center');
+//           doc.text(`Nom: ${invoice.userId.prenom.toUpperCase()} ${invoice.userId.nom.toUpperCase()}`, centerX, y + 10, null, null, 'center');
+//           doc.text(`Sexe: ${invoice.userId.sexe}, Âge: ${ageDisplay} ans`, centerX, y + 15, null, null, 'center');
+
+//           const barcodeData = generateBarcode(`${invoice.userId.nom} ${invoice.userId.prenom} ${invoice.identifiant} ${invoice.userId.age} ${invoice.userId.sexe}`);
+//           doc.addImage(barcodeData, 'PNG', x + 5, y + 16, 25, 5); // Position adjusted to fit barcode
 //         }
 //       }
 
-//       const currentY = verticalMargin + 3 * (stickerHeight + verticalMargin) + 10; // Position juste après les autocollants
+//       const currentY = verticalMargin + 3 * (stickerHeight + verticalMargin) + 5; // Position juste après les autocollants
 
 //       // Ticket Content (original code)
-      
-
 //       doc.setFont('helvetica');
 //       doc.setTextColor(userColor);
 
@@ -153,22 +157,22 @@
 //       doc.text('', 52, currentY + 20, null, null, 'center');
 
 //       doc.setFillColor(userColor);
-     
-//       let newY = currentY + 10;
-//       doc.setFontSize(10);
+
+//       let newY = currentY + 2;
+//       doc.setFontSize(12);
 //       doc.setFont('helvetica', 'bold');
 //       doc.setTextColor(128, 128, 128); // Gris
 //       doc.text(`Nº Dossier: ${invoice?.identifiant}`, 18, newY, null, null, 'center');
 //       doc.setTextColor(0, 0, 0); // Retour au noir pour le reste du texte
-      
-//       doc.setFontSize(7);
+
+//       doc.setFontSize(9);
 //       doc.setFont('helvetica', 'bold');
 //       doc.text(
 //         `Nom: ${invoice.userId.prenom.toUpperCase()} ${invoice.userId.nom.toUpperCase()}`,
 //         5,
 //         newY + 5
 //       );
-      
+
 //       let ageDisplay;
 //       if (invoice.userId.age) {
 //         ageDisplay = invoice.userId.age.toString();
@@ -187,15 +191,13 @@
 //         ageDisplay = 'Non disponible';
 //       }
 
-     
-
 //       doc.text(`Âge: ${ageDisplay} ans`, 5, newY + 10);
 //       doc.text(`Tel: ${invoice.userId.telephone}`, 5, newY + 15);
 
-//       doc.setFontSize(6);
+//       doc.setFontSize(9);
 //       doc.setFont('helvetica', 'bold');
 //       doc.text(`Paramètres:`, 5, newY + 20);
-      
+
 //       doc.setFont('helvetica', 'normal');
 //       newY += 25;
 
@@ -207,7 +209,6 @@
 //         });
 //       });
 
-     
 //       const blob = doc.output('blob');
 //       const url = URL.createObjectURL(blob);
 //       window.open(url, '_blank');
@@ -220,9 +221,7 @@
 //   };
 
 //   return (
-   
-//       <FontAwesomeIcon icon={faArrowCircleUp} onClick={generateTicketPDF} /> 
-    
+//     <FontAwesomeIcon icon={faArrowCircleUp} onClick={generateTicketPDF} />
 //   );
 // }
 
@@ -340,8 +339,11 @@ function GenerateTicketButton({ invoice }) {
       const stickerHeight = 21.1;
       const stickersPerRow = 5;
       const stickersPerColumn = 3; // Only the first 3 lines
-      const horizontalMargin = (210 - (stickersPerRow * stickerWidth)) / (stickersPerRow + 1); // A4 width is 210mm
-      const verticalMargin = (297 - (12 * stickerHeight)) / (12 + 1); // A4 height is 297mm, calculated with total 12 rows to keep consistent spacing
+      const pageWidth = 210; // A4 width is 210mm
+      const pageHeight = 297; // A4 height is 297mm
+      const margin = 10; // 1 cm margin on each side
+      const horizontalMargin = (pageWidth - (2 * margin) - (stickersPerRow * stickerWidth)) / (stickersPerRow - 1);
+      const verticalMargin = (pageHeight - (2 * margin) - (12 * stickerHeight)) / (12 - 1);
 
       for (let row = 0; row < stickersPerColumn; row++) {
         let ageDisplay;
@@ -363,8 +365,8 @@ function GenerateTicketButton({ invoice }) {
         }
 
         for (let col = 0; col < stickersPerRow; col++) {
-          const x = horizontalMargin + col * (stickerWidth + horizontalMargin);
-          const y = verticalMargin + row * (stickerHeight + verticalMargin);
+          const x = margin + col * (stickerWidth + horizontalMargin);
+          const y = margin + row * (stickerHeight + verticalMargin);
 
           doc.setDrawColor(0);
           doc.rect(x, y, stickerWidth, stickerHeight);
@@ -382,7 +384,7 @@ function GenerateTicketButton({ invoice }) {
         }
       }
 
-      const currentY = verticalMargin + 3 * (stickerHeight + verticalMargin) + 5; // Position juste après les autocollants
+      const currentY = margin + 3 * (stickerHeight + verticalMargin) + 5; // Position juste après les autocollants
 
       // Ticket Content (original code)
       doc.setFont('helvetica');
