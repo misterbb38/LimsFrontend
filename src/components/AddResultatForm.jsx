@@ -11,7 +11,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
   const [machineB, setMachineB] = useState('')
 
   const [statutInterpretation, setStatutInterpretation] = useState(false)
-  const [statutMachine, setStatutMachine] = useState(false)
+  const [statutMachine, setStatutMachine] = useState(true)
   const [typePrelevement, setTypePrelevement] = useState('')
   const [lieuPrelevement, setLieuPrelevement] = useState('')
   const [datePrelevement, setDatePrelevement] = useState('')
@@ -644,9 +644,15 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
               <option value="Urines">Urines</option>
               <option value="Secretions vaginales">Sécrétions vaginales</option>
               <option value="Selles">Selles</option>
-              <option value="Uretral">Urétal</option>
+              <option value="Uretral">Urétral</option>
               <option value="Sperme">Sperme</option>
               <option value="Vulve">Vulve</option>
+              <option value="Urines">Urines</option>
+              <option value="Secretions vaginales">Sécrétions vaginales</option>
+              <option value="Selles">Selles</option>
+              <option value="Uretral">Urétral</option>
+              <option value="Sérum">Sérum</option>
+              <option value="Plasma">Plasma</option>
               <option value="Pus">Pus</option>
               <option value="Culot urinaire">Culot urinaire</option>
               <option value="Soude urinaire">Sonde urinaire</option>
@@ -1540,7 +1546,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <option value="cervical">Cervical</option>
                   <option value="urine">Urine</option>
                   <option value="sperme">Sperme</option>
-                  <option value="uretral">Urétal</option>
+                  <option value="uretral">Urétral</option>
                 </select>
               </div>
               <div>
@@ -1584,7 +1590,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <option value="cervical">Cervical</option>
                   <option value="urine">Urine</option>
                   <option value="sperme">Sperme</option>
-                  <option value="uretral">Urétal</option>
+                  <option value="uretral">Urétral</option>
                 </select>
               </div>
               <div>

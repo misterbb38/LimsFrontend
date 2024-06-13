@@ -4,14 +4,14 @@ import PropTypes from 'prop-types'
 function AddTestForm({ onTestChange }) {
   const [nom, setNom] = useState('')
   const [description, setDescription] = useState('')
-  const [prixAssurance, setPrixAssurance] = useState('')
-  const [prixIpm, setPrixIpm] = useState('')
-  const [prixPaf, setPrixPaf] = useState('')
+  const [prixAssurance, setPrixAssurance] = useState('260')
+  const [prixIpm, setPrixIpm] = useState('200')
+  const [prixPaf, setPrixPaf] = useState('220')
   const [coeficiantB, setCoeficiantB] = useState('')
   const [categories, setCategories] = useState('')
   const [valeur, setValeur] = useState('')
-  const [prixSococim, setPrixSococim] = useState('')
-  const [prixClinique, setPrixClinique] = useState('')
+  const [prixSococim, setPrixSococim] = useState('180')
+  const [prixClinique, setPrixClinique] = useState('220')
   const [interpretationA, setInterpretationA] = useState('')
   const [interpretationB, setInterpretationB] = useState('')
 
@@ -151,7 +151,7 @@ function AddTestForm({ onTestChange }) {
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            required
+            
             className="input input-bordered input-primary w-full max-w-xs"
           />
         </div>

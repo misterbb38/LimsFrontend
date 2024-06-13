@@ -1555,10 +1555,10 @@ function GenerateResultatButton({ invoice }) {
           10 * (nomTestLines.length + interpretationLines.length + 3) // Plus les autres lignes
 
         // Gérer la pagination si nécessaire
-        if (currentY + spaceNeeded > 280) {
-          doc.addPage()
-          currentY = 20 // Réinitialisation de la position Y pour la nouvelle page
-        }
+        // if (currentY + spaceNeeded > 280) {
+        //   doc.addPage()
+        //   currentY = 20 // Réinitialisation de la position Y pour la nouvelle page
+        // }
 
         // Ajout des informations du test
         doc.setFontSize(10)
@@ -1587,12 +1587,12 @@ function GenerateResultatButton({ invoice }) {
         doc.setFontSize(8)
 
         // Ne pas afficher les informations si test?.observations existe
-        if (!test?.observations && test?.dernierResultatAnterieur) {
+        if (test?.observations?.macroscopique.length === 0 && test?.dernierResultatAnterieur) {
           const valeurAnterieure = test.dernierResultatAnterieur.valeur ?? ''
           const dateAnterieure = formattedDateAnterieur ?? ''
-          doc.text('Anterieure', 150, currentY)
-          doc.text(valeurAnterieure, 160, currentY + 5)
-          doc.text(dateAnterieure, 170, currentY)
+          doc.text('Anterieure', 170, currentY)
+          doc.text(valeurAnterieure, 170, currentY + 5)
+          doc.text(dateAnterieure, 190, currentY)
         }
         if (test?.observations?.macroscopique.length === 0) {
           doc.text(`${test?.valeur}`, 90, currentY + 5)

@@ -357,7 +357,8 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
   // Détecter si la valeur actuelle de germeIdentifie est parmi les options prédéfinies
   const predefinedGerms = [
     'Escherichia coli',
-    'Klebsiella pneumoniae ssp pneumoniae',
+    'Klebsiella pneumoniae ssp pneumoniae I',
+    'Klebsiella pneumoniae ssp pneumoniae II',
     'Streptococcus agalactiae',
     'Candida albicans',
     'Gardnerella vaginalis',
@@ -781,7 +782,15 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
                         Sécrétions vaginales
                       </option>
                       <option value="Selles">Selles</option>
-                      <option value="Uretral">Urétal</option>
+                      <option value="Uretral">Urétral</option>
+                      <option value="Urines">Urines</option>
+                      <option value="Secretions vaginales">
+                        Sécrétions vaginales
+                      </option>
+                      <option value="Selles">Selles</option>
+                      <option value="Uretral">Urétral</option>
+                      <option value="Sérum">Sérum</option>
+                      <option value="Plasma">Plasma</option>
                       <option value="Sperme">Sperme</option>
                       <option value="Vulve">Vulve</option>
                       <option value="Pus">Pus</option>
@@ -1829,7 +1838,7 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
                           <option value="cervical">Cervical</option>
                           <option value="urine">Urine</option>
                           <option value="sperme">Sperme</option>
-                          <option value="uretral">Urétal</option>
+                          <option value="uretral">Urétral</option>
                         </select>
                       </div>
                       <div>
@@ -1877,7 +1886,7 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
                           <option value="cervical">Cervical</option>
                           <option value="urine">Urine</option>
                           <option value="sperme">Sperme</option>
-                          <option value="uretral">Urétal</option>
+                          <option value="uretral">Urétral</option>
                         </select>
                       </div>
                       <div>
