@@ -720,6 +720,8 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
     e.preventDefault()
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
     const token = userInfo?.token
+   
+    const userconnect = userInfo?._id
 
     const formData = new FormData()
     selectedTests.forEach((test) => {
@@ -728,6 +730,7 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
     if (ordonnancePdf) {
       formData.append('ordonnancePdf', ordonnancePdf)
     }
+    formData.append('userOwn', userconnect)
     formData.append('pc1', pc1 ? 2000 : 0) // Envoyer 2000 si coché, sinon 0
     formData.append('pc2', pc2 ? 4000 : 0) // Envoyer 4000 si coché, sinon 0
     formData.append('deplacement', deplacement) // Envoyer la valeur de déplacemen

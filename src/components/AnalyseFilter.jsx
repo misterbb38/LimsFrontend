@@ -69,9 +69,11 @@ function FiltreAnalyse({ onFilter }) {
         <option value="Approuvé">Approuvé</option>
         <option value="Échantillon collecté">Échantillon collecté</option>
         <option value="Livré au laboratoire">Livré au laboratoire</option>
-        <option value="Fait">Fait</option>
-        <option value="Modificationt">Modification</option>
-        <option value="Annulé">Annulé</option>
+        
+        <option value="Modification">Modification</option>
+        
+        <option value="Validé">Validé</option>
+        <option value="Validation technique">Validation technique</option>
       </select>
       <button
         className="btn btn-outline btn-primary w-auto mx-2"

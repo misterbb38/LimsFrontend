@@ -88,6 +88,8 @@ function AddHistoriqueForm({
             <option value="Approuvé">Approuvé</option>
             <option value="Échantillon collecté">Échantillon collecté</option>
             <option value="Livré au laboratoire">Livré au laboratoire</option>
+            <option value="Validation technique">Validation technique</option>
+            <option value="Information">Information</option>
             <option value="Annulé">Annulé</option>
             {/* Conditionner l'affichage de l'option "Validé" */}
             {userType === 'medecin' && !isValidePresent && (

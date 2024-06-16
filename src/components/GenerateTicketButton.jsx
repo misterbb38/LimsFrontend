@@ -376,8 +376,9 @@ function GenerateTicketButton({ invoice }) {
           doc.setFontSize(7);
           doc.setTextColor(0, 0, 0);
           doc.text(`N° Dossier: ${invoice.identifiant}`, centerX, y + 5, null, null, 'center');
-          doc.text(`Nom: ${invoice.userId.prenom.toUpperCase()} ${invoice.userId.nom.toUpperCase()}`, centerX, y + 10, null, null, 'center');
-          doc.text(`Sexe: ${invoice.userId.sexe}, Âge: ${ageDisplay} ans`, centerX, y + 15, null, null, 'center');
+          doc.text(`Nom: ${invoice.userId.nom.toUpperCase()}`, centerX, y + 8, null, null, 'center');
+          doc.text(`Prenom: ${invoice.userId.prenom.toUpperCase()}`, centerX, y + 11, null, null, 'center');
+          doc.text(`Sexe: ${invoice.userId.sexe}, Âge: ${ageDisplay} ans`, centerX, y + 14, null, null, 'center');
 
           const barcodeData = generateBarcode(`${invoice.userId.nom} ${invoice.userId.prenom} ${invoice.identifiant} ${invoice.userId.age} ${invoice.userId.sexe}`);
           doc.addImage(barcodeData, 'PNG', x + 5, y + 16, 25, 5); // Position adjusted to fit barcode

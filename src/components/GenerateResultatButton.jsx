@@ -1573,7 +1573,7 @@ function GenerateResultatButton({ invoice }) {
           doc.text(nomTestLines, 60, currentY)
         }
         if (test?.observations?.macroscopique.length === 0) {
-          doc.setFontSize(13)
+          doc.setFontSize(10)
           doc.text(nomTestLines, 20, currentY)
         }
         currentY += 5 * nomTestLines.length // Mise à jour de Y basée sur le nombre de lignes de nom
@@ -1609,7 +1609,7 @@ function GenerateResultatButton({ invoice }) {
             doc.text(`${machineValue}`, 120, currentY + 5)
           }
 
-          doc.setFontSize(8)
+          doc.setFontSize(9)
           doc.setFont('Times', 'bold')
           // Déterminer quelle machine afficher en fonction de statutMachine
           let machineText = test?.statutMachine
@@ -1618,7 +1618,7 @@ function GenerateResultatButton({ invoice }) {
 
           // Vérifiez si machineText n'est ni undefined, ni une chaîne vide
           if (machineText) {
-            doc.text(` ${machineText}`, 20, currentY)
+            doc.text(` ${machineText}`, 20, currentY -1)
           } else {
             // Optionnel: vous pouvez commenter ou décommenter la ligne suivante selon vos besoins
             // doc.text('Machine utilisée: Non spécifiée', 20, currentY);
@@ -1654,16 +1654,16 @@ function GenerateResultatButton({ invoice }) {
 
         // Afficher la méthode si elle existe, juste après le nom de la machine
         if (test?.methode) {
-          doc.text(`(${test.methode})`, methodStartPos, currentY)
+          doc.text(`(${test.methode})`, methodStartPos, currentY -1)
         }
         if (test?.observations?.macroscopique.length === 0) {
           doc.text(
-            `Prélèvement: ${formattedDate} ${test?.typePrelevement}`,
+            `Prélèvement: ${formattedDate}, ${test?.typePrelevement}`,
             20,
             currentY + 3
           )
         }
-        doc.setFontSize(8)
+        doc.setFontSize(10)
         doc.setFont('Times', 'normal')
         currentY += 12 // Increment for one line
         if (test?.observations?.macroscopique.length === 0) {

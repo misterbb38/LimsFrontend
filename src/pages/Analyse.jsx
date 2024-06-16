@@ -35,6 +35,7 @@ function Facture() {
     'Échantillon collecté':
       'badge badge-primary text-white font-bold px-2 py-1', // Bleu foncé pour "Échantillon collecté"
     'Livré au laboratoire': 'badge badge-accent text-white font-bold px-2 py-1', // Cyan pour "Livré au laboratoire"
+    'Validation technique': 'badge badge-accent text-white font-bold px-2 py-1',
     Fait: 'badge badge-success text-white font-bold px-2 py-1', // Vert pour "Fait"
     Annulé: 'badge badge-error text-white font-bold px-2 py-1', // Rouge pour "Annulé"
     Validé: 'badge badge-success text-white font-bold px-2 py-1', // Vert pour "Validé"
@@ -335,6 +336,10 @@ function Facture() {
                                   facture.historiques.length - 1
                                 ].status === 'Livré au laboratoire'
                               ? 'Livré'
+                              : facture.historiques[
+                                facture.historiques.length - 1
+                              ].status === 'Validation technique'
+                            ? 'Technique'
                               : facture.historiques[
                                   facture.historiques.length - 1
                                 ].status
