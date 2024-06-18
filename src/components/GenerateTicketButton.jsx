@@ -373,15 +373,19 @@ function GenerateTicketButton({ invoice }) {
 
           const centerX = x + stickerWidth / 2;
 
-          doc.setFontSize(7);
+          doc.setFontSize(6);
           doc.setTextColor(0, 0, 0);
-          doc.text(`N° Dossier: ${invoice.identifiant}`, centerX, y + 5, null, null, 'center');
-          doc.text(`Nom: ${invoice.userId.nom.toUpperCase()}`, centerX, y + 8, null, null, 'center');
-          doc.text(`Prenom: ${invoice.userId.prenom.toUpperCase()}`, centerX, y + 11, null, null, 'center');
-          doc.text(`Sexe: ${invoice.userId.sexe}, Âge: ${ageDisplay} ans`, centerX, y + 14, null, null, 'center');
+          doc.text(`LABM BIORAM`, centerX, y + 5, null, null, 'center');
+          doc.text(`Tél: +221 78 601 09 09 / 33 836 99 98`, centerX, y + 11, null, null, 'center');
+          doc.text(`Email:  contact@bioram.org`, centerX, y + 8, null, null, 'center');
+          
+          doc.text(`N° Dossier: ${invoice.identifiant}`, centerX, y + 15, null, null, 'center');
+          doc.text(`Nom: ${invoice.userId.nom.toUpperCase()}`, centerX, y + 17, null, null, 'center');
+          doc.text(`Prenom: ${invoice.userId.prenom.toUpperCase()}`, centerX, y + 19, null, null, 'center');
+          // doc.text(`Sexe: ${invoice.userId.sexe}, Âge: ${ageDisplay} ans`, centerX, y + 21, null, null, 'center');
 
           const barcodeData = generateBarcode(`${invoice.userId.nom} ${invoice.userId.prenom} ${invoice.identifiant} ${invoice.userId.age} ${invoice.userId.sexe}`);
-          doc.addImage(barcodeData, 'PNG', x + 5, y + 16, 25, 5); // Position adjusted to fit barcode
+          // doc.addImage(barcodeData, 'PNG', x + 5, y + 16, 25, 5); // Position adjusted to fit barcode
         }
       }
 
@@ -430,14 +434,15 @@ function GenerateTicketButton({ invoice }) {
       }
 
       doc.text(`Âge: ${ageDisplay} ans`, 5, newY + 10);
-      doc.text(`Tel: ${invoice.userId.telephone}`, 5, newY + 15);
+      doc.text(`sexe: ${invoice.userId.sexe}`, 5, newY + 15);
+      doc.text(`Tel: ${invoice.userId.telephone}`, 5, newY + 20);
 
       doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
-      doc.text(`Paramètres:`, 5, newY + 20);
+      doc.text(`Paramètres:`, 5, newY + 25);
 
       doc.setFont('helvetica', 'normal');
-      newY += 25;
+      newY += 30;
 
       invoice.tests.forEach(test => {
         const lines = doc.splitTextToSize(test.nom, 70); // Split the text to fit within 70mm

@@ -29,6 +29,7 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
     statutInterpretation: false,
     statutMachine: false,
     typePrelevement: '',
+    qualitatif: '',
     lieuPrelevement: '',
     datePrelevement: null,
     remarque: '',
@@ -139,6 +140,7 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
           valeur: data.data.valeur || '',
           statutInterpretation: data.data.statutInterpretation,
           typePrelevement: data.data.typePrelevement,
+          qualitatif: data.data.qualitatif,
           lieuPrelevement: data.data.lieuPrelevement,
           datePrelevement: datePrelevementFormatted,
           remarque: data.data.remarque,
@@ -860,6 +862,25 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
                       className="input input-bordered"
                     />
                   </div>
+                  <div>
+                    <label className="label">Résultat qualitatif</label>
+                    <select
+                      className="select select-bordered"
+                      value={formData.qualitatif}
+                      onChange={handleChange}
+                      name="qualitatif" // Ajoutez l'attribut name
+                    >
+                      <option value="">Sélectionner une option</option>
+                      <option value="Positif">Positif</option>
+    <option value="Négatif">Négatif</option>
+    <option value="Douteux">Douteux</option>
+    <option value="Positive">Positive</option>
+    <option value="Négative">Négative</option>
+    <option value="Douteuse">Douteuse</option>
+                      
+                    </select>
+                  </div>
+
                 </div>
 
                 <label className="label">Choisissez le genre de resultat</label>

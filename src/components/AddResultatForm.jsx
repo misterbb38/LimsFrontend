@@ -13,6 +13,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
   const [statutInterpretation, setStatutInterpretation] = useState(false)
   const [statutMachine, setStatutMachine] = useState(true)
   const [typePrelevement, setTypePrelevement] = useState('')
+  const [qualitatif, setQualitatif] = useState('')
   const [lieuPrelevement, setLieuPrelevement] = useState('')
   const [datePrelevement, setDatePrelevement] = useState('')
   const [tests, setTests] = useState([])
@@ -493,6 +494,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
         statutMachine,
         statutInterpretation,
         typePrelevement,
+        qualitatif,
         lieuPrelevement,
         datePrelevement: datePrelevement || null,
         remarque,
@@ -547,6 +549,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     setStatutMachine(false)
     setStatutInterpretation(false)
     setTypePrelevement('')
+    setQualitatif('')
     setLieuPrelevement('')
     setDatePrelevement('')
     setRemarque('')
@@ -712,6 +715,23 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
               onChange={(e) => setDatePrelevement(e.target.value)}
               className="input input-bordered"
             />
+          </div>
+
+          <div>
+            <label className="label">Résultat qualitatif</label>
+            <select
+              className="select select-bordered"
+              value={qualitatif}
+              onChange={(e) => setQualitatif(e.target.value)}
+            >
+              <option value="">Sélectionner une option</option>
+              <option value="Positif">Positif</option>
+              <option value="Négatif">Négatif</option>
+              <option value="Douteux">Douteux</option>
+              <option value="Positive">Positive</option>
+              <option value="Négative">Négative</option>
+              <option value="Douteuse">Douteuse</option>
+            </select>
           </div>
         </div>
 
