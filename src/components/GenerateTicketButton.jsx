@@ -1,3 +1,6 @@
+
+
+
 // import { useState, useEffect } from 'react';
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // import { faArrowCircleUp } from '@fortawesome/free-solid-svg-icons'; // Import de la nouvelle icône
@@ -105,8 +108,11 @@
 //       const stickerHeight = 21.1;
 //       const stickersPerRow = 5;
 //       const stickersPerColumn = 3; // Only the first 3 lines
-//       const horizontalMargin = (210 - (stickersPerRow * stickerWidth)) / (stickersPerRow + 1); // A4 width is 210mm
-//       const verticalMargin = (297 - (12 * stickerHeight)) / (12 + 1); // A4 height is 297mm, calculated with total 12 rows to keep consistent spacing
+//       const pageWidth = 210; // A4 width is 210mm
+//       const pageHeight = 297; // A4 height is 297mm
+//       const margin = 10; // 1 cm margin on each side
+//       const horizontalMargin = (pageWidth - (2 * margin) - (stickersPerRow * stickerWidth)) / (stickersPerRow - 1);
+//       const verticalMargin = (pageHeight - (2 * margin) - (12 * stickerHeight)) / (12 - 1);
 
 //       for (let row = 0; row < stickersPerColumn; row++) {
 //         let ageDisplay;
@@ -128,26 +134,31 @@
 //         }
 
 //         for (let col = 0; col < stickersPerRow; col++) {
-//           const x = horizontalMargin + col * (stickerWidth + horizontalMargin);
-//           const y = verticalMargin + row * (stickerHeight + verticalMargin);
+//           const x = margin + col * (stickerWidth + horizontalMargin);
+//           const y = margin + row * (stickerHeight + verticalMargin);
 
 //           doc.setDrawColor(0);
 //           doc.rect(x, y, stickerWidth, stickerHeight);
 
 //           const centerX = x + stickerWidth / 2;
 
-//           doc.setFontSize(7);
+//           doc.setFontSize(6);
 //           doc.setTextColor(0, 0, 0);
-//           doc.text(`N° Dossier: ${invoice.identifiant}`, centerX, y + 5, null, null, 'center');
-//           doc.text(`Nom: ${invoice.userId.prenom.toUpperCase()} ${invoice.userId.nom.toUpperCase()}`, centerX, y + 10, null, null, 'center');
-//           doc.text(`Sexe: ${invoice.userId.sexe}, Âge: ${ageDisplay} ans`, centerX, y + 15, null, null, 'center');
+//           doc.text(`LABM BIORAM`, centerX, y + 5, null, null, 'center');
+//           doc.text(`Tél: +221 78 601 09 09 / 33 836 99 98`, centerX, y + 11, null, null, 'center');
+//           doc.text(`Email:  contact@bioram.org`, centerX, y + 8, null, null, 'center');
+          
+//           doc.text(`N° Dossier: ${invoice.identifiant}`, centerX, y + 15, null, null, 'center');
+//           doc.text(`Nom: ${invoice.userId.nom.toUpperCase()}`, centerX, y + 17, null, null, 'center');
+//           doc.text(`Prenom: ${invoice.userId.prenom.toUpperCase()}`, centerX, y + 19, null, null, 'center');
+//           // doc.text(`Sexe: ${invoice.userId.sexe}, Âge: ${ageDisplay} ans`, centerX, y + 21, null, null, 'center');
 
 //           const barcodeData = generateBarcode(`${invoice.userId.nom} ${invoice.userId.prenom} ${invoice.identifiant} ${invoice.userId.age} ${invoice.userId.sexe}`);
-//           doc.addImage(barcodeData, 'PNG', x + 5, y + 16, 25, 5); // Position adjusted to fit barcode
+//           // doc.addImage(barcodeData, 'PNG', x + 5, y + 16, 25, 5); // Position adjusted to fit barcode
 //         }
 //       }
 
-//       const currentY = verticalMargin + 3 * (stickerHeight + verticalMargin) + 5; // Position juste après les autocollants
+//       const currentY = margin + 3 * (stickerHeight + verticalMargin) + 5; // Position juste après les autocollants
 
 //       // Ticket Content (original code)
 //       doc.setFont('helvetica');
@@ -192,14 +203,15 @@
 //       }
 
 //       doc.text(`Âge: ${ageDisplay} ans`, 5, newY + 10);
-//       doc.text(`Tel: ${invoice.userId.telephone}`, 5, newY + 15);
+//       doc.text(`sexe: ${invoice.userId.sexe}`, 5, newY + 15);
+//       doc.text(`Tel: ${invoice.userId.telephone}`, 5, newY + 20);
 
 //       doc.setFontSize(9);
 //       doc.setFont('helvetica', 'bold');
-//       doc.text(`Paramètres:`, 5, newY + 20);
+//       doc.text(`Paramètres:`, 5, newY + 25);
 
 //       doc.setFont('helvetica', 'normal');
-//       newY += 25;
+//       newY += 30;
 
 //       invoice.tests.forEach(test => {
 //         const lines = doc.splitTextToSize(test.nom, 70); // Split the text to fit within 70mm
@@ -334,7 +346,7 @@ function GenerateTicketButton({ invoice }) {
       const maxWidth = 10;
       const leftHeight = maxWidth * (imgLeft.height / imgLeft.width);
 
-      // addFooter()
+      // Add stickers
       const stickerWidth = 38;
       const stickerHeight = 21.1;
       const stickersPerRow = 5;
@@ -371,18 +383,17 @@ function GenerateTicketButton({ invoice }) {
           doc.setDrawColor(0);
           doc.rect(x, y, stickerWidth, stickerHeight);
 
-          const centerX = x + stickerWidth / 2;
-
           doc.setFontSize(6);
           doc.setTextColor(0, 0, 0);
-          doc.text(`LABM BIORAM`, centerX, y + 5, null, null, 'center');
-          doc.text(`Tél: +221 78 601 09 09 / 33 836 99 98`, centerX, y + 11, null, null, 'center');
-          doc.text(`Email:  contact@bioram.org`, centerX, y + 8, null, null, 'center');
+          doc.text(`LABM BIORAM`, x + 2, y + 5); // Align text to the left
+          doc.text(`Tél: +221 78 601 09 09 / 33 836 99 98`, x + 2, y + 11); // Align text to the left
+          doc.text(`Email: contact@bioram.org`, x + 2, y + 8); // Align text to the left
           
-          doc.text(`N° Dossier: ${invoice.identifiant}`, centerX, y + 15, null, null, 'center');
-          doc.text(`Nom: ${invoice.userId.nom.toUpperCase()}`, centerX, y + 17, null, null, 'center');
-          doc.text(`Prenom: ${invoice.userId.prenom.toUpperCase()}`, centerX, y + 19, null, null, 'center');
-          // doc.text(`Sexe: ${invoice.userId.sexe}, Âge: ${ageDisplay} ans`, centerX, y + 21, null, null, 'center');
+          doc.setFont('helvetica', 'bold');
+          doc.text(`N° Dossier: ${invoice.identifiant}`, x + 2, y + 16); // Align text to the left
+          doc.text(`Nom: ${invoice.userId.nom.toUpperCase()}`, x + 2, y + 20); // Align text to the left
+          doc.text(`Prenom: ${invoice.userId.prenom.toUpperCase()}`, x + 2, y + 18); // Align text to the left
+          doc.setFont('helvetica', 'normal');
 
           const barcodeData = generateBarcode(`${invoice.userId.nom} ${invoice.userId.prenom} ${invoice.identifiant} ${invoice.userId.age} ${invoice.userId.sexe}`);
           // doc.addImage(barcodeData, 'PNG', x + 5, y + 16, 25, 5); // Position adjusted to fit barcode
@@ -396,7 +407,7 @@ function GenerateTicketButton({ invoice }) {
       doc.setTextColor(userColor);
 
       doc.setFontSize(12);
-      doc.text('', 52, currentY + 20, null, null, 'center');
+      doc.text('', 52, currentY + 20);
 
       doc.setFillColor(userColor);
 
@@ -404,7 +415,7 @@ function GenerateTicketButton({ invoice }) {
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(128, 128, 128); // Gris
-      doc.text(`Nº Dossier: ${invoice?.identifiant}`, 18, newY, null, null, 'center');
+      doc.text(`Nº Dossier: ${invoice?.identifiant}`, 5, newY);
       doc.setTextColor(0, 0, 0); // Retour au noir pour le reste du texte
 
       doc.setFontSize(9);

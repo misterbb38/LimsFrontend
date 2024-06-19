@@ -165,6 +165,7 @@ function GenerateResultatButton({ invoice }) {
           footerY + 14
         )
       }
+      
 
       // Ajouter le pied de page à la première page
       addFooter()
