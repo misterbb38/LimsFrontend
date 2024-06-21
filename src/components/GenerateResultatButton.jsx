@@ -306,6 +306,7 @@ function GenerateResultatButton({ invoice }) {
         
 
         const maxLineWidth = 100
+        const maxLineWidthInt = 160
         const maxvaluWidth = 50 // Largeur maximale du texte dans le PDF
         let nomTestLines = doc.splitTextToSize(
           `${test.testId.nom.toUpperCase()}`,
@@ -321,7 +322,7 @@ function GenerateResultatButton({ invoice }) {
 
         let interpretationLines = doc.splitTextToSize(
           `Interprétation:\n${interpretationText}`,
-          maxLineWidth
+          maxLineWidthInt
         )
 
         // Calcul de l'espace nécessaire pour ce bloc de test
