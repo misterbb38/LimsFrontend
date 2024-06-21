@@ -522,7 +522,7 @@ function EditTestButton({ testId, ontestUpdated }) {
     return null
   }
 
-  const categoryOptions = [
+  const categories = [
     "BIOCHIMIE SANGUINE",
     "BIOCHIMIE URINAIRE",
     "IMMUNOLOGIE-SEROLOGIE VIRALE",
