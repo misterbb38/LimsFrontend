@@ -286,7 +286,7 @@ function GenerateResultatButton({ invoice }) {
       const sortedResults = sortResultsByCategory(invoice?.resultat);
     sortedResults.forEach((group) => {
       // Affichez le nom de la catégorie
-      doc.setFontSize(10);
+      doc.setFontSize(12);
       doc.setFont('Times', 'bold');
       doc.text(group.category.toUpperCase(), 90, currentY);
 
@@ -458,13 +458,13 @@ function GenerateResultatButton({ invoice }) {
               doc.addPage();
               currentY = 20; // Réinitialisation de la position Y pour la nouvelle page
               doc.text(`Nº Dossier: ${invoice?.identifiant}`, 42, currentY)
-            currentY
+            
             doc.text(
               `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
               42,
               currentY + 5
             )
-            currentY += 5
+            currentY += 10
               
               addFooter();
           }
@@ -475,6 +475,7 @@ function GenerateResultatButton({ invoice }) {
           doc.text(interpretationLines, 20, currentY);
           currentY += interpretationHeight; // Mise à jour de Y basée sur le nombre de lignes d'interprétation
       }
+      doc.setFont('Times', 'normal');
       
       
         currentY += 5 // Ajout d'un espace avant le prochain test
@@ -1180,13 +1181,13 @@ function GenerateResultatButton({ invoice }) {
                 addFooter()
                 currentY = 15 // Position Y initiale pour chaque nouvelle page
                 doc.text(`Nº Dossier: ${invoice?.identifiant}`, 42, currentY)
-                currentY
+                
                 doc.text(
                   `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
                   42,
                   currentY + 5
                 )
-                currentY += 5
+                currentY += 10
 
                 doc.setFontSize(10)
                 doc.setFont('Times', 'bold')
