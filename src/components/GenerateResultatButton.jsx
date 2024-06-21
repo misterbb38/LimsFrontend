@@ -288,7 +288,7 @@ function GenerateResultatButton({ invoice }) {
       // Affichez le nom de la catégorie
       doc.setFontSize(10);
       doc.setFont('Times', 'bold');
-      doc.text(group.category.toUpperCase(), 70, currentY);
+      doc.text(group.category.toUpperCase(), 90, currentY);
 
       // Ajouter une ligne sous la catégorie
     const lineStartX = 20; // Position de départ X de la ligne
@@ -314,7 +314,7 @@ function GenerateResultatButton({ invoice }) {
 
         // Choisir entre interpretationA et interpretationB en fonction de statutMachine
         doc.setFontSize(9); // Changer la taille de la police à 10
-          doc.setFont('Helvetica', 'normal');
+          doc.setFont('Courier', 'normal');
         let interpretationText = test.statutMachine
           ? test.testId.interpretationA || "Pas d'interprétationA disponible"
           : test.testId.interpretationB || "Pas d'interprétationB disponible"
@@ -469,7 +469,7 @@ function GenerateResultatButton({ invoice }) {
               addFooter();
           }
           doc.setFontSize(9); // Changer la taille de la police à 10
-          doc.setFont('Helvetica', 'normal'); // Assurez-vous que la police est définie comme normale
+          doc.setFont('Courier', 'normal'); // Assurez-vous que la police est définie comme normale
       
       
           doc.text(interpretationLines, 20, currentY);
