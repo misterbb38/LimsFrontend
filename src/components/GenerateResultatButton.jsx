@@ -465,7 +465,7 @@ function GenerateResultatButton({ invoice }) {
               42,
               currentY + 5
             )
-            currentY += 10
+            currentY += 15
               
               addFooter();
           }
