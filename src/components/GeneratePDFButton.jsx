@@ -344,8 +344,14 @@ function GeneratePDFButton({ invoice }) {
         }
 
         // Calculer et afficher total
-        const total = prixChoisi * (test.coeficiantB || 1) // Assumer coeficiantB de 1 si non spécifié
+        if (['ipm', 'assurance', 'sococim', 'paf'].includes(invoice.partenaireId?.typePartenaire)) {
+          const total = prixChoisi * (test.coeficiantB || 1) // Assumer coeficiantB de 1 si non spécifié
         doc.text(`${total.toFixed(0)}`, 166, textY)
+        }else {
+          const total = prixChoisi
+          doc.text(`${total.toFixed(0)}`, 166, textY)
+        }
+        
 
         currentY += testHeight // Mise à jour de Y pour le prochain test
 
