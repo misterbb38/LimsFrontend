@@ -479,12 +479,12 @@ function AddTestForm({ onTestChange }) {
   const categoryOptions = [
     "BIOCHIMIE SANGUINE",
     "BIOCHIMIE URINAIRE",
-    "Immunologie-Sérologie virale",
+    "IMMUNOLOGIE-SEROLOGIE VIRALE",
     "ENDOCRINOLOGIE",
-    "Immunologie-Autoimmunité",
+    "IMMUNOLOGIE-AUTOIMMUNITE",
     "IMMUNOLOGIE",
     "INFECTIOLOGIE",
-    "Immunologie-Sérologie bactérienne",
+    "IMMUNOLOGIE-SEROLOGIE BACTERIENNE",
     "ALLERGIE",
     "HEMATOLOGIE",
     "HEMATOLOGIE - HEMOSTASE",
@@ -499,7 +499,7 @@ function AddTestForm({ onTestChange }) {
     "CYTOLOGIE",
     "INFECTIOLOGIE - PARASITOLOGIE",
     "BIOCHIMIE - GAZ"
-  ];
+];
 
   // Suppression des doublons
   const uniqueCategoryOptions = [...new Set(categoryOptions)];
