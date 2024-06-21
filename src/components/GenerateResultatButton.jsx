@@ -288,7 +288,7 @@ function GenerateResultatButton({ invoice }) {
       // Affichez le nom de la catégorie
       doc.setFontSize(12);
       doc.setFont('Times', 'bold');
-      doc.text(group.category.toUpperCase(), 85, currentY);
+      doc.text(group.category.toUpperCase(), 90, currentY);
 
       // Ajouter une ligne sous la catégorie
     const lineStartX = 20; // Position de départ X de la ligne
