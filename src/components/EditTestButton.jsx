@@ -556,8 +556,8 @@ function EditTestButton({ testId, ontestUpdated }) {
         <FontAwesomeIcon icon={faEdit} />
       </button>
       {showModal && (
-        <div className="modal modal-open">
-          <div className="modal-box">
+        <div className="modal modal-open ">
+          <div className="modal-box w-11/12 max-w-5xl">
             <form onSubmit={handleSubmit}>
               {/* Champs du formulaire pour éditer un test */}
               <div className="form-control">
