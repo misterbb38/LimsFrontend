@@ -320,7 +320,7 @@ function GenerateResultatButton({ invoice }) {
           : test.testId.interpretationB || "Pas d'interprétationB disponible"
 
         let interpretationLines = doc.splitTextToSize(
-          `Interprétation:\n ${interpretationText}`,
+          `Interprétation:\n${interpretationText}`,
           maxLineWidth
         )
 
@@ -457,12 +457,12 @@ function GenerateResultatButton({ invoice }) {
           if (currentY + interpretationHeight + marginBottom > footerY) {
               doc.addPage();
               currentY = 20; // Réinitialisation de la position Y pour la nouvelle page
-              doc.text(`Nº Dossier: ${invoice?.identifiant}`, 75, currentY)
+              doc.text(`Nº Dossier: ${invoice?.identifiant}`, 42, currentY)
             currentY
             doc.text(
               `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
               42,
-              currentY
+              currentY + 5
             )
             currentY += 5
               
@@ -1179,12 +1179,12 @@ function GenerateResultatButton({ invoice }) {
                 doc.addPage() // Démarre chaque antibiogramme sur une nouvelle page
                 addFooter()
                 currentY = 15 // Position Y initiale pour chaque nouvelle page
-                doc.text(`Nº Dossier: ${invoice?.identifiant}`, 75, currentY)
+                doc.text(`Nº Dossier: ${invoice?.identifiant}`, 42, currentY)
                 currentY
                 doc.text(
                   `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
                   42,
-                  currentY
+                  currentY + 5
                 )
                 currentY += 5
 
