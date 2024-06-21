@@ -325,7 +325,7 @@ function GeneratePDFButton({ invoice }) {
         test.prixClinique !== undefined
         ) {
           prixChoisi = test.prixClinique
-          afficherCoefB = true // Afficher CoefB pour 'ipm'
+          
         }
          else if (test.PrixPaf !== undefined) {
           prixChoisi = test.prixPaf

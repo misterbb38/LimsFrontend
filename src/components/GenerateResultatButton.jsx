@@ -117,8 +117,8 @@ function GenerateResultatButton({ invoice }) {
 
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i) // Définir la page courante sur laquelle le numéro de page sera ajouté
-        doc.setFontSize(8) // Définir la taille de la police pour le numéro de page
-        doc.setTextColor(150) // Définir la couleur du texte pour le numéro de page
+        doc.setFontSize(9) // Définir la taille de la police pour le numéro de page
+        doc.setTextColor(0, 0, 0); // Définir la couleur du texte pour le numéro de page
         // Ajouter le numéro de page au centre du pied de page de chaque page
         doc.text(` ${i}/${pageCount}`, 185, 275, { align: 'center' })
       }
@@ -289,6 +289,19 @@ function GenerateResultatButton({ invoice }) {
       doc.setFontSize(10);
       doc.setFont('Times', 'bold');
       doc.text(group.category.toUpperCase(), 70, currentY);
+
+      // Ajouter une ligne sous la catégorie
+    // const lineStartX = 20; // Position de départ X de la ligne
+    // const lineEndX = 190;  // Position de fin X de la ligne
+    // const lineY = currentY + 2; // Position Y de la ligne (juste en dessous du texte)
+    // doc.line(lineStartX, lineY, lineEndX, lineY);
+
+     // Ajouter une ligne sous la catégorie
+     const textWidth = doc.getTextWidth(group.category.toUpperCase());
+     const lineStartX = 70; // Position de départ X de la ligne
+     const lineEndX = lineStartX + textWidth; // Position de fin X de la ligne
+     const lineY = currentY + 2; // Position Y de la ligne (juste en dessous du texte)
+     doc.line(lineStartX, lineY, lineEndX, lineY);
       currentY += 10; // Espace après la catégorie
 
       group.results.forEach((test, index) => {
@@ -304,6 +317,8 @@ function GenerateResultatButton({ invoice }) {
         )
 
         // Choisir entre interpretationA et interpretationB en fonction de statutMachine
+        doc.setFontSize(9); // Changer la taille de la police à 10
+          doc.setFont('Helvetica', 'normal');
         let interpretationText = test.statutMachine
           ? test.testId.interpretationA || "Pas d'interprétationA disponible"
           : test.testId.interpretationB || "Pas d'interprétationB disponible"
@@ -324,7 +339,7 @@ function GenerateResultatButton({ invoice }) {
         // }
 
         // Ajout des informations du test
-        doc.setFontSize(10)
+        doc.setFontSize(8)
         doc.setFont('Times', 'bold') // Utilisation de Times en gras
         // doc.text(nomTestLines, 20, currentY)
 
@@ -363,11 +378,14 @@ function GenerateResultatButton({ invoice }) {
           doc.text(dateAnterieure, 190, currentY)
         }
         if (test?.observations?.macroscopique.length === 0) {
+          doc.setFont('Times', 'bold')
+        doc.setFontSize(10)
           doc.text(`${test?.valeur}`, 90, currentY + 5)
           if(test?.qualitatif){
           doc.text(`(${test?.qualitatif})`, 86, currentY + 10)
           }
         }
+       
 
         doc.setFont('Times', 'normal')
         doc.setFontSize(8)
@@ -423,7 +441,7 @@ function GenerateResultatButton({ invoice }) {
             currentY + 3
           )
         }
-        doc.setFontSize(10)
+        doc.setFontSize(8)
         doc.setFont('Times', 'normal')
         currentY += 12 // Increment for one line
         if (test?.observations?.macroscopique.length === 0) {
@@ -433,10 +451,37 @@ function GenerateResultatButton({ invoice }) {
         }
         currentY += 5 // Increment for one line
         if (test.statutInterpretation) {
-          
-          doc.text(interpretationLines, 20, currentY)
-          currentY += 4 * interpretationLines.length // Mise à jour de Y basée sur le nombre de lignes d'interprétation
-        }
+          doc.setFontSize(10); // Changer la taille de la police à 10
+          doc.setFont('Times', 'normal'); // Assurez-vous que la police est définie comme normale
+      
+          const interpretationHeight = 4 * interpretationLines.length;
+          const footerY = 277;
+          const marginBottom = 5;
+      
+          // Vérifier si l'espace restant sur la page est suffisant
+          if (currentY + interpretationHeight + marginBottom > footerY) {
+              doc.addPage();
+              currentY = 20; // Réinitialisation de la position Y pour la nouvelle page
+              doc.text(`Nº Dossier: ${invoice?.identifiant}`, 75, currentY)
+            currentY
+            doc.text(
+              `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
+              42,
+              currentY
+            )
+            currentY += 5
+              
+              addFooter();
+          }
+          doc.setFontSize(9); // Changer la taille de la police à 10
+          doc.setFont('Helvetica', 'normal'); // Assurez-vous que la police est définie comme normale
+      
+      
+          doc.text(interpretationLines, 20, currentY);
+          currentY += interpretationHeight; // Mise à jour de Y basée sur le nombre de lignes d'interprétation
+      }
+      
+      
         currentY += 5 // Ajout d'un espace avant le prochain test
        
         
