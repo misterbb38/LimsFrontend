@@ -616,8 +616,11 @@ if (invoice.statusPayement === 'Reliquat') {
       // Avant d'ajouter la mise en garde, assurez-vous qu'il y a assez d'espace pour elle et le pied de page
       // Calculez l'espace nécessaire pour la mise en garde
       // Conversion de la date de récupération au format souhaité
-      let miseEnGarde = `Facture à ramener au retrait des résultats. `
+      
 
+      let miseEnGarde = `Facture à ramener au retrait des résultats. `
+      // Vérifier si le type de partenaire est différent de "clinique"
+if (invoice.partenaireId?.typePartenaire !== 'clinique'){
 
       // Vérifier si la date de récupération est définie
       if (invoice.dateDeRecuperation) {
@@ -632,6 +635,7 @@ if (invoice.statusPayement === 'Reliquat') {
 
         miseEnGarde += `\nRésultats à récupérer le ${formattedDateDeRecuperation}`
       }
+    
 
       // Puis, utilisez `miseEnGarde` où vous avez besoin de l'afficher
       doc.setFont('helvetica', 'bold')
@@ -656,6 +660,7 @@ if (invoice.statusPayement === 'Reliquat') {
 
       // Ajoutez la mise en garde à la position calculée
       doc.text(miseEnGardeWrapped, 20, currentY)
+    }
 
       // Continuer avec la logique de création du PDF comme avant
 
