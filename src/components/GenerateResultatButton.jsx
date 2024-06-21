@@ -320,6 +320,10 @@ function GenerateResultatButton({ invoice }) {
           ? test.testId.interpretationA || "Pas d'interprétationA disponible"
           : test.testId.interpretationB || "Pas d'interprétationB disponible"
 
+           // Remplacer les symboles "supérieur ou égal" et "inférieur ou égal" dans l'interprétation
+    interpretationText = interpretationText.replace(/≥/g, '\u2265');
+    interpretationText = interpretationText.replace(/≤/g, '\u2264');
+
         let interpretationLines = doc.splitTextToSize(
           `Interprétation:\n${interpretationText}`,
           maxLineWidthInt
