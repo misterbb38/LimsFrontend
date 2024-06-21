@@ -792,7 +792,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                 value={statutMachine}
                 onChange={(e) => setStatutMachine(e.target.value === 'true')}
               >
-                <option value="true">A</option>
+                
+                <option selected value="true">A</option>
                 <option value="false">B</option>
               </select>
             </div>

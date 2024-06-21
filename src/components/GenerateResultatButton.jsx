@@ -291,17 +291,13 @@ function GenerateResultatButton({ invoice }) {
       doc.text(group.category.toUpperCase(), 70, currentY);
 
       // Ajouter une ligne sous la catégorie
-    // const lineStartX = 20; // Position de départ X de la ligne
-    // const lineEndX = 190;  // Position de fin X de la ligne
-    // const lineY = currentY + 2; // Position Y de la ligne (juste en dessous du texte)
-    // doc.line(lineStartX, lineY, lineEndX, lineY);
+    const lineStartX = 20; // Position de départ X de la ligne
+    const lineEndX = 190;  // Position de fin X de la ligne
+    const lineY = currentY + 2; // Position Y de la ligne (juste en dessous du texte)
+    doc.line(lineStartX, lineY, lineEndX, lineY);
 
      // Ajouter une ligne sous la catégorie
-     const textWidth = doc.getTextWidth(group.category.toUpperCase());
-     const lineStartX = 70; // Position de départ X de la ligne
-     const lineEndX = lineStartX + textWidth; // Position de fin X de la ligne
-     const lineY = currentY + 2; // Position Y de la ligne (juste en dessous du texte)
-     doc.line(lineStartX, lineY, lineEndX, lineY);
+     
       currentY += 10; // Espace après la catégorie
 
       group.results.forEach((test, index) => {
@@ -387,8 +383,7 @@ function GenerateResultatButton({ invoice }) {
         }
        
 
-        doc.setFont('Times', 'normal')
-        doc.setFontSize(8)
+        
         if (test?.observations?.macroscopique.length === 0) {
           // Affichage de la valeur de la machine A ou B en fonction de statutMachine
           let machineValue = test.statutMachine
