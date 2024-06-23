@@ -31,6 +31,8 @@ function CreateAnalyseForm({ onAnalyseChange }) {
   // Ajout d'un état pour la recherche
   const [searchTerm, setSearchTerm] = useState('')
   const [searchTermPatient, setSearchTermPatient] = useState('')
+  const [searchTermPartenaire, setSearchTermPartenaire] = useState('');
+
 
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
 
@@ -43,13 +45,20 @@ function CreateAnalyseForm({ onAnalyseChange }) {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
     const token = userInfo?.token
     const response = await fetch(`${apiUrl}/api/user/simpleusers`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
     })
     const data = await response.json()
-    setUsers(data.data)
-  }
+    if (data && data.data) {
+        const sortedUsers = data.data.sort((a, b) => {
+            // Convertit les dates en timestamps pour la comparaison
+            return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+        setUsers(sortedUsers);
+    }
+}
+
 
   const fetchAvailableTests = async () => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
@@ -121,12 +130,11 @@ function CreateAnalyseForm({ onAnalyseChange }) {
   }
 
   // Fonction pour filtrer les tests basée sur la recherche
-  const filteredTests =
-    searchTerm.length > 0
-      ? availableTests.filter((test) =>
-          test.nom.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      : availableTests
+  const filteredTests = searchTerm.length > 0
+  ? availableTests
+    .filter(test => test.nom.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => a.nom.localeCompare(b.nom)) // Ajout du tri alphabétique
+  : availableTests.sort((a, b) => a.nom.localeCompare(b.nom));
 
   // Fonction pour filtrer les patients basée sur la recherche
   const filteredPatients =
@@ -138,6 +146,11 @@ function CreateAnalyseForm({ onAnalyseChange }) {
         )
       : users
 
+      const filteredPartenaires = searchTermPartenaire.length > 0
+      ? partenaires.filter(partenaire => partenaire.nom.toLowerCase().includes(searchTermPartenaire.toLowerCase()))
+      : partenaires;
+
+      
   // Ajout d'une fonction pour réinitialiser le formulaire
   const resetForm = () => {
     setSelectedTests([])
@@ -346,7 +359,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
             {/* Afficher les champs conditionnels */}
             {hasInsurance === 'oui' && (
               <>
-                <div>
+                {/* <div>
                   <select
                     id="partenaireSelect"
                     className="select select-primary w-full max-w-xs mt-2"
@@ -360,7 +373,40 @@ function CreateAnalyseForm({ onAnalyseChange }) {
                       </option>
                     ))}
                   </select>
-                </div>
+                </div> */}
+
+<div>
+  <label className="label">
+    <span className="label-text">Filtre Partenaire</span>
+  </label>
+  <input
+    type="text"
+    placeholder="Rechercher un partenaire..."
+    value={searchTermPartenaire}
+    onChange={(e) => setSearchTermPartenaire(e.target.value)}
+    className="input input-bordered input-primary w-full max-w-xs"
+  />
+</div>
+
+<div>
+  <label className="label">
+    <span className="label-text">Partenaire</span>
+  </label>
+  <select
+    className="select select-primary w-full max-w-xs"
+    value={selectedPartenaireId}
+    onChange={(e) => setSelectedPartenaireId(e.target.value)}
+    required
+  >
+    <option value="">Sélectionner un partenaire</option>
+    {filteredPartenaires.map((partenaire) => (
+      <option key={partenaire._id} value={partenaire._id}>
+        {partenaire.nom}
+      </option>
+    ))}
+  </select>
+</div>
+
                 <div>
                   <label>Pourcentage de couverture</label>
                   <input

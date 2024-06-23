@@ -18,31 +18,7 @@ function TestList() {
     fetchTests()
   }, [currentPage]) // Dépendance ajoutée ici pour recharger à chaque changement de page
 
-  // const fetchTests = async () => {
-  //   setLoading(true)
-  //   try {
-  //     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-  //     const token = userInfo?.token
-  //     const response = await fetch(`${apiUrl}/api/test?page=${currentPage}`, {
-  //       // Modification pour inclure la pagination
-  //       method: 'GET',
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     })
-  //     const data = await response.json()
-  //     if (data.success) {
-  //       setTests(data.data)
-  //       setTotalPages(data.totalPages) // Assumant que l'API renvoie le nombre total de pages
-  //     } else {
-  //       console.error('Failed to fetch tests')
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching tests:', error)
-  //   } finally {
-  //     setLoading(false)
-  //   }
-  // }
+  
 
   const fetchTests = async () => {
     setLoading(true)

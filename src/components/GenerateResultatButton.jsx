@@ -96,6 +96,8 @@ function GenerateResultatButton({ invoice }) {
       return acc;
     }, []);
   };
+
+  
   
   
 
@@ -123,6 +125,8 @@ function GenerateResultatButton({ invoice }) {
         doc.text(` ${i}/${pageCount}`, 185, 275, { align: 'center' })
       }
     }
+
+    
 
     
 
@@ -314,15 +318,13 @@ function GenerateResultatButton({ invoice }) {
         )
 
         // Choisir entre interpretationA et interpretationB en fonction de statutMachine
+        
         doc.setFontSize(9); // Changer la taille de la police à 10
           doc.setFont('Courier', 'normal');
         let interpretationText = test.statutMachine
           ? test.testId.interpretationA || "Pas d'interprétationA disponible"
           : test.testId.interpretationB || "Pas d'interprétationB disponible"
 
-           // Remplacer les symboles "supérieur ou égal" et "inférieur ou égal" dans l'interprétation
-    interpretationText = interpretationText.replace(/≥/g, '\u2265');
-    interpretationText = interpretationText.replace(/≤/g, '\u2264');
 
         let interpretationLines = doc.splitTextToSize(
           `Interprétation:\n${interpretationText}`,
@@ -395,7 +397,8 @@ function GenerateResultatButton({ invoice }) {
             ? test.testId.valeurMachineA
             : test.testId.valeurMachineB
           if (machineValue) {
-            doc.text(`${machineValue}`, 120, currentY + 5)
+            doc.text(`${machineValue}`, 110, currentY + 5)
+            
           }
 
           doc.setFontSize(9)
@@ -436,7 +439,7 @@ function GenerateResultatButton({ invoice }) {
         }
         if (test?.observations?.macroscopique.length === 0) {
           doc.text(
-            `Prélèvement: ${formattedDate}, ${test?.typePrelevement}`,
+            `Prélèvement : ${formattedDate}, ${test?.typePrelevement}`,
             20,
             currentY + 3
           )

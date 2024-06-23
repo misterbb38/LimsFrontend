@@ -172,8 +172,10 @@ function GeneratePDFButton({ invoice }) {
 
       // Informations du client
       let currentY = 40 // Mise à jour pour utiliser currentY pour la position initiale
-      doc.setFontSize(8) // Changez la taille à la valeur souhaitée
+      doc.setFontSize(10) // Changez la taille à la valeur souhaitée
       doc.setFont('helvetica', 'bold') // Définissez la police en Helvetica et le style en gras
+      doc.text(`FACTURE`, 85, currentY + 7)
+      doc.setFontSize(8)
       // doc.text(`Informations du patient`, 130, currentY)
       doc.text(`Nº Dossier: ${invoice?.identifiant}`, 135, currentY + 7)
       doc.text(
