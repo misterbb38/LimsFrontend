@@ -132,7 +132,8 @@ function Sidebar() {
     { id: 6, label: 'Partenaire', route: '/dash/partenaireclinique', icon: faBuilding, allowedUserTypes: ['superadmin','medecin','docteur'] },
     { id: 7, label: 'Assurance/IPM', route: '/dash/partenaire', icon: faFileMedical, allowedUserTypes: ['superadmin','medecin','docteur'] },
     { id: 8, label: 'Ettiquette', route: '/dash/ettiquette', icon: faClipboardList, allowedUserTypes: ['superadmin','medecin', 'technicien','docteur'] },
-    { id: 9, label: 'Profil', route: '/dash/parametre', icon: faCog, allowedUserTypes: ['superadmin', 'medecin', 'technicien','medecin', 'preleveur', 'docteur', 'acceuil','accueil',] },
+    { id: 9, label: 'Facture(Partenaire)', route: '/dash/partenairefacture', icon: faCog, allowedUserTypes: ['superadmin', 'medecin', 'technicien','medecin', 'preleveur', 'docteur', 'acceuil','accueil',] },
+    { id: 10, label: 'Profil', route: '/dash/parametre', icon: faCog, allowedUserTypes: ['superadmin', 'medecin', 'technicien','medecin', 'preleveur', 'docteur', 'acceuil','accueil',] },
   ]
 
   const filteredMenuItems = menuItems.filter(item => item.allowedUserTypes.includes(userType))

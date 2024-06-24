@@ -23,6 +23,7 @@ import PatientList from './pages/patientList'
 import Personnel from './pages/Personnel'
 import TestList from './pages/TestList'
 import PartenaireList from './pages/PartenaireList'
+import PartenaireFacture from './pages/PartenaireFacture'
 
 import KeyExpired from './components/KeyExpired'
 import Notifications from './components/Notifications'
@@ -113,7 +114,7 @@ function App() {
           <Route path="partenaire" element={<PartenaireList />} />
           <Route path="ettiquette" element={<Ettiquette />} />
           <Route path="Formulaire" element={<Formulaire />} />
-          <Route path="instruction" element={<Instruction />} />
+          <Route path="partenairefacture" element={<PartenaireFacture />} />
           <Route path="notification" element={<Notifications />} />
           
           <Route path="parametre" element={<Parametre />} />

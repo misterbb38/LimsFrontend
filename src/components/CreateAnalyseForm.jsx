@@ -4,6 +4,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
 function CreateAnalyseForm({ onAnalyseChange }) {
+  const [selectedPartenaireType, setSelectedPartenaireType] = useState('');
+
   const [selectedTests, setSelectedTests] = useState([])
   const [availableTests, setAvailableTests] = useState([])
   const [ordonnancePdf, setOrdonnancePdf] = useState(null)
@@ -127,6 +129,20 @@ function CreateAnalyseForm({ onAnalyseChange }) {
   const handleUserChange = (e) => {
     setSelectedUserId(e.target.value)
   }
+
+  const handlePartenaireChange = (e) => {
+    const selectedId = e.target.value;
+    setSelectedPartenaireId(selectedId);
+    
+    // Trouver le type de partenaire sélectionné
+    const selectedPartenaire = partenaires.find(partenaire => partenaire._id === selectedId);
+    if (selectedPartenaire) {
+      setSelectedPartenaireType(selectedPartenaire.typePartenaire);
+    } else {
+      setSelectedPartenaireType('');
+    }
+  };
+  
 
   // Fonction pour filtrer les tests basée sur la recherche
   const filteredTests =
@@ -401,7 +417,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
                   <select
                     className="select select-primary w-full max-w-xs"
                     value={selectedPartenaireId}
-                    onChange={(e) => setSelectedPartenaireId(e.target.value)}
+                    onChange={handlePartenaireChange}
                     required
                   >
                     <option value="">Sélectionner un partenaire</option>
@@ -413,15 +429,17 @@ function CreateAnalyseForm({ onAnalyseChange }) {
                   </select>
                 </div>
 
-                <div>
-                  <label>Pourcentage de couverture</label>
-                  <input
-                    type="number"
-                    className="input input-primary w-full max-w-xs"
-                    value={pourcentageCouverture}
-                    onChange={(e) => setPourcentageCouverture(e.target.value)}
-                  />
-                </div>
+                {['ipm', 'assurance', 'sococim'].includes(selectedPartenaireType) && (
+      <div>
+        <label>Pourcentage de couverture</label>
+        <input
+          type="number"
+          className="input input-primary w-full max-w-xs"
+          value={pourcentageCouverture}
+          onChange={(e) => setPourcentageCouverture(e.target.value)}
+        />
+      </div>
+    )}
               </>
             )}
           </div>

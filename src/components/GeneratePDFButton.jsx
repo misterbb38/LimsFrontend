@@ -331,7 +331,8 @@ function GeneratePDFButton({ invoice }) {
         }
          else if (test.PrixPaf !== undefined) {
           prixChoisi = test.prixPaf
-        // Ne pas afficher CoefB si 'paf', ajustez selon votre logique
+          
+        
         }
 
         prixChoisi = prixChoisi || 0 // S'assurer que prixChoisi a une valeur par défaut
@@ -346,9 +347,9 @@ function GeneratePDFButton({ invoice }) {
         }
 
         // Calculer et afficher total
-        if (['ipm', 'assurance', 'sococim', 'paf'].includes(invoice.partenaireId?.typePartenaire)) {
+        if (['ipm', 'assurance', 'sococim'].includes(invoice.partenaireId?.typePartenaire) || invoice.partenaireId?.typePartenaire == null) {
           const total = prixChoisi * (test.coeficiantB || 1) // Assumer coeficiantB de 1 si non spécifié
-        doc.text(`${total.toFixed(0)}`, 166, textY)
+          doc.text(`${total.toFixed(0)}`, 166, textY)
         }else {
           const total = prixChoisi
           doc.text(`${total.toFixed(0)}`, 166, textY)
