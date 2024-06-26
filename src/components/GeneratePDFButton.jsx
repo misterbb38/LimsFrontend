@@ -93,6 +93,18 @@ function GeneratePDFButton({ invoice }) {
       img.src = src
     })
 
+    function addPageNumbers(doc) {
+      const pageCount = doc.internal.getNumberOfPages() // Obtenir le nombre total de pages
+
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i) // Définir la page courante sur laquelle le numéro de page sera ajouté
+        doc.setFontSize(9) // Définir la taille de la police pour le numéro de page
+        doc.setTextColor(0, 0, 0); // Définir la couleur du texte pour le numéro de page
+        // Ajouter le numéro de page au centre du pied de page de chaque page
+        doc.text(` ${i}/${pageCount}`, 185, 275, { align: 'center' })
+      }
+    }
+
     try {
       // Charger les images
       const [imgLeft, imgRight] = await Promise.all([
@@ -668,7 +680,7 @@ if (invoice.partenaireId?.typePartenaire !== 'clinique'){
       // Continuer avec la logique de création du PDF comme avant
 
       currentY += 20 // Espace avant les informations bancaires
-   
+      addPageNumbers(doc)
       const blob = doc.output('blob')
       // Créez une URL à partir du blob
       const url = URL.createObjectURL(blob)

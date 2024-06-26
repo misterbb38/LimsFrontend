@@ -146,13 +146,14 @@ function CreateAnalyseForm({ onAnalyseChange }) {
 
   // Fonction pour filtrer les tests basée sur la recherche
   const filteredTests =
-    searchTerm.length > 0
-      ? availableTests
-          .filter((test) =>
-            test.nom.toLowerCase().includes(searchTerm.toLowerCase())
-          )
-          .sort((a, b) => a.nom.localeCompare(b.nom)) // Ajout du tri alphabétique
-      : availableTests.sort((a, b) => a.nom.localeCompare(b.nom))
+  searchTerm.length > 0
+    ? availableTests
+        .filter((test) =>
+          test.nom.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+        .sort((a, b) => a.nom.localeCompare(b.nom)) // Ajout du tri alphabétique
+    : availableTests.sort((a, b) => a.nom.localeCompare(b.nom));
+
 
   // Fonction pour filtrer les patients basée sur la recherche
   const filteredPatients =
@@ -297,6 +298,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
               onChange={handleUserChange}
               value={selectedUserId}
               required
+              
             >
               <option value="">Sélectionner un patient</option>
               {filteredPatients.map((user) => (
@@ -325,6 +327,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
               onChange={(e) => handleTestSelection(e.target.value)}
               defaultValue=""
               required
+              multiple
             >
               <option disabled value="">
                 Choisir des paramettres
@@ -355,7 +358,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
             <div className="form-control">
               <label className="cursor-pointer label">
                 <span className="label-text">
-                  Le patient a t-il une partenaire(Assurance, Ipm ou Cabinet) ?
+                  Le patient a t-il une partenaire ?
                 </span>
                 <div className="flex mt-2">
                   <input

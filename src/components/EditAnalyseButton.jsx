@@ -66,7 +66,7 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
     const token = userInfo?.token
     try {
-      const response = await fetch(`${apiUrl}/api/test`, {
+      const response = await fetch(`${apiUrl}/api/test/analyse`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -241,7 +241,7 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
             <form onSubmit={handleSubmit}>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Filtre tests</span>
+                  <span className="label-text">Filtre Paramettre</span>
                 </label>
                 <input
                   type="text"
@@ -251,12 +251,13 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
                   className="input input-bordered w-full mb-2"
                 />
                 <label className="label">
-                  <span className="label-text">Tests</span>
+                  <span className="label-text">Paramettre</span>
                 </label>
                 <select
                   className="select select-bordered"
                   defaultValue=""
                   onChange={(e) => handleTestSelection(e.target.value)}
+                  multiple
                 >
                   <option disabled value="">
                     Choisir des tests
