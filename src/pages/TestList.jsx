@@ -244,7 +244,7 @@ function TestList() {
 
   useEffect(() => {
     fetchTests();
-  }, [currentPage, searchTerm]); // Recharger à chaque changement de page ou de terme de recherche
+  }, [currentPage]); // Recharger à chaque changement de page
 
   const fetchTests = async () => {
     setLoading(true);
@@ -272,6 +272,11 @@ function TestList() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = () => {
+    setCurrentPage(1); // Réinitialiser à la première page lors de la recherche
+    fetchTests();
   };
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -328,9 +333,9 @@ function TestList() {
           className="input input-bordered input-primary w-full max-w-xs"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyPress={(event) => event.key === 'Enter' && fetchTests()}
+          onKeyPress={(event) => event.key === 'Enter' && handleSearch()}
         />
-        <button className="btn btn-primary ml-2" onClick={fetchTests}>
+        <button className="btn btn-primary ml-2" onClick={handleSearch}>
           Rechercher
         </button>
       </div>
