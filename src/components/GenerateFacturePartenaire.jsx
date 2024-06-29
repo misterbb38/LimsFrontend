@@ -415,16 +415,20 @@ function GenerateFacturePartenaire({ partner, mois, annee }) {
       doc.setFont('helvetica', 'bold');
       doc.text(`FACTURE`, 90, currentY -3);
       doc.setFontSize(10);
-      doc.text(`PARTENAIRE: ${partner.partenaire || ''}`, 20, currentY);
+      doc.text(`PARTENAIRE: ${partner.partenaire || ''}`, 20, currentY + 2);
       doc.setFontSize(8);
-      doc.text(`Nombre de factures: ${partner.count || ''}`, 20, currentY + 15);
+      doc.text(`Nombre de factures: ${partner.count || ''}`, 20, currentY + 17);
       const reference = `${partner.partenaire || ''}-${mois || ''}${annee || ''}`;
 
       if (mois && annee) {
         const moisNom = getMonthName(parseInt(mois, 10));
-        doc.text(`Période: ${moisNom} ${annee}`, 20, currentY + 10);
-        doc.text(`Référence: ${reference}`, 20, currentY + 5); // Ajouter la référence
+        doc.text(`Période: ${moisNom} ${annee}`, 20, currentY + 12);
+        doc.text(`Référence: ${reference}`, 20, currentY + 7); // Ajouter la référence
       }
+      const today = new Date();
+    const formattedDate = today.toLocaleDateString('fr-FR');
+    doc.text(`Date: ${formattedDate}`, 170, currentY + 7);
+
 
       currentY += 25;
 
@@ -454,7 +458,7 @@ function GenerateFacturePartenaire({ partner, mois, annee }) {
         doc.text(`${etiquette.pourcentageCouverture || ''}%`, 140, currentY); // Ajout du pourcentage de couverture
         doc.text(etiquette.analyse.user.nom || '', 80, currentY);
         doc.text(etiquette.analyse.user.prenom || '', 110, currentY);
-        doc.text(`${etiquette.sommeAPayer || ''}CFA`, 175, currentY, { align: 'right' });
+        doc.text(`${etiquette.sommeAPayer || ''}`, 175, currentY, { align: 'right' });
         currentY += 10;
       });
 
@@ -466,7 +470,7 @@ function GenerateFacturePartenaire({ partner, mois, annee }) {
       const totalSommeInWords = numberToWords(totalSomme);
 
       doc.setFontSize(12);
-      doc.text(`TOTAL SOMME HT: ${totalSomme} CFA`, 120, currentY);
+      doc.text(`TOTAL HT: ${totalSomme} CFA`, 120, currentY);
 
       currentY += 10; // Ajustement pour laisser un peu d'espace après la somme en chiffres
       doc.text(`Arrêtée à la somme de : ${totalSommeInWords} francs CFA`, 20, currentY + 5);

@@ -307,15 +307,18 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     }
   }
 
-  const handleGermeRemoval = (germe) => {
-    const updatedGermeIdentifie = culture.germeIdentifie.filter(
-      (g) => g !== germe
-    )
-    const updatedAntibiogrammes = { ...antibiogrammes }
-    delete updatedAntibiogrammes[germe]
-    setCulture({ ...culture, germeIdentifie: updatedGermeIdentifie })
-    setAntibiogrammes(updatedAntibiogrammes)
-  }
+  const handleGermeRemoval = (germeNom) => {
+    setCulture((prev) => ({
+      ...prev,
+      germeIdentifie: prev.germeIdentifie.filter((g) => g.nom !== germeNom),
+    }));
+    setAntibiogrammes((prev) => {
+      const updated = { ...prev };
+      delete updated[germeNom];
+      return updated;
+    });
+  };
+  
 
   const handleAddAntibiogramme = (event, germeNom) => {
     event.preventDefault() // Prevent form submission

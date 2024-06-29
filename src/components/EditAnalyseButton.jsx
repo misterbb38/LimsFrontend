@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -31,8 +30,8 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
 
   // Ajout d'un état pour la recherche
   const [searchTerm, setSearchTerm] = useState('')
-  const [searchTermPartenaire, setSearchTermPartenaire] = useState('');
-
+  const [searchTermPartenaire, setSearchTermPartenaire] = useState('')
+  const [isLoading, setIsLoading] = useState(false) // État pour le chargement
 
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
 
@@ -80,12 +79,12 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
   }
 
   useEffect(() => {
-    setHasInsurance(selectedPartenaireId ? 'oui' : 'non');
-  }, [selectedPartenaireId]);
+    setHasInsurance(selectedPartenaireId ? 'oui' : 'non')
+  }, [selectedPartenaireId])
 
   useEffect(() => {
-    setHasReduction(reductionValue > 0 ? 'oui' : 'non');
-  }, [reductionValue]);
+    setHasReduction(reductionValue > 0 ? 'oui' : 'non')
+  }, [reductionValue])
 
   const fetchAnalyseData = async () => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
@@ -130,7 +129,10 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
         }
       }
     } catch (error) {
-      console.error("Erreur lors de la récupération des données de l'analyse:", error)
+      console.error(
+        "Erreur lors de la récupération des données de l'analyse:",
+        error
+      )
     }
   }
 
@@ -157,25 +159,32 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
   }
 
   // Fonction pour filtrer les tests basée sur la recherche
-  const filteredTests = searchTerm.length > 0
-  ? availableTests
-    .filter(test => test.nom.toLowerCase().includes(searchTerm.toLowerCase()))
-    .sort((a, b) => a.nom.localeCompare(b.nom)) // Ajout du tri alphabétique
-  : availableTests.sort((a, b) => a.nom.localeCompare(b.nom));
+  const filteredTests =
+    searchTerm.length > 0
+      ? availableTests
+          .filter((test) =>
+            test.nom.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+          .sort((a, b) => a.nom.localeCompare(b.nom)) // Ajout du tri alphabétique
+      : availableTests.sort((a, b) => a.nom.localeCompare(b.nom))
 
-      const filteredPartenaires = searchTermPartenaire.length > 0
+  const filteredPartenaires =
+    searchTermPartenaire.length > 0
       ? partenaires
-        .filter(partenaire => partenaire.nom.toLowerCase().includes(searchTermPartenaire.toLowerCase()))
-        .sort((a, b) => a.nom.localeCompare(b.nom)) // Ajout du tri alphabétique
-      : partenaires.sort((a, b) => a.nom.localeCompare(b.nom));
-    
-    
+          .filter((partenaire) =>
+            partenaire.nom
+              .toLowerCase()
+              .includes(searchTermPartenaire.toLowerCase())
+          )
+          .sort((a, b) => a.nom.localeCompare(b.nom)) // Ajout du tri alphabétique
+      : partenaires.sort((a, b) => a.nom.localeCompare(b.nom))
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setIsLoading(true) // Début du chargement
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
     const token = userInfo?.token
-   
+
     const userconnect = userInfo?._id
 
     const formData = new FormData()
@@ -226,6 +235,8 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'analyse:", error)
       console.log(formData)
+    } finally {
+      setIsLoading(false) // Fin du chargement
     }
   }
 
@@ -331,36 +342,38 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
                       ))}
                     </select> */}
 
-<div>
-  <label className="label">
-    <span className="label-text">Filtre Partenaire</span>
-  </label>
-  <input
-    type="text"
-    placeholder="Rechercher un partenaire..."
-    value={searchTermPartenaire}
-    onChange={(e) => setSearchTermPartenaire(e.target.value)}
-    className="input input-bordered w-full max-w-xs"
-  />
-</div>
+                    <div>
+                      <label className="label">
+                        <span className="label-text">Filtre Partenaire</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Rechercher un partenaire..."
+                        value={searchTermPartenaire}
+                        onChange={(e) =>
+                          setSearchTermPartenaire(e.target.value)
+                        }
+                        className="input input-bordered w-full max-w-xs"
+                      />
+                    </div>
 
-<select
-      className="select select-primary w-full max-w-xs mt-2"
-      value={selectedPartenaireId}
-      onChange={(e) => {
-        setSelectedPartenaireId(e.target.value);
-        if (e.target.value === '') {
-          setPourcentageCouverture(0); // Réinitialise le pourcentage de couverture si aucun partenaire n'est sélectionné
-        }
-      }}
-    >
-      <option value="">Sélectionner un partenaire</option>
-      {filteredPartenaires.map((partenaire) => (
-        <option key={partenaire._id} value={partenaire._id}>
-          {partenaire.nom}
-        </option>
-      ))}
-    </select>
+                    <select
+                      className="select select-primary w-full max-w-xs mt-2"
+                      value={selectedPartenaireId}
+                      onChange={(e) => {
+                        setSelectedPartenaireId(e.target.value)
+                        if (e.target.value === '') {
+                          setPourcentageCouverture(0) // Réinitialise le pourcentage de couverture si aucun partenaire n'est sélectionné
+                        }
+                      }}
+                    >
+                      <option value="">Sélectionner un partenaire</option>
+                      {filteredPartenaires.map((partenaire) => (
+                        <option key={partenaire._id} value={partenaire._id}>
+                          {partenaire.nom}
+                        </option>
+                      ))}
+                    </select>
                     <input
                       type="number"
                       placeholder="Pourcentage de couverture"
@@ -495,7 +508,8 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
                     className="input input-bordered input-primary w-full max-w-xs"
                   />
                   <h6 className="label-text mt-2">
-                    *Si le patient donne une avance additionnelle, additionnez-la avec son dernier avance: {avance} CFA
+                    *Si le patient donne une avance additionnelle,
+                    additionnez-la avec son dernier avance: {avance} CFA
                   </h6>
                   <p>Le patient a déjà avancé : {avancePatient} CFA</p>
                   <p>Le patient doit donner : {reliquat} CFA</p>
@@ -514,9 +528,15 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
                 />
               </div>
               <div className="modal-action">
-                <button type="submit" className="btn btn-primary">
-                  Enregistrer
-                </button>
+                {isLoading ? (
+                  <div className="flex justify-center items-center">
+                    <span className="loading loading-spinner text-primary"></span>
+                  </div>
+                ) : (
+                  <button type="submit" className="btn btn-primary">
+                    Enregistrer
+                  </button>
+                )}
                 <button
                   type="button"
                   className="btn"
