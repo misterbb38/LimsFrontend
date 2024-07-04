@@ -15,6 +15,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
   const [hasInsurance, setHasInsurance] = useState('')
   const [selectedPartenaireId, setSelectedPartenaireId] = useState('')
   const [statusPayement, setStatusPayement] = useState('')
+  const [typeAnalyse, setTypeAnalyse] = useState('Interne')
   const [pourcentageCouverture, setPourcentageCouverture] = useState('')
   const [pc1, setPc1] = useState(false)
   const [pc2, setPc2] = useState(false)
@@ -120,6 +121,10 @@ function CreateAnalyseForm({ onAnalyseChange }) {
     setStatusPayement(e.target.value)
   }
 
+  const handleTypeAnalyseChange = (e) => {
+    setTypeAnalyse(e.target.value)
+  }
+
   const handleAvanceChange = (e) => {
     const value = parseFloat(e.target.value) || 0 // Utilisez parseFloat
     setAvance(value)
@@ -209,6 +214,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
     if (pc1) formData.append('pc1', 2000)
     if (pc2) formData.append('pc2', 4000)
     formData.append('statusPayement', statusPayement || 'Impayée')
+    formData.append('typeAnalyse', typeAnalyse || 'Interne' )
 
     if (statusPayement === 'Reliquat') {
       formData.append('avance', avance) // Ajouter l'avance au formData
@@ -239,8 +245,9 @@ function CreateAnalyseForm({ onAnalyseChange }) {
         body: formData, // Passer FormData comme corps de la requête
       })
       const data = await response.json()
-      console.log(data)
+      
       if (data.success) {
+        console.log('les info de l api',data)
         setToastMessage('Analyse ajoutée avec succès')
         setIsSuccess(true)
         onAnalyseChange()
@@ -353,6 +360,24 @@ function CreateAnalyseForm({ onAnalyseChange }) {
                 </div>
               ))}
             </div>
+
+            {/* // Type d analyse */}
+          <div className="form-control">
+            <label className="label">Type d'analyse(fait au labo ou pas)</label>
+            <select
+              className="select select-bordered"
+              value={typeAnalyse}
+              onChange={handleTypeAnalyseChange}
+            >
+              <option value="" disabled>
+                Choisissez
+              </option>
+              {/* option */}
+              <option value="Interne">Interne</option>
+              <option value="Externe">Externe</option>
+              
+            </select>
+          </div>
 
             {/* Ajout des boutons radio pour l'assurance */}
             <div className="form-control">

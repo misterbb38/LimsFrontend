@@ -5,9 +5,11 @@ import { faEye } from '@fortawesome/free-solid-svg-icons'
 import { faTrash } from '@fortawesome/free-solid-svg-icons'
 import EditHistoriqueButton from './EditHistoriqueButton'
 import EditResultatButton from './EditResultatButton'
+import EditFileResultatButton from './EditFileResultatButton'
 import AddHistoriqueForm from './AddHistoriqueForm'
 import AddResultatForm from './AddResultatForm'
 import EditPatientButton from './EditPatientButton'
+import AddExterneResultat from './AddExterneResultat'
 import GenerateBarcodeButton from './GenerateBarcodeButton'
 
 function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
@@ -92,6 +94,46 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
     }
   }
 
+  const deleteFileResultat = async (fileResultatId) => {
+    const userConfirmed = window.confirm(
+      'Êtes-vous sûr de vouloir supprimer ce fichier résultat ?'
+    )
+
+    if (!userConfirmed) {
+      return
+    }
+    setIsLoading(true) // Commencer le chargement
+
+    try {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+      const token = userInfo?.token
+      const apiUrl = import.meta.env.VITE_APP_API_BASE_URL // Ensure this is set in your environment variables
+
+      const response = await fetch(
+        `${apiUrl}/api/fileresultats/${fileResultatId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      const data = await response.json()
+      if (data.success) {
+        alert('Fichier résultat supprimé avec succès.')
+        // Rafraîchir la liste des fichiers résultats après la suppression
+        fetchAnalyseData(analyseId)
+      } else {
+        console.error('Failed to delete file resultat')
+      }
+    } catch (error) {
+      console.error('Error deleting file resultat:', error)
+    } finally {
+      setIsLoading(false) // Arrêter le chargement
+    }
+  }
+
   const deleteResultat = async (resultatId) => {
     const userConfirmed = window.confirm(
       'Êtes-vous sûr de vouloir supprimer ce résultat ?'
@@ -168,6 +210,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
           >
             Ajouter une mise à jour
           </button>
+          {analyseData.typeAnalyse === 'Interne' && (
           <button
             className="btn"
             onClick={() =>
@@ -176,6 +219,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
           >
             Ajouter un résultat
           </button>
+          )}
           <dialog
             id={`my_modal_5_${analyseId}`}
             className="modal modal-bottom sm:modal-middle"
@@ -193,8 +237,11 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
               </div>
             </div>
           </dialog>
+          
+          
           <dialog id={`my_modal_6_${analyseId}`} className="modal modal-middle">
             <div className="modal-box  w-11/12 max-w-5xl">
+              
               <AddResultatForm
                 analyseId={analyseId}
                 patientId={analyseData.userId?._id}
@@ -212,6 +259,33 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
               </div>
             </div>
           </dialog>
+          {analyseData.typeAnalyse !== 'Interne' && (
+
+          <button
+            className="btn ml-2"
+            onClick={() =>
+              document.getElementById(`my_modal_7_${analyseId}`).showModal()
+            }
+          >
+            Ajouter un résultat externe
+          </button>
+        )}
+
+          <dialog id={`my_modal_7_${analyseId}`} className="modal modal-middle">
+            <div className="modal-box w-11/12 max-w-5xl">
+              <AddExterneResultat
+                analyseId={analyseId}
+                patientId={analyseData.userId?._id}
+                onResultatChange={() => fetchAnalyseData(analyseId)}
+              />
+              <div className="modal-action">
+                <form method="dialog">
+                  <button className="btn">Fermer</button>
+                </form>
+              </div>
+            </div>
+          </dialog>
+
           <div className="divider"></div>
 
           <h1 className="font-bold">Détails</h1>
@@ -416,70 +490,138 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
             </div>
 
             <div className="divider"></div>
+            {/* resultat interne */}
 
-            <div className="mb-4 overflow-x-auto">
-              <h3 className="font-bold text-lg mb-2">Resultats</h3>
-              <table className="table w-full">
-                {/* Entête du tableau */}
-                <thead className="bg-primary text-primary-content">
-                  <tr>
-                    <th>Date</th>
-                    <th>Paramettre</th>
-                    <th>Valeur</th>
-                    <th>Type de prelevement </th>
-                    <th>Valeur d'interpreation </th>
-                    <th>Commentaire</th>
-                    <th>Auteur</th>
-                    <th className="font-bold">Actions</th>
-                  </tr>
-                </thead>
-                {/* Corps du tableau */}
-                <tbody>
-                  {analyseData.resultat.map((resul) => (
-                    <tr key={resul._id}>
-                      <td>
-                        {resul.createdAt ? formatDate(resul.createdAt) : 'N/A'}
-                      </td>
-                      <td>{resul?.testId?.nom}</td>
-                      <td>{resul?.valeur}</td>
-                      <td>{resul?.typePrelevement}</td>
-                      <td>
-                        {resul?.statutMachine
-                          ? resul?.testId?.valeurMachineA
-                          : resul?.testId?.valeurMachineB}
-                      </td>
-
-                      <td>{resul.statutInterpretation ? 'Oui' : 'Non'}</td>
-
-                      <td>{resul?.updatedBy?.nom}</td>
-                      <td>
-                        <div className="flex justify-around space-x-1">
-                          <EditResultatButton
-                            resultatId={resul._id}
-                            analyseId={analyseId}
-                            onResultatUpdated={() =>
-                              fetchAnalyseData(analyseId)
-                            }
-                          />
-                          <button
-                            className="btn btn-error"
-                            onClick={() => deleteResultat(resul._id)}
-                            disabled={isLoading}
-                          >
-                            {isLoading ? (
-                              <span className="loading loading-spinner text-error"></span>
-                            ) : (
-                              <FontAwesomeIcon icon={faTrash} />
-                            )}
-                          </button>
-                        </div>
-                      </td>
+            {analyseData.typeAnalyse === 'Interne' && (
+              <div className="mb-4 overflow-x-auto">
+                <h3 className="font-bold text-lg mb-2">Resultats</h3>
+                <table className="table w-full">
+                  {/* Entête du tableau */}
+                  <thead className="bg-primary text-primary-content">
+                    <tr>
+                      <th>Date</th>
+                      <th>Paramettre</th>
+                      <th>Valeur</th>
+                      <th>Type de prelevement </th>
+                      <th>Valeur d'interpreation </th>
+                      <th>Commentaire</th>
+                      <th>Auteur</th>
+                      <th className="font-bold">Actions</th>
                     </tr>
-                  ))}
-                  {}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  {/* Corps du tableau */}
+                  <tbody>
+                    {analyseData.resultat.map((resul) => (
+                      <tr key={resul._id}>
+                        <td>
+                          {resul.createdAt
+                            ? formatDate(resul.createdAt)
+                            : 'N/A'}
+                        </td>
+                        <td>{resul?.testId?.nom}</td>
+                        <td>{resul?.valeur}</td>
+                        <td>{resul?.typePrelevement}</td>
+                        <td>
+                          {resul?.statutMachine
+                            ? resul?.testId?.valeurMachineA
+                            : resul?.testId?.valeurMachineB}
+                        </td>
+                        <td>{resul.statutInterpretation ? 'Oui' : 'Non'}</td>
+                        <td>{resul?.updatedBy?.nom}</td>
+                        <td>
+                          <div className="flex justify-around space-x-1">
+                            <EditResultatButton
+                              resultatId={resul._id}
+                              analyseId={analyseId}
+                              onResultatUpdated={() =>
+                                fetchAnalyseData(analyseId)
+                              }
+                            />
+                            <button
+                              className="btn btn-error"
+                              onClick={() => deleteResultat(resul._id)}
+                              disabled={isLoading}
+                            >
+                              {isLoading ? (
+                                <span className="loading loading-spinner text-error"></span>
+                              ) : (
+                                <FontAwesomeIcon icon={faTrash} />
+                              )}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Tableau pour fileResultat */}
+            {analyseData.typeAnalyse !== 'Interne' && (
+              <div className="mb-4 overflow-x-auto">
+                <h3 className="font-bold text-lg mb-2">
+                  Fichiers de Résultats
+                </h3>
+                <table className="table w-full">
+                  {/* Entête du tableau */}
+                  <thead className="bg-primary text-primary-content">
+                    <tr>
+                      <th>Date</th>
+                      <th>Fichier</th>
+                      <th>Auteur</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  {/* Corps du tableau */}
+                  <tbody>
+                    {analyseData.fileResultat.map((file) => (
+                      <tr key={file._id}>
+                        <td>
+                          {file.createdAt ? formatDate(file.createdAt) : 'N/A'}
+                        </td>
+                        <td>
+                          <a
+                            href={`${apiUrl}/resultatExterne/${file.path.split('\\').pop()}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="link link-primary"
+                          >
+                            <button>Ouvrir</button>
+                          </a>
+                        </td>
+                        <td>
+                          {file?.updatedBy?.nom} {file?.updatedBy?.prenom}
+                        </td>
+                        <td>
+                          <div className="flex justify-around space-x-1">
+                            <EditFileResultatButton
+                              fileResultatId={file._id}
+                              analyseId={analyseId}
+                              onFileResultatUpdated={() =>
+                                fetchAnalyseData(analyseId)
+                              }
+                            />
+                            <button
+                              className="btn btn-error"
+                              onClick={() => deleteFileResultat(file._id)}
+                              disabled={isLoading}
+                            >
+                              {isLoading ? (
+                                <span className="loading loading-spinner text-error"></span>
+                              ) : (
+                                <FontAwesomeIcon icon={faTrash} />
+                              )}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
           <div className="modal-action">
             <form method="dialog">

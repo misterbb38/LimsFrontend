@@ -8,7 +8,8 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
   const [selectedTests, setSelectedTests] = useState([])
   const [availableTests, setAvailableTests] = useState([])
   const [ordonnancePdf, setOrdonnancePdf] = useState(null)
-  const [statusPayement, setStatusPayement] = useState('')
+  const [statusPayement, setStatusPayement] = useState('') 
+  const [typeAnalyse, setTypeAnalyse] = useState('')
   const [pc1, setPc1] = useState(false)
   const [pc2, setPc2] = useState(false)
   const [deplacement, setDeplacement] = useState(0)
@@ -114,6 +115,7 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
         setPc1(data.data.pc1 === 2000) // true si pc1 est 2000, sinon false
         setPc2(data.data.pc2 === 4000)
         setStatusPayement(data.data.statusPayement || 'Impayée') // Utilisez la valeur par défaut si aucune donnée n'est disponible
+        setTypeAnalyse(data.data.typeAnalyse)
         setAvance(data.data.avance || 0) // Récupération de l'avance
         setAvancePatient(data.data.avance || 0) // Récupération de l'avance
         setReliquat(data.data.reliquat || 0) // Récupération du reliquat
@@ -212,6 +214,7 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
       formData.append('typeReduction', reductionType)
     }
     formData.append('statusPayement', statusPayement)
+    formData.append('typeAnalyse', typeAnalyse)
     if (statusPayement === 'Reliquat') {
       formData.append('avance', avance) // Ajouter l'avance au formData
       console.log('Avance ajoutée au formData:', avance) // Vérification
@@ -295,6 +298,26 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
                   ))}
                 </div>
               </div>
+
+
+               {/* // Type d analyse */}
+          <div className="form-control">
+            <label className="label">Type d'analyse(fait au labo ou pas)</label>
+            <select
+              className="select select-bordered"
+              value={typeAnalyse}
+              onChange={(e) => setTypeAnalyse(e.target.value)}
+            >
+              <option value="" disabled>
+                Choisissez
+              </option>
+              {/* option */}
+              <option value="Interne">Interne</option>
+              <option value="Externe">Externe</option>
+              
+            </select>
+          </div>
+
               <div className="form-control">
                 <label className="cursor-pointer label">
                   <span className="label-text">
