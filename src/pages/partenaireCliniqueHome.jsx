@@ -72,7 +72,6 @@ function PartenaireClinique() {
     }
   }
 
- 
   const handleFilter = (filters) => {
     setLoading(true)
 
@@ -178,7 +177,7 @@ function PartenaireClinique() {
       'preleveur',
       'docteur',
       'patient',
-      'partenaire'
+      'partenaire',
     ].includes(userInfo?.userType)
   ) {
     // Si l'utilisateur n'est pas autorisé, retourner un message d'erreur ou un composant spécifique
@@ -303,13 +302,26 @@ function PartenaireClinique() {
                     <td>
                       <div className="flex justify-around space-x-1">
                         <GeneratePDFButton invoice={facture} />
-                        {facture.historiques.length > 0 &&
+                        {facture.typeAnalyse === 'Interne' &&
+                        facture.historiques.length > 0 &&
                         facture.historiques[facture.historiques.length - 1]
                           .status === 'Validé' ? (
                           <GenerateResultatButton invoice={facture} />
                         ) : (
-                          <></> // Rendre un fragment vide si le statut n'est pas "Validé"
+                          <></> // Rendre un fragment vide si les conditions ne sont pas remplies
                         )}
+
+                        {facture.fileResultat &&
+                          facture.fileResultat.length > 0 && (
+                            <a
+                              href={`${apiUrl}/resultatExterne/${facture.fileResultat[0].path.split('\\').pop()}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn btn-primary"
+                            >
+                              <FontAwesomeIcon icon={faDownload} />
+                            </a>
+                          )}
 
                         {/* <ViewAnalyseButton
                           analyseId={facture._id}

@@ -9,6 +9,8 @@ import FiltreAnalyse from '../components/AnalyseFilter'
 import DeleteAnalyseButton from '../components/DeleteAnalyseButton'
 import NavigationBreadcrumb from '../components/NavigationBreadcrumb'
 import Chatbot from '../components/Chatbot'
+import { faDownload } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 function Facture() {
   const [allFactures, setAllFactures] = useState([])
@@ -92,7 +94,6 @@ function Facture() {
       setLoading(false)
     }
   }
-
 
   const handleFilter = (filters) => {
     setLoading(true)
@@ -192,9 +193,14 @@ function Facture() {
 
   // Vérifier si le type d'utilisateur est autorisé
   if (
-    !['superadmin', 'medecin', 'technicien', 'preleveur', 'docteur', 'accueil', ].includes(
-      userInfo?.userType
-    )
+    ![
+      'superadmin',
+      'medecin',
+      'technicien',
+      'preleveur',
+      'docteur',
+      'accueil',
+    ].includes(userInfo?.userType)
   ) {
     // Si l'utilisateur n'est pas autorisé, retourner un message d'erreur ou un composant spécifique
     return (
@@ -232,7 +238,7 @@ function Facture() {
       {/* You can open the modal using document.getElementById('ID').showModal() method */}
       <button
         className="btn"
-        onClick={() => document.getElementById('my_modal_3').showModal() }
+        onClick={() => document.getElementById('my_modal_3').showModal()}
       >
         Ajouter une Analyse
       </button>
@@ -245,10 +251,12 @@ function Facture() {
             </button>
           </form>
 
-          <CreateAnalyseForm onAnalyseChange={() => {
-        refreshFactures();
-        document.getElementById('my_modal_3').close(); // Ferme le modal
-      }} />
+          <CreateAnalyseForm
+            onAnalyseChange={() => {
+              refreshFactures()
+              document.getElementById('my_modal_3').close() // Ferme le modal
+            }}
+          />
         </div>
       </dialog>
       <div className="divider"></div>
@@ -275,7 +283,9 @@ function Facture() {
                     Patient
                   </th>
                   <th className="font-bold text-lg text-base-content">NIP</th>
-                  <th className="font-bold text-lg text-base-content">Paramettre</th>
+                  <th className="font-bold text-lg text-base-content">
+                    Paramettre
+                  </th>
                   <th className="font-bold text-lg text-base-content">
                     Facture
                   </th>
@@ -293,8 +303,11 @@ function Facture() {
                 {currentFactures.map((facture) => (
                   <tr key={facture._id}>
                     <td>{formatDate(facture.createdAt)}</td>
-                    <td>{facture.identifiant}<GenerateTicketButton invoice={facture} /></td>
-                    
+                    <td>
+                      {facture.identifiant}
+                      <GenerateTicketButton invoice={facture} />
+                    </td>
+
                     <td>
                       {facture.userId
                         ? `${facture.userId.prenom} ${facture.userId.nom}`
@@ -305,14 +318,12 @@ function Facture() {
                     </td>
                     <td>{facture.tests.map((test) => test.nom).join(', ')}</td>
                     <td>
-                    <GeneratePDFButton invoice={facture} />
+                      <GeneratePDFButton invoice={facture} />
                       <span
                         className={paymentStatusClasses[facture.statusPayement]}
                       >
                         {facture.statusPayement}
-                        
                       </span>
-                     
                     </td>
                     {/* <td>{facture.status}</td> */}
 
@@ -337,21 +348,33 @@ function Facture() {
                                 ].status === 'Livré au laboratoire'
                               ? 'Livré'
                               : facture.historiques[
-                                facture.historiques.length - 1
-                              ].status === 'Validation technique'
-                            ? 'Technique'
-                              : facture.historiques[
-                                  facture.historiques.length - 1
-                                ].status
+                                    facture.historiques.length - 1
+                                  ].status === 'Validation technique'
+                                ? 'Technique'
+                                : facture.historiques[
+                                    facture.historiques.length - 1
+                                  ].status
                           : 'Non défini'}
                       </span>
                     </td>
 
                     <td>
                       <div className="flex justify-around space-x-1">
-                       
-                        
-                        <GenerateResultatButton invoice={facture} />
+                        {facture.typeAnalyse === 'Interne' && facture.resultat.length > 0 && (
+                          <GenerateResultatButton invoice={facture} />
+                        )}
+
+                        {facture.fileResultat &&
+                          facture.fileResultat.length > 0 && (
+                            <a
+                              href={`${apiUrl}/resultatExterne/${facture.fileResultat[0].path.split('\\').pop()}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn btn-primary"
+                            >
+                              <FontAwesomeIcon icon={faDownload} />
+                            </a>
+                          )}
                         <ViewAnalyseButton
                           analyseId={facture._id}
                           onAnalyseRefresh={refreshFactures}
