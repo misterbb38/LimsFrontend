@@ -583,7 +583,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
                         </td>
                         <td>
                           <a
-                            href={`${apiUrl}/resultatExterne/${file.path.split('\\').pop()}`}
+                            href={file.path}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="link link-primary"

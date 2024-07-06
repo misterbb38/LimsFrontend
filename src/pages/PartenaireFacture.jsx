@@ -46,7 +46,6 @@ function PartenaireFacture() {
     const query = new URLSearchParams();
     if (mois) query.append('mois', mois);
     if (annee) query.append('annee', annee);
-
     const fetchFilteredPartners = async () => {
       setLoading(true);
       try {
