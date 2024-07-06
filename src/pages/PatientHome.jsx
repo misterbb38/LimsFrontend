@@ -360,7 +360,7 @@ function PatientHome() {
                         {facture.fileResultat &&
                           facture.fileResultat.length > 0 && (
                             <a
-                              href={`${apiUrl}/resultatExterne/${facture.fileResultat[0].path.split('\\').pop()}`}
+                              href={facture.fileResultat[0].path} // Utiliser directement l'URL Cloudinary
                               target="_blank"
                               rel="noopener noreferrer"
                               className="btn btn-primary"

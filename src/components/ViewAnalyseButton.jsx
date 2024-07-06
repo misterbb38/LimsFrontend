@@ -330,7 +330,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
                     <td>
                       {analyseData.ordonnancePdf ? (
                         <a
-                          href={`${apiUrl}/ordonnances/${analyseData.ordonnancePdf.split('\\').pop()}`}
+                          href={analyseData.ordonnancePdf}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="link link-primary"
