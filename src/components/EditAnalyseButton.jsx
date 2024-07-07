@@ -544,7 +544,7 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
                   <span className="label-text">Date de récupération</span>
                 </label>
                 <input
-                  type="date"
+                  type="datetime-local"
                   className="input input-bordered"
                   value={dateDeRecuperation}
                   onChange={(e) => setDateDeRecuperation(e.target.value)}

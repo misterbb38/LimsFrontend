@@ -639,17 +639,22 @@ if (invoice.partenaireId?.typePartenaire !== 'clinique'){
 
       // Vérifier si la date de récupération est définie
       if (invoice.dateDeRecuperation) {
-        const dateDeRecuperation = new Date(invoice.dateDeRecuperation)
-        const options = { year: 'numeric', month: 'long', day: 'numeric' } // Format de date long et localisé
-        const formattedDateDeRecuperation = dateDeRecuperation.toLocaleDateString(
-          'fr-FR',
-          options
-        ) // Ajustez 'fr-FR' au besoin
-
-        // Ajouter la date formatée à la mise en garde
-
-        miseEnGarde += `\nRésultats à récupérer le ${formattedDateDeRecuperation}`
-      }
+        const dateDeRecuperation = new Date(invoice.dateDeRecuperation);
+        const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            hour12: false // Utiliser le format 24h
+        };
+        const formattedDateDeRecuperation = dateDeRecuperation.toLocaleString('fr-FR', options); // Ajustez 'fr-FR' au besoin
+    
+        // Ajouter la date formatée avec l'heure à la mise en garde
+        miseEnGarde += `\nRésultats à récupérer le ${formattedDateDeRecuperation}`;
+    }
+    
     
 
       // Puis, utilisez `miseEnGarde` où vous avez besoin de l'afficher
