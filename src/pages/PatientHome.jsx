@@ -9,6 +9,8 @@ import DeleteAnalyseButton from '../components/DeleteAnalyseButton'
 import NavigationBreadcrumb from '../components/NavigationBreadcrumb'
 import CurrencySelector from '../components/CurrencySelector' // Importez le nouveau composant
 import Chatbot from '../components/Chatbot'
+import { faDownload } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 function PatientHome() {
   const [allFactures, setAllFactures] = useState([])
