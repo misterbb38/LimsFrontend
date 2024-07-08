@@ -302,7 +302,7 @@ function PartenaireClinique() {
                     <td>
                       <div className="flex justify-around space-x-1">
                         <GeneratePDFButton invoice={facture} />
-                        {facture.typeAnalyse === 'Interne' &&
+                        {
                         facture.historiques.length > 0 &&
                         facture.historiques[facture.historiques.length - 1]
                           .status === 'Validé' ? (
