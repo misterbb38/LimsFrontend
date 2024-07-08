@@ -360,7 +360,7 @@ function Facture() {
 
                     <td>
                       <div className="flex justify-around space-x-1">
-                        {facture.typeAnalyse === 'Interne' && facture.resultat.length > 0 && (
+                        {facture.resultat.length > 0 && (
                           <GenerateResultatButton invoice={facture} />
                         )}
 
