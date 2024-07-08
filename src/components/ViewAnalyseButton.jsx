@@ -210,7 +210,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
           >
             Ajouter une mise à jour
           </button>
-          {analyseData.typeAnalyse === 'Interne' && (
+          
           <button
             className="btn"
             onClick={() =>
@@ -219,7 +219,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
           >
             Ajouter un résultat
           </button>
-          )}
+         
           <dialog
             id={`my_modal_5_${analyseId}`}
             className="modal modal-bottom sm:modal-middle"
@@ -259,7 +259,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
               </div>
             </div>
           </dialog>
-          {analyseData.typeAnalyse !== 'Interne' && (
+          
 
           <button
             className="btn ml-2"
@@ -269,7 +269,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
           >
             Ajouter un résultat externe
           </button>
-        )}
+        
 
           <dialog id={`my_modal_7_${analyseId}`} className="modal modal-middle">
             <div className="modal-box w-11/12 max-w-5xl">
