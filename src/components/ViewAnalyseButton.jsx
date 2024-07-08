@@ -492,7 +492,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
             <div className="divider"></div>
             {/* resultat interne */}
 
-            {analyseData.typeAnalyse === 'Interne' && (
+            
               <div className="mb-4 overflow-x-auto">
                 <h3 className="font-bold text-lg mb-2">Resultats</h3>
                 <table className="table w-full">
@@ -556,10 +556,10 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
                   </tbody>
                 </table>
               </div>
-            )}
+           
 
             {/* Tableau pour fileResultat */}
-            {analyseData.typeAnalyse !== 'Interne' && (
+            
               <div className="mb-4 overflow-x-auto">
                 <h3 className="font-bold text-lg mb-2">
                   Fichiers de Résultats
@@ -621,7 +621,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
                   </tbody>
                 </table>
               </div>
-            )}
+           
           </div>
           <div className="modal-action">
             <form method="dialog">
