@@ -20,7 +20,7 @@ function PatientHome() {
 
   // Mapping des statuts aux classes de couleur de DaisyUI
   const statusBadgeClasses = {
-    Création: 'badge badge-info text-white font-bold', // Bleu pour "Création"
+    Création: 'badge badge-info text-white font-bold', // Bleu pour "Création "
     'En attente': 'badge badge-warning text-white font-bold', // Jaune pour "En attente"
     Approuvé: 'badge badge-success text-white font-bold', // Vert pour "Approuvé"
     'Échantillon collecté': 'badge badge-primary text-white font-bold', // Bleu foncé pour "Échantillon collecté"
