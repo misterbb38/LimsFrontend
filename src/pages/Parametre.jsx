@@ -333,11 +333,7 @@ const Parametre = () => {
                     <div className="mb-4 flex items-center gap-3">
                       <div className="h-14 w-14 rounded-full">
                         <img
-                          src={
-                            user.logo
-                              ? `${apiUrl}/${user.logo.replace(/\\/g, '/')}`
-                              : userThree
-                          }
+                          src={user.logo ? user.logo : userThree}
                           alt="User"
                         />
                       </div>
