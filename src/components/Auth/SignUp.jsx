@@ -67,8 +67,26 @@ const SignUp = ({ onUser }) => {
     fetchPartenaires()
   }, [apiUrl])
 
+  const formatPhoneNumber = (phoneNumber) => {
+    // Supprimer tous les caractères non numériques
+    const digits = phoneNumber.replace(/\D/g, '');
+  
+    // Ajouter le préfixe international +221 s'il n'est pas déjà présent
+    if (digits.startsWith('221')) {
+      return `+${digits}`;
+    } else if (digits.startsWith('77') || digits.startsWith('78') || digits.startsWith('78') ) {
+      return `+221${digits}`;
+    } else {
+      return phoneNumber; // Retourner tel quel si le format est inattendu
+    }
+  };
+  
+
   const handleChange = (e) => {
     const { name, value } = e.target
+    // Format the phone number if the field is 'telephone'
+  const formattedValue = name === 'telephone' ? formatPhoneNumber(value) : value;
+    
     setFormData({ ...formData, [name]: value })
   }
 
@@ -88,6 +106,8 @@ const SignUp = ({ onUser }) => {
     // setPasswordError(false)
     // setPasswordLengthError(false)
     const generatedPassword = `${nom}${prenom}` // Concaténation du nom et du prénom
+    // Format the phone number before sending
+  const formattedPhoneNumber = formatPhoneNumber(telephone);
 
     // if (password.length < 8) {
     //   // setPasswordLengthError(true)
@@ -110,7 +130,7 @@ const SignUp = ({ onUser }) => {
         body: JSON.stringify({
           nom,
           prenom,
-          telephone,
+          telephone: formattedPhoneNumber, // Use the formatted phone number
           email,
           password: generatedPassword, // Utiliser le mot de passe généré
           dateNaissance,

@@ -14,7 +14,13 @@ import GenerateBarcodeButton from './GenerateBarcodeButton'
 
 function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingSMS, setIsLoadingSMS] = useState(false);
+
   const [analyseData, setAnalyseData] = useState(null)
+
+  const [showToast, setShowToast] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
 
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
 
@@ -40,6 +46,43 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
       }
     } catch (error) {
       console.error("Erreur lors de la récupération de l'analyse:", error)
+    }
+  }
+
+  const sendSMS = async () => {
+    setIsLoadingSMS(true); // Commencer le chargement
+    try {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+      const token = userInfo?.token
+
+      const response = await fetch(`${apiUrl}/api/sms/send`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phoneNumber: analyseData.userId?.telephone,
+          analyseId: analyseData._id,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setIsSuccess(true)
+        setToastMessage('SMS envoyé avec succès')
+      } else {
+        setIsSuccess(false)
+        setToastMessage("Échec de l'envoi du SMS")
+      }
+    } catch (error) {
+      setIsSuccess(false)
+      setToastMessage("Erreur lors de l'envoi du SMS")
+    } finally {
+      setIsLoadingSMS(false); // Arrêter le chargement
+      setShowToast(true)
+      setTimeout(() => setShowToast(false), 3000)
     }
   }
 
@@ -200,6 +243,33 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
       </button>
       <dialog id={`my_modal_4_${analyseId}`} className="modal">
         <div className="modal-box w-11/12 max-w-7xl">
+          
+
+        <div className="">
+    <button className="btn btn-primary" onClick={sendSMS} disabled={isLoadingSMS}>
+      {isLoadingSMS ? (
+        <span className="loading loading-spinner"></span>
+      ) : (
+        'Envoyer SMS'
+      )}
+    </button>
+    <span className="ml-1">
+      {analyseData?.smsCount === 0
+        ? 'Aucun SMS n\'a encore été envoyé'
+        : `${analyseData?.smsCount} SMS ${analyseData?.smsCount === 1 ? 'a déjà été envoyé' : 'ont déjà été envoyés'}, renvoyez si nécessaire`}
+    </span>
+  </div>
+
+  {showToast && (
+    <div className="toast toast-center toast-middle">
+      <div
+        className={`alert ${isSuccess ? 'alert-success' : 'alert-error'}`}
+      >
+        <span className="text-white">{toastMessage}</span>
+      </div>
+    </div>
+  )}
+
           <div className="divider"></div>
           {/* Open the modal using document.getElementById('ID').showModal() method */}
           <button
@@ -210,7 +280,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
           >
             Ajouter une mise à jour
           </button>
-          
+
           <button
             className="btn"
             onClick={() =>
@@ -219,7 +289,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
           >
             Ajouter un résultat
           </button>
-         
+
           <dialog
             id={`my_modal_5_${analyseId}`}
             className="modal modal-bottom sm:modal-middle"
@@ -237,11 +307,9 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
               </div>
             </div>
           </dialog>
-          
-          
+
           <dialog id={`my_modal_6_${analyseId}`} className="modal modal-middle">
             <div className="modal-box  w-11/12 max-w-5xl">
-              
               <AddResultatForm
                 analyseId={analyseId}
                 patientId={analyseData.userId?._id}
@@ -259,7 +327,6 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
               </div>
             </div>
           </dialog>
-          
 
           <button
             className="btn ml-2"
@@ -269,7 +336,6 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
           >
             Ajouter un résultat externe
           </button>
-        
 
           <dialog id={`my_modal_7_${analyseId}`} className="modal modal-middle">
             <div className="modal-box w-11/12 max-w-5xl">
@@ -492,136 +558,129 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
             <div className="divider"></div>
             {/* resultat interne */}
 
-            
-              <div className="mb-4 overflow-x-auto">
-                <h3 className="font-bold text-lg mb-2">Resultats</h3>
-                <table className="table w-full">
-                  {/* Entête du tableau */}
-                  <thead className="bg-primary text-primary-content">
-                    <tr>
-                      <th>Date</th>
-                      <th>Paramettre</th>
-                      <th>Valeur</th>
-                      <th>Type de prelevement </th>
-                      <th>Valeur d'interpreation </th>
-                      <th>Commentaire</th>
-                      <th>Auteur</th>
-                      <th className="font-bold">Actions</th>
+            <div className="mb-4 overflow-x-auto">
+              <h3 className="font-bold text-lg mb-2">Resultats</h3>
+              <table className="table w-full">
+                {/* Entête du tableau */}
+                <thead className="bg-primary text-primary-content">
+                  <tr>
+                    <th>Date</th>
+                    <th>Paramettre</th>
+                    <th>Valeur</th>
+                    <th>Type de prelevement </th>
+                    <th>Valeur d'interpreation </th>
+                    <th>Commentaire</th>
+                    <th>Auteur</th>
+                    <th className="font-bold">Actions</th>
+                  </tr>
+                </thead>
+                {/* Corps du tableau */}
+                <tbody>
+                  {analyseData.resultat.map((resul) => (
+                    <tr key={resul._id}>
+                      <td>
+                        {resul.createdAt ? formatDate(resul.createdAt) : 'N/A'}
+                      </td>
+                      <td>{resul?.testId?.nom}</td>
+                      <td>{resul?.valeur}</td>
+                      <td>{resul?.typePrelevement}</td>
+                      <td>
+                        {resul?.statutMachine
+                          ? resul?.testId?.valeurMachineA
+                          : resul?.testId?.valeurMachineB}
+                      </td>
+                      <td>{resul.statutInterpretation ? 'Oui' : 'Non'}</td>
+                      <td>{resul?.updatedBy?.nom}</td>
+                      <td>
+                        <div className="flex justify-around space-x-1">
+                          <EditResultatButton
+                            resultatId={resul._id}
+                            analyseId={analyseId}
+                            onResultatUpdated={() =>
+                              fetchAnalyseData(analyseId)
+                            }
+                          />
+                          <button
+                            className="btn btn-error"
+                            onClick={() => deleteResultat(resul._id)}
+                            disabled={isLoading}
+                          >
+                            {isLoading ? (
+                              <span className="loading loading-spinner text-error"></span>
+                            ) : (
+                              <FontAwesomeIcon icon={faTrash} />
+                            )}
+                          </button>
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  {/* Corps du tableau */}
-                  <tbody>
-                    {analyseData.resultat.map((resul) => (
-                      <tr key={resul._id}>
-                        <td>
-                          {resul.createdAt
-                            ? formatDate(resul.createdAt)
-                            : 'N/A'}
-                        </td>
-                        <td>{resul?.testId?.nom}</td>
-                        <td>{resul?.valeur}</td>
-                        <td>{resul?.typePrelevement}</td>
-                        <td>
-                          {resul?.statutMachine
-                            ? resul?.testId?.valeurMachineA
-                            : resul?.testId?.valeurMachineB}
-                        </td>
-                        <td>{resul.statutInterpretation ? 'Oui' : 'Non'}</td>
-                        <td>{resul?.updatedBy?.nom}</td>
-                        <td>
-                          <div className="flex justify-around space-x-1">
-                            <EditResultatButton
-                              resultatId={resul._id}
-                              analyseId={analyseId}
-                              onResultatUpdated={() =>
-                                fetchAnalyseData(analyseId)
-                              }
-                            />
-                            <button
-                              className="btn btn-error"
-                              onClick={() => deleteResultat(resul._id)}
-                              disabled={isLoading}
-                            >
-                              {isLoading ? (
-                                <span className="loading loading-spinner text-error"></span>
-                              ) : (
-                                <FontAwesomeIcon icon={faTrash} />
-                              )}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                    {}
-                  </tbody>
-                </table>
-              </div>
-           
+                  ))}
+                  {}
+                </tbody>
+              </table>
+            </div>
 
             {/* Tableau pour fileResultat */}
-            
-              <div className="mb-4 overflow-x-auto">
-                <h3 className="font-bold text-lg mb-2">
-                  Fichiers de Résultats
-                </h3>
-                <table className="table w-full">
-                  {/* Entête du tableau */}
-                  <thead className="bg-primary text-primary-content">
-                    <tr>
-                      <th>Date</th>
-                      <th>Fichier</th>
-                      <th>Auteur</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  {/* Corps du tableau */}
-                  <tbody>
-                    {analyseData.fileResultat.map((file) => (
-                      <tr key={file._id}>
-                        <td>
-                          {file.createdAt ? formatDate(file.createdAt) : 'N/A'}
-                        </td>
-                        <td>
-                          <a
-                            href={file.path}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="link link-primary"
+
+            <div className="mb-4 overflow-x-auto">
+              <h3 className="font-bold text-lg mb-2">Fichiers de Résultats</h3>
+              <table className="table w-full">
+                {/* Entête du tableau */}
+                <thead className="bg-primary text-primary-content">
+                  <tr>
+                    <th>Date</th>
+                    <th>Fichier</th>
+                    <th>Auteur</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                {/* Corps du tableau */}
+                <tbody>
+                  {analyseData.fileResultat.map((file) => (
+                    <tr key={file._id}>
+                      <td>
+                        {file.createdAt ? formatDate(file.createdAt) : 'N/A'}
+                      </td>
+                      <td>
+                        <a
+                          href={file.path}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="link link-primary"
+                        >
+                          <button>Ouvrir</button>
+                        </a>
+                      </td>
+                      <td>
+                        {file?.updatedBy?.nom} {file?.updatedBy?.prenom}
+                      </td>
+                      <td>
+                        <div className="flex justify-around space-x-1">
+                          <EditFileResultatButton
+                            fileResultatId={file._id}
+                            analyseId={analyseId}
+                            onFileResultatUpdated={() =>
+                              fetchAnalyseData(analyseId)
+                            }
+                          />
+                          <button
+                            className="btn btn-error"
+                            onClick={() => deleteFileResultat(file._id)}
+                            disabled={isLoading}
                           >
-                            <button>Ouvrir</button>
-                          </a>
-                        </td>
-                        <td>
-                          {file?.updatedBy?.nom} {file?.updatedBy?.prenom}
-                        </td>
-                        <td>
-                          <div className="flex justify-around space-x-1">
-                            <EditFileResultatButton
-                              fileResultatId={file._id}
-                              analyseId={analyseId}
-                              onFileResultatUpdated={() =>
-                                fetchAnalyseData(analyseId)
-                              }
-                            />
-                            <button
-                              className="btn btn-error"
-                              onClick={() => deleteFileResultat(file._id)}
-                              disabled={isLoading}
-                            >
-                              {isLoading ? (
-                                <span className="loading loading-spinner text-error"></span>
-                              ) : (
-                                <FontAwesomeIcon icon={faTrash} />
-                              )}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-           
+                            {isLoading ? (
+                              <span className="loading loading-spinner text-error"></span>
+                            ) : (
+                              <FontAwesomeIcon icon={faTrash} />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
           <div className="modal-action">
             <form method="dialog">
