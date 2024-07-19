@@ -10,7 +10,7 @@ import AddHistoriqueForm from './AddHistoriqueForm'
 import AddResultatForm from './AddResultatForm'
 import EditPatientButton from './EditPatientButton'
 import AddExterneResultat from './AddExterneResultat'
-import GenerateBarcodeButton from './GenerateBarcodeButton'
+// import GenerateBarcodeButton from './GenerateBarcodeButton'
 
 function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
   const [isLoading, setIsLoading] = useState(false)
@@ -482,13 +482,13 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
                         <td>{test.nom}</td>
 
                         <td>
-                          <GenerateBarcodeButton
+                          {/* <GenerateBarcodeButton
                             nip={analyseData?.userId?.nip}
                             nom={analyseData?.userId?.nom}
                             prenom={analyseData?.userId?.prenom}
                             identifiant={analyseData?.identifiant}
                             test={test.nom}
-                          />
+                          /> */}
                         </td>
                       </tr>
                     )
