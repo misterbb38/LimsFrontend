@@ -482,7 +482,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
                         <td>{test.nom}</td>
 
                         <td>
-                          {/* <GenerateBarcodeButton
+                          {/* a refaire <GenerateBarcodeButton
                             nip={analyseData?.userId?.nip}
                             nom={analyseData?.userId?.nom}
                             prenom={analyseData?.userId?.prenom}
