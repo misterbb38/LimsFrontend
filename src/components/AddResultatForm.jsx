@@ -701,10 +701,10 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
               onChange={(e) => setLieuPrelevement(e.target.value)}
             >
               <option value="">Sélectionner une option</option>
-              <option value="Prélevé au laboratoire">
+              <option value="Prélevé(es) au laboratoire">
                 Prélevé au laboratoire
               </option>
-              <option value="Apporté au laboratoire">
+              <option value="Apporté(es) au laboratoire">
                 Apporté au laboratoire
               </option>
             </select>
@@ -1325,7 +1325,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                 </div>
 
                 <div>
-                  <label className="label">proteinesArochies</label>
+                  <label className="label">Protéinorachie</label>
                   <input
                     type="text"
                     value={chimie.proteinesArochies}

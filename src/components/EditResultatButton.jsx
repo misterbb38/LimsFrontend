@@ -1576,7 +1576,7 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
                         </div>
 
                         <div>
-                          <label className="label">proteinesArochies</label>
+                          <label className="label">Protéinorachie</label>
                           <input
                             type="text"
                             value={

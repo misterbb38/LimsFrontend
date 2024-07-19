@@ -503,7 +503,7 @@ function GenerateResultatButton({ invoice }) {
             test?.observations?.macroscopique.length > 0
           ) {
             doc.text(
-              ` ${test?.typePrelevement} ${test?.lieuPrelevement}  ${formattedDate}`,
+              ` ${test?.typePrelevement} : ${test?.lieuPrelevement}  ${formattedDate}`,
               20,
               currentY - 10
             )
