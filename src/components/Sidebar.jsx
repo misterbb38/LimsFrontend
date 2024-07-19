@@ -125,7 +125,7 @@ function Sidebar() {
 
   const menuItems = [
     { id: 1, label: 'Accueil', route: '/dash', icon: faHome, allowedUserTypes: ['superadmin', 'medecin', 'technicien', 'preleveur', 'docteur'] },
-    { id: 2, label: 'Analyse', route: '/dash/Analyse', icon: faFileMedical, allowedUserTypes: ['medecin','superadmin', 'technicien', 'acceuil','accueil','docteur'] },
+    { id: 2, label: 'Analyse', route: '/dash/Analyse', icon: faFileMedical, allowedUserTypes: ['medecin','superadmin', 'technicien', 'acceuil','accueil','docteur','preleveur',] },
     { id: 3, label: 'Parametre', route: '/dash/test', icon: faFlask, allowedUserTypes: ['superadmin','medecin','docteur'] },
     { id: 4, label: 'Patient', route: '/dash/patient', icon: faUsers, allowedUserTypes: ['superadmin', 'medecin','docteur','accueil','acceuil','accueil'] },
     { id: 5, label: 'Personnel', route: '/dash/personnel', icon: faUsers, allowedUserTypes: ['superadmin','medecin',] },
