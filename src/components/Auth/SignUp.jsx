@@ -366,7 +366,7 @@ const SignUp = ({ onUser }) => {
                   </select>
                 </div> */}
 
-                {usertype !== 'accueil' && (
+                {usertype !== 'accueil' && usertype !== 'technicien' &&  usertype !== 'preleveur' && (
                   <div className="mb-4">
                     <label
                       htmlFor="userType"
