@@ -1212,7 +1212,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <option value="I">I</option>
                   <option value="II">II</option>
                   <option value="III">III</option>
-                  <option value="III">IV</option>
+                  <option value="IV">IV</option>
                   <option value="équilibrée">équilibrée</option>
                   <option value="deséquilibrée">deséquilibrée</option>
                 </select>
