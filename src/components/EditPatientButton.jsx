@@ -199,7 +199,7 @@
 //                   name="sexe"
 //                   value={formData.sexe}
 //                   onChange={handleChange}
-                  
+
 //                   className="input input-bordered"
 //                 >
 //                   <option value="">Sélectionnez le sexe</option>
@@ -267,8 +267,6 @@
 // }
 
 // export default EditPatientButton
-
-
 
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
@@ -338,7 +336,8 @@ function EditPatientButton({ userId, onuserUpdated }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    const formattedValue = name === 'telephone' ? formatPhoneNumber(value) : value
+    const formattedValue =
+      name === 'telephone' ? formatPhoneNumber(value) : value
     setFormData((prevFormData) => ({
       ...prevFormData,
       [name]: formattedValue,
@@ -351,7 +350,8 @@ function EditPatientButton({ userId, onuserUpdated }) {
     if (!formData.prenom.trim()) errors.prenom = 'Le prénom est obligatoire.'
     if (!formData.nom.trim()) errors.nom = 'Le nom est obligatoire.'
     if (!formData.adresse.trim()) errors.adresse = "L'adresse est obligatoire."
-    if (!formData.telephone.trim()) errors.telephone = 'Le numéro de téléphone est obligatoire.'
+    if (!formData.telephone.trim())
+      errors.telephone = 'Le numéro de téléphone est obligatoire.'
     return errors
   }
 
@@ -394,7 +394,9 @@ function EditPatientButton({ userId, onuserUpdated }) {
 
   const renderError = (fieldref) => {
     if (formErrors[fieldref]) {
-      return <span className="text-red-500 text-xs">{formErrors[fieldref]}</span>
+      return (
+        <span className="text-red-500 text-xs">{formErrors[fieldref]}</span>
+      )
     }
     return null
   }
@@ -439,7 +441,10 @@ function EditPatientButton({ userId, onuserUpdated }) {
                   value={formData.password}
                   onChange={handleChange}
                 />
-                <p>Si l'utilisateur a oublié son mot de passe, il faut lui en créer un nouveau</p>
+                <p>
+                  Si l'utilisateur a oublié son mot de passe, il faut lui en
+                  créer un nouveau
+                </p>
               </div>
               <div className="form-control">
                 <label className="label">Téléphone</label>
@@ -464,7 +469,10 @@ function EditPatientButton({ userId, onuserUpdated }) {
                 {renderError('adresse')}
               </div>
               <div className="mb-4">
-                <label htmlFor="sexe" className="mb-2.5 block font-medium base-content">
+                <label
+                  htmlFor="sexe"
+                  className="mb-2.5 block font-medium base-content"
+                >
                   Sexe
                 </label>
                 <select
@@ -480,7 +488,10 @@ function EditPatientButton({ userId, onuserUpdated }) {
                 </select>
               </div>
               <div className="mb-4">
-                <label htmlFor="userType" className="mb-2.5 block font-medium base-content">
+                <label
+                  htmlFor="userType"
+                  className="mb-2.5 block font-medium base-content"
+                >
                   Type d'Utilisateur
                 </label>
                 <select
@@ -502,10 +513,17 @@ function EditPatientButton({ userId, onuserUpdated }) {
                 </select>
               </div>
               <div className="modal-action">
-                <button className="btn btn-primary" type="submit" disabled={loading}>
+                <button
+                  className="btn btn-primary"
+                  type="submit"
+                  disabled={loading}
+                >
                   {loading ? 'Chargement...' : 'Enregistrer'}
                 </button>
-                <button className="btn btn-ghost" onClick={() => setShowModal(false)}>
+                <button
+                  className="btn btn-ghost"
+                  onClick={() => setShowModal(false)}
+                >
                   Annuler
                 </button>
               </div>
@@ -515,7 +533,9 @@ function EditPatientButton({ userId, onuserUpdated }) {
       )}
       {showToast && (
         <div className="toast toast-top toast-center">
-          <div className="alert alert-success">Patient mis à jour avec succès.</div>
+          <div className="alert alert-success">
+            Patient mis à jour avec succès.
+          </div>
         </div>
       )}
     </>

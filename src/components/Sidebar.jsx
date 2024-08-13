@@ -17,7 +17,6 @@
 
 // function Sidebar() {
 //   const [selectedMenuItem, setSelectedMenuItem] = useState(1)
-  
 
 //   const menuItems = [
 //     { id: 1, label: 'Accueil', route: '/dash', icon: faHome },
@@ -33,7 +32,7 @@
 //     { id: 5, label: 'Personnel', route: '/dash/personnel', icon: faUsers },
 //    { id: 6, label: 'Partenaire', route: '/dash/partenaireclinique', icon: faBuilding },
 //     { id: 7, label: 'Assurance/IPM', route: '/dash/partenaire', icon: faFileMedical},
-    
+
 //     {
 //       id: 8,
 //       label: 'Ettiquette',
@@ -99,7 +98,6 @@
 
 // export default Sidebar
 
-
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -113,7 +111,10 @@ import {
   faBook, // Icone pour Instruction
   faCog,
   faTag, // Icone pour Paramètre
-  faFileMedical, faBuilding, faFileInvoice, faFlask
+  faFileMedical,
+  faBuilding,
+  faFileInvoice,
+  faFlask,
 } from '@fortawesome/free-solid-svg-icons'
 import logo from '../images/bioramlogo.png'
 
@@ -124,19 +125,114 @@ function Sidebar() {
   const userType = userInfo?.userType
 
   const menuItems = [
-    { id: 1, label: 'Accueil', route: '/dash', icon: faHome, allowedUserTypes: ['superadmin', 'medecin',  'docteur'] },
-    { id: 2, label: 'Analyse', route: '/dash/Analyse', icon: faFileMedical, allowedUserTypes: ['medecin','superadmin', 'technicien', 'acceuil','accueil','docteur','preleveur',] },
-    { id: 3, label: 'Parametre', route: '/dash/test', icon: faFlask, allowedUserTypes: ['superadmin','medecin','docteur'] },
-    { id: 4, label: 'Patient', route: '/dash/patient', icon: faUsers, allowedUserTypes: ['superadmin', 'medecin','docteur','acceuil','accueil', 'technicien'] },
-    { id: 5, label: 'Personnel', route: '/dash/personnel', icon: faUsers, allowedUserTypes: ['superadmin','medecin',] },
-    { id: 6, label: 'Partenaire', route: '/dash/partenaireclinique', icon: faBuilding, allowedUserTypes: ['superadmin','medecin','docteur'] },
-    { id: 7, label: 'Assurance/IPM', route: '/dash/partenaire', icon: faFileMedical, allowedUserTypes: ['superadmin','medecin','docteur'] },
-    { id: 8, label: 'Ettiquette', route: '/dash/ettiquette', icon: faClipboardList, allowedUserTypes: ['superadmin','medecin', 'technicien','docteur'] },
-    { id: 9, label: 'Facture(Partenaire)', route: '/dash/partenairefacture', icon: faFileInvoice, allowedUserTypes: ['superadmin', 'medecin', 'technicien','medecin', 'preleveur', 'docteur', 'acceuil','accueil',] },
-    { id: 10, label: 'Profil', route: '/dash/parametre', icon: faCog, allowedUserTypes: ['superadmin', 'medecin', 'technicien','medecin', 'preleveur', 'docteur', 'acceuil','accueil',] },
+    {
+      id: 1,
+      label: 'Accueil',
+      route: '/dash',
+      icon: faHome,
+      allowedUserTypes: ['superadmin', 'medecin', 'docteur'],
+    },
+    {
+      id: 2,
+      label: 'Analyse',
+      route: '/dash/Analyse',
+      icon: faFileMedical,
+      allowedUserTypes: [
+        'medecin',
+        'superadmin',
+        'technicien',
+        'acceuil',
+        'accueil',
+        'docteur',
+        'preleveur',
+      ],
+    },
+    {
+      id: 3,
+      label: 'Parametre',
+      route: '/dash/test',
+      icon: faFlask,
+      allowedUserTypes: ['superadmin', 'medecin', 'docteur'],
+    },
+    {
+      id: 4,
+      label: 'Patient',
+      route: '/dash/patient',
+      icon: faUsers,
+      allowedUserTypes: [
+        'superadmin',
+        'medecin',
+        'docteur',
+        'acceuil',
+        'accueil',
+        'technicien',
+      ],
+    },
+    {
+      id: 5,
+      label: 'Personnel',
+      route: '/dash/personnel',
+      icon: faUsers,
+      allowedUserTypes: ['superadmin', 'medecin'],
+    },
+    {
+      id: 6,
+      label: 'Partenaire',
+      route: '/dash/partenaireclinique',
+      icon: faBuilding,
+      allowedUserTypes: ['superadmin', 'medecin', 'docteur'],
+    },
+    {
+      id: 7,
+      label: 'Assurance/IPM',
+      route: '/dash/partenaire',
+      icon: faFileMedical,
+      allowedUserTypes: ['superadmin', 'medecin', 'docteur'],
+    },
+    {
+      id: 8,
+      label: 'Ettiquette',
+      route: '/dash/ettiquette',
+      icon: faClipboardList,
+      allowedUserTypes: ['superadmin', 'medecin', 'technicien', 'docteur'],
+    },
+    {
+      id: 9,
+      label: 'Facture(Partenaire)',
+      route: '/dash/partenairefacture',
+      icon: faFileInvoice,
+      allowedUserTypes: [
+        'superadmin',
+        'medecin',
+        'technicien',
+        'medecin',
+        'preleveur',
+        'docteur',
+        'acceuil',
+        'accueil',
+      ],
+    },
+    {
+      id: 10,
+      label: 'Profil',
+      route: '/dash/parametre',
+      icon: faCog,
+      allowedUserTypes: [
+        'superadmin',
+        'medecin',
+        'technicien',
+        'medecin',
+        'preleveur',
+        'docteur',
+        'acceuil',
+        'accueil',
+      ],
+    },
   ]
 
-  const filteredMenuItems = menuItems.filter(item => item.allowedUserTypes.includes(userType))
+  const filteredMenuItems = menuItems.filter((item) =>
+    item.allowedUserTypes.includes(userType)
+  )
 
   const handleMenuItemClick = (id) => {
     setSelectedMenuItem(id)

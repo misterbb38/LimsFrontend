@@ -24,6 +24,7 @@ module.exports = {
   },
   plugins: ['react-refresh', 'prettier'],
   rules: {
+    'linebreak-style': ['error', 'unix'],
     'react-refresh/only-export-components': [
       'warn',
       { allowConstantExport: true },

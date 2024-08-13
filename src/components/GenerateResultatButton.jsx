@@ -7,8 +7,6 @@ import logoLeft from '../images/bioramlogo.png'
 import logoRight from '../images/logo2.png'
 import { useNavigate } from 'react-router-dom' // Importez useNavigate
 
-
-
 function GenerateResultatButton({ invoice }) {
   const [user, setUser] = useState({
     nom: '',
@@ -83,23 +81,27 @@ function GenerateResultatButton({ invoice }) {
   }
   const sortResultsByCategory = (results) => {
     const groupedResults = results.reduce((acc, result) => {
-      const category = result.testId?.categories || 'Autres';
+      const category = result.testId?.categories || 'Autres'
       if (!acc[category]) {
-        acc[category] = [];
+        acc[category] = []
       }
-      acc[category].push(result);
-      return acc;
-    }, {});
-  
-    return Object.keys(groupedResults).sort().reduce((acc, key) => {
-      acc.push({ category: key, results: groupedResults[key] });
-      return acc;
-    }, []);
-  };
+      acc[category].push(result)
+      return acc
+    }, {})
 
-  
-  
-  
+    return Object.keys(groupedResults)
+      .sort()
+      .reduce((acc, key) => {
+        acc.push({ category: key, results: groupedResults[key] })
+        return acc
+      }, [])
+  }
+  const germeList = [
+    'Escherichia coli',
+    'Staphylococcus aureus',
+    'Pseudomonas aeruginosa',
+    // Ajoutez d'autres noms de germes ici
+  ]
 
   const generatePDF = async () => {
     const doc = new jsPDF()
@@ -120,15 +122,11 @@ function GenerateResultatButton({ invoice }) {
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i) // Définir la page courante sur laquelle le numéro de page sera ajouté
         doc.setFontSize(9) // Définir la taille de la police pour le numéro de page
-        doc.setTextColor(0, 0, 0); // Définir la couleur du texte pour le numéro de page
+        doc.setTextColor(0, 0, 0) // Définir la couleur du texte pour le numéro de page
         // Ajouter le numéro de page au centre du pied de page de chaque page
         doc.text(` ${i}/${pageCount}`, 185, 275, { align: 'center' })
       }
     }
-
-    
-
-    
 
     try {
       // Charger les images
@@ -169,7 +167,6 @@ function GenerateResultatButton({ invoice }) {
           footerY + 14
         )
       }
-      
 
       // Ajouter le pied de page à la première page
       addFooter()
@@ -287,588 +284,893 @@ function GenerateResultatButton({ invoice }) {
       doc.setFontSize(8)
       doc.setTextColor(0, 0, 0)
 
-      const sortedResults = sortResultsByCategory(invoice?.resultat);
-    sortedResults.forEach((group) => {
-      // Affichez le nom de la catégorie
-      doc.setFontSize(12);
-      doc.setFont('Times', 'bold');
-      doc.text(group.category.toUpperCase(), 90, currentY);
-
-      // Ajouter une ligne sous la catégorie
-    const lineStartX = 20; // Position de départ X de la ligne
-    const lineEndX = 190;  // Position de fin X de la ligne
-    const lineY = currentY + 2; // Position Y de la ligne (juste en dessous du texte)
-    doc.line(lineStartX, lineY, lineEndX, lineY);
-
-     // Ajouter une ligne sous la catégorie
-     
-      currentY += 10; // Espace après la catégorie
-
-      group.results.forEach((test, index) => {
-        if (!test || !test.testId) return // Ignorer si test ou testId n'est pas défini
-
-        
-
-        const maxLineWidth = 100
-        const maxLineWidthInt = 160
-        const maxvaluWidth = 50 // Largeur maximale du texte dans le PDF
-        let nomTestLines = doc.splitTextToSize(
-          `${test.testId.nom.toUpperCase()}`,
-          maxLineWidth
-        )
-
-        // Choisir entre interpretationA et interpretationB en fonction de statutMachine
-        
-        doc.setFontSize(9); // Changer la taille de la police à 10
-          doc.setFont('Courier', 'normal');
-        let interpretationText = test.statutMachine
-          ? test.testId.interpretationA || "Pas d'interprétationA disponible"
-          : test.testId.interpretationB || "Pas d'interprétationB disponible"
-
-
-        let interpretationLines = doc.splitTextToSize(
-          `Interprétation:\n${interpretationText}`,
-          maxLineWidthInt
-        )
-
-        // Calcul de l'espace nécessaire pour ce bloc de test
-        const spaceNeeded =
-          10 * (nomTestLines.length + interpretationLines.length + 3) // Plus les autres lignes
-
-        // Gérer la pagination si nécessaire
-        // if (currentY + spaceNeeded > 280) {
-        //   doc.addPage()
-        //   currentY = 20 // Réinitialisation de la position Y pour la nouvelle page
-        // }
-
-        // Ajout des informations du test
-        doc.setFontSize(8)
-        doc.setFont('Times', 'bold') // Utilisation de Times en gras
-        // doc.text(nomTestLines, 20, currentY)
-
-        // Dessiner un grand point (cercle) manuellement
-  doc.setFillColor(0, 0, 0); // Couleur noire
-  doc.circle(18, currentY - 1, 1, 'F'); // Position (x, y), rayon, style de remplissage
-
-        if (
-          test?.observations &&
-          test?.observations?.macroscopique.length > 0
-        ) {
-          doc.setFontSize(9)
-          doc.setFont('Times', 'bold')
-          doc.text(nomTestLines, 60, currentY)
-        }
-        if (test?.observations?.macroscopique.length === 0) {
-          doc.setFontSize(9)
-          doc.text(nomTestLines, 20, currentY)
-        }
-        currentY += 5 * nomTestLines.length // Mise à jour de Y basée sur le nombre de lignes de nom
-        doc.setFont('Times', 'normal') // Réinitialisation à la police normale pour le reste du texte
-        doc.setFontSize(8) // Réduire la taille de la police pour les détails
-        let formattedDate = formatDateAndTime(test?.datePrelevement)
-        let formattedDateAnterieur = formatDateAndTime(
-          test?.dernierResultatAnterieur?.date
-        )
+      const sortedResults = sortResultsByCategory(invoice?.resultat)
+      sortedResults.forEach((group) => {
+        // Affichez le nom de la catégorie
+        doc.setFontSize(12)
         doc.setFont('Times', 'bold')
-        doc.setFontSize(8)
+        doc.text(group.category.toUpperCase(), 90, currentY)
 
-        // Ne pas afficher les informations si test?.observations existe
-        if (test?.observations?.macroscopique.length === 0 && test?.dernierResultatAnterieur) {
-          const valeurAnterieure = test.dernierResultatAnterieur.valeur ?? ''
-          const dateAnterieure = formattedDateAnterieur ?? ''
-          doc.text('Antériorités', 170, currentY)
-          doc.text(valeurAnterieure, 170, currentY + 5)
-          doc.text(dateAnterieure, 190, currentY)
-        }
-        if (test?.observations?.macroscopique.length === 0) {
-          doc.setFont('Times', 'bold')
-        doc.setFontSize(10)
-          doc.text(`${test?.valeur}`, 90, currentY + 5)
-          if(test?.qualitatif){
-          doc.text(`(${test?.qualitatif})`, 86, currentY + 10)
-          }
-        }
-       
+        // Ajouter une ligne sous la catégorie
+        const lineStartX = 20 // Position de départ X de la ligne
+        const lineEndX = 190 // Position de fin X de la ligne
+        const lineY = currentY + 2 // Position Y de la ligne (juste en dessous du texte)
+        doc.line(lineStartX, lineY, lineEndX, lineY)
 
-        
-        if (test?.observations?.macroscopique.length === 0) {
-          // Affichage de la valeur de la machine A ou B en fonction de statutMachine
-          let machineValue = test.statutMachine
-            ? test.testId.valeurMachineA
-            : test.testId.valeurMachineB
-          if (machineValue) {
-            doc.text(`${machineValue}`, 110, currentY + 5)
-            
-          }
+        // Ajouter une ligne sous la catégorie
 
-          doc.setFontSize(9)
-          doc.setFont('Times', 'bold')
-          // Déterminer quelle machine afficher en fonction de statutMachine
-          let machineText = test?.statutMachine
-            ? test?.testId?.machineA
-            : test?.testId?.machineB
+        currentY += 10 // Espace après la catégorie
 
-          // Vérifiez si machineText n'est ni undefined, ni une chaîne vide
-          if (machineText) {
-            doc.text(` ${machineText}`, 20, currentY -1)
-          } else {
-            // Optionnel: vous pouvez commenter ou décommenter la ligne suivante selon vos besoins
-            // doc.text('Machine utilisée: Non spécifiée', 20, currentY);
-          }
-        }
+        group.results.forEach((test, index) => {
+          if (!test || !test.testId) return // Ignorer si test ou testId n'est pas défini
 
-        
-
-        // Calculer la largeur du texte de la machine pour positionner correctement la méthode
-        let machineTextWidth = 0
-        if (test?.testId?.machineA || test?.testId?.machineB) {
-          const machineText = test?.statutMachine
-            ? test?.testId?.machineA
-            : test?.testId?.machineB
-          machineTextWidth =
-            (doc.getStringUnitWidth(machineText || '') *
-              doc.internal.getFontSize()) /
-            doc.internal.scaleFactor
-        }
-        // Position de début pour le texte de la méthode
-        let methodStartPos = 20 + machineTextWidth + 5 // 5 est un petit espace entre les deux textes
-
-        // Afficher la méthode si elle existe, juste après le nom de la machine
-        if (test?.methode) {
-          doc.text(`(${test.methode})`, methodStartPos, currentY -1)
-        }
-        if (test?.observations?.macroscopique.length === 0) {
-          doc.text(
-            `Prélèvement : ${formattedDate}, ${test?.typePrelevement}`,
-            20,
-            currentY + 3
+          const maxLineWidth = 100
+          const maxLineWidthInt = 160
+          const maxvaluWidth = 50 // Largeur maximale du texte dans le PDF
+          let nomTestLines = doc.splitTextToSize(
+            `${test.testId.nom.toUpperCase()}`,
+            maxLineWidth
           )
-        }
-        doc.setFontSize(8)
-        doc.setFont('Times', 'normal')
-        currentY += 12 // Increment for one line
-        if (test?.observations?.macroscopique.length === 0) {
-          if (test?.remarque) {
-            doc.text(`${test.remarque}`, 20, currentY)
-          }
-        }
-        currentY += 5 // Increment for one line
-        if (test.statutInterpretation) {
-          doc.setFontSize(10); // Changer la taille de la police à 10
-          doc.setFont('Times', 'normal'); // Assurez-vous que la police est définie comme normale
-      
-          const interpretationHeight = 4 * interpretationLines.length;
-          const footerY = 277;
-          const marginBottom = 5;
-      
-          // Vérifier si l'espace restant sur la page est suffisant
-          if (currentY + interpretationHeight + marginBottom > footerY) {
-              doc.addPage();
-              currentY = 20; // Réinitialisation de la position Y pour la nouvelle page
-              doc.text(`Nº Dossier: ${invoice?.identifiant}`, 42, currentY)
-            
-            doc.text(
-              `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
-              42,
-              currentY + 5
-            )
-            currentY += 15
-              
-              addFooter();
-          }
-          doc.setFontSize(9); // Changer la taille de la police à 10
-          doc.setFont('Courier', 'normal'); // Assurez-vous que la police est définie comme normale
-      
-      
-          doc.text(interpretationLines, 20, currentY);
-          currentY += interpretationHeight; // Mise à jour de Y basée sur le nombre de lignes d'interprétation
-      }
-      doc.setFont('Times', 'normal');
-      
-      
-        currentY += 5 // Ajout d'un espace avant le prochain test
-       
-        
 
-        if (
-          test?.observations ||
-          test?.culture ||
-          test?.gram ||
-          test?.conclusion ||
-          test?.observations?.macroscopique.length > 0
-        ) {
-          let positionX = 100
+          // Choisir entre interpretationA et interpretationB en fonction de statutMachine
+
+          doc.setFontSize(9) // Changer la taille de la police à 10
+          doc.setFont('Courier', 'normal')
+          // let interpretationText = test.statutMachine
+          //   ? test.testId.interpretationA || "Pas d'interprétationA disponible"
+          //   : test.testId.interpretationB || "Pas d'interprétationB disponible"
+
+          // let interpretationLines = doc.splitTextToSize(
+          //   `Interprétation:\n${interpretationText}`,
+          //   maxLineWidthInt
+          // )
+
+          let interpretationLines = [] // Initialisation en tant que tableau vide
+
+          // Calcul de l'espace nécessaire pour ce bloc de test
+          const spaceNeeded =
+            10 * (nomTestLines.length + interpretationLines.length + 3) // Plus les autres lignes
+
+          // Gérer la pagination si nécessaire
+          // if (currentY + spaceNeeded > 280) {
+          //   doc.addPage()
+          //   currentY = 20 // Réinitialisation de la position Y pour la nouvelle page
+          // }
+
+          // Ajout des informations du test
+          doc.setFontSize(8)
+          doc.setFont('Times', 'bold') // Utilisation de Times en gras
+          // doc.text(nomTestLines, 20, currentY)
+
+          // Dessiner un grand point (cercle) manuellement
+          doc.setFillColor(0, 0, 0) // Couleur noire
+          doc.circle(18, currentY - 1, 1, 'F') // Position (x, y), rayon, style de remplissage
+
           if (
             test?.observations &&
             test?.observations?.macroscopique.length > 0
           ) {
+            doc.setFontSize(9)
+            doc.setFont('Times', 'bold')
+            doc.text(nomTestLines, 60, currentY)
+          }
+          if (test?.observations?.macroscopique.length === 0) {
+            doc.setFontSize(9)
+            doc.text(nomTestLines, 20, currentY)
+          }
+          currentY += 5 * nomTestLines.length // Mise à jour de Y basée sur le nombre de lignes de nom
+          doc.setFont('Times', 'normal') // Réinitialisation à la police normale pour le reste du texte
+          doc.setFontSize(8) // Réduire la taille de la police pour les détails
+          let formattedDate = formatDateAndTime(test?.datePrelevement)
+          let formattedDateAnterieur = formatDateAndTime(
+            test?.dernierResultatAnterieur?.date
+          )
+          doc.setFont('Times', 'bold')
+          doc.setFontSize(8)
+
+          // Ne pas afficher les informations si test?.observations existe
+          if (
+            test?.observations?.macroscopique.length === 0 &&
+            test?.dernierResultatAnterieur
+          ) {
+            const valeurAnterieure = test.dernierResultatAnterieur.valeur ?? ''
+            const dateAnterieure = formattedDateAnterieur ?? ''
+            doc.text('Antériorités', 170, currentY)
+            doc.text(valeurAnterieure, 170, currentY + 5)
+            doc.text(dateAnterieure, 190, currentY)
+          }
+          if (test?.observations?.macroscopique.length === 0) {
+            doc.setFont('Times', 'bold')
+            doc.setFontSize(10)
+            doc.text(`${test?.valeur}`, 90, currentY + 5)
+            if (test?.qualitatif) {
+              doc.text(`(${test?.qualitatif})`, 86, currentY + 10)
+            }
+          }
+
+          if (test?.observations?.macroscopique.length === 0) {
+            // Affichage de la valeur de la machine A ou B en fonction de statutMachine
+            let machineValue = test.statutMachine
+              ? test.testId.valeurMachineA
+              : test.testId.valeurMachineB
+            if (machineValue) {
+              doc.text(`${machineValue}`, 110, currentY + 5)
+            }
+
+            doc.setFontSize(9)
+            doc.setFont('Times', 'bold')
+            // Déterminer quelle machine afficher en fonction de statutMachine
+            let machineText = test?.statutMachine
+              ? test?.testId?.machineA
+              : test?.testId?.machineB
+
+            // Vérifiez si machineText n'est ni undefined, ni une chaîne vide
+            if (machineText) {
+              doc.text(` ${machineText}`, 20, currentY - 1)
+            } else {
+              // Optionnel: vous pouvez commenter ou décommenter la ligne suivante selon vos besoins
+              // doc.text('Machine utilisée: Non spécifiée', 20, currentY);
+            }
+          }
+
+          // Calculer la largeur du texte de la machine pour positionner correctement la méthode
+          let machineTextWidth = 0
+          if (test?.testId?.machineA || test?.testId?.machineB) {
+            const machineText = test?.statutMachine
+              ? test?.testId?.machineA
+              : test?.testId?.machineB
+            machineTextWidth =
+              (doc.getStringUnitWidth(machineText || '') *
+                doc.internal.getFontSize()) /
+              doc.internal.scaleFactor
+          }
+          // Position de début pour le texte de la méthode
+          let methodStartPos = 20 + machineTextWidth + 5 // 5 est un petit espace entre les deux textes
+
+          // Afficher la méthode si elle existe, juste après le nom de la machine
+          if (test?.methode) {
+            doc.text(`(${test.methode})`, methodStartPos, currentY - 1)
+          }
+          if (test?.observations?.macroscopique.length === 0) {
             doc.text(
-              ` ${test?.typePrelevement} : ${test?.lieuPrelevement}  ${formattedDate}`,
+              `Prélèvement : ${formattedDate}, ${test?.typePrelevement}`,
               20,
-              currentY - 10
+              currentY + 3
             )
           }
+          doc.setFontSize(8)
+          doc.setFont('Times', 'normal')
+          currentY += 12 // Increment for one line
+          if (test?.observations?.macroscopique.length === 0) {
+            if (test?.remarque) {
+              doc.text(`${test.remarque}`, 20, currentY)
+            }
+          }
+          currentY += 5 // Increment for one line
+          // if (test.statutInterpretation) {
+          //   const interpretation = test.statutMachine
+          //     ? test.testId.interpretationA
+          //     : test.testId.interpretationB
 
-          if (
-            test?.observations &&
-            test?.observations?.macroscopique.length > 0
-          ) {
+          //   // Affiche "Interprétation:"
+          //   doc.setFontSize(10)
+          //   doc.setFont('Times', 'bold')
+          //   doc.text('Interprétation:', 20, currentY)
+          //   currentY += 5
+          //   if (interpretation.type === 'text') {
+          //     // Afficher le texte
+          //     const interpretationLines = doc.splitTextToSize(
+          //       interpretation.content,
+          //       maxLineWidthInt
+          //     )
+          //     doc.setFontSize(9) // Taille de police pour l'interprétation
+          //     doc.setFont('Courier', 'normal') // Police pour l'interprétation
+          //     doc.text(interpretationLines, 20, currentY)
+          //     currentY += 5 * interpretationLines.length // Mise à jour de Y en fonction du nombre de lignes
+          //   } else if (interpretation.type === 'table') {
+          //     // Afficher le tableau
+          //     const { columns, rows } = interpretation.content
+
+          //     // Afficher les en-têtes de colonne
+          //     doc.setFontSize(9)
+          //     doc.setFont('Times', 'bold')
+          //     columns.forEach((col, colIndex) => {
+          //       doc.text(col, 20 + colIndex * 40, currentY)
+          //     })
+          //     currentY += 5
+
+          //     // Afficher les lignes de données
+          //     doc.setFont('Times', 'normal')
+          //     rows.forEach((row) => {
+          //       row.forEach((cell, cellIndex) => {
+          //         doc.text(cell, 20 + cellIndex * 40, currentY)
+          //       })
+          //       currentY += 5
+          //     })
+          //   }
+          // }
+          // if (test.statutInterpretation) {
+          //   doc.setFontSize(10) // Changer la taille de la police à 10
+          //   doc.setFont('Times', 'normal') // Assurez-vous que la police est définie comme normale
+
+          //   const interpretationHeight = 4 * interpretationLines.length
+          //   const footerY = 277
+          //   const marginBottom = 5
+
+          //   // Vérifier si l'espace restant sur la page est suffisant
+          //   if (currentY + interpretationHeight + marginBottom > footerY) {
+          //     doc.addPage()
+          //     currentY = 20 // Réinitialisation de la position Y pour la nouvelle page
+          //     doc.text(`Nº Dossier: ${invoice?.identifiant}`, 42, currentY)
+
+          //     doc.text(
+          //       `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
+          //       42,
+          //       currentY + 5
+          //     )
+          //     currentY += 15
+
+          //     addFooter()
+          //   }
+          //   doc.setFontSize(9) // Changer la taille de la police à 10
+          //   doc.setFont('Courier', 'normal') // Assurez-vous que la police est définie comme normale
+
+          //   doc.text(interpretationLines, 20, currentY)
+          //   currentY += interpretationHeight // Mise à jour de Y basée sur le nombre de lignes d'interprétation
+          // }
+
+          if (test.statutInterpretation) {
+            const interpretation = test.statutMachine
+              ? test.testId.interpretationA
+              : test.testId.interpretationB
+
+            // Affiche "Interprétation:"
             doc.setFontSize(10)
             doc.setFont('Times', 'bold')
-            doc.text(`EXAMEN MACROSCOPIQUE`, 20, currentY)
-            doc.setFontSize(10)
-            doc.setFont('Times', 'normal')
-            currentY += 5 // Incrémentation de currentY après chaque élément
+            doc.text('Interprétation:', 20, currentY)
+            currentY += 5
 
-            if (
-              Array.isArray(test?.observations?.macroscopique) &&
-              test.observations.macroscopique.length > 0
-            ) {
-              // Convertir le tableau en une chaîne de caractères, séparée par des virgules et des espaces
-              const macroscopiqueText =
-                test.observations.macroscopique.join(', ')
+            let interpretationHeight = 0
+            let interpretationLines = []
 
-              // Afficher le texte formaté dans le PDF
-              doc.text(
-                `${test?.typePrelevement} : ${macroscopiqueText}`,
-                20,
-                currentY
+            if (interpretation.type === 'text') {
+              // Afficher le texte
+              interpretationLines = doc.splitTextToSize(
+                interpretation.content,
+                maxLineWidthInt
               )
-              currentY += 7 // Incrémenter currentY pour la prochaine section ou le prochain élément
+              interpretationHeight = 5 * interpretationLines.length
+            } else if (interpretation.type === 'table') {
+              // Afficher le tableau
+              const { columns, rows } = interpretation.content
+
+              // Calculer la hauteur nécessaire pour le tableau
+              interpretationHeight = 5 + rows.length * 5
+            }
+
+            const footerY = 277
+            const marginBottom = 5
+
+            // Vérifier si l'espace restant sur la page est suffisant
+            if (currentY + interpretationHeight + marginBottom > footerY) {
+              doc.addPage()
+              currentY = 20 // Réinitialisation de la position Y pour la nouvelle page
+              doc.text(`Nº Dossier: ${invoice?.identifiant}`, 42, currentY)
+
+              doc.text(
+                `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
+                42,
+                currentY + 5
+              )
+              currentY += 15
+
+              addFooter()
+            }
+
+            if (interpretation.type === 'text') {
+              doc.setFontSize(9) // Taille de police pour l'interprétation
+              doc.setFont('Courier', 'normal') // Police pour l'interprétation
+              doc.text(interpretationLines, 20, currentY)
+              currentY += interpretationHeight // Mise à jour de Y en fonction du nombre de lignes
+            } else if (interpretation.type === 'table') {
+              // Afficher les en-têtes de colonne
+              doc.setFontSize(9)
+              doc.setFont('Times', 'bold')
+              interpretation.content.columns.forEach((col, colIndex) => {
+                doc.text(col, 20 + colIndex * 40, currentY)
+              })
+              currentY += 5
+
+              // Afficher les lignes de données
+              doc.setFont('Times', 'normal')
+              interpretation.content.rows.forEach((row) => {
+                row.forEach((cell, cellIndex) => {
+                  doc.text(cell, 20 + cellIndex * 40, currentY)
+                })
+                currentY += 5
+              })
+            }
+          }
+
+          doc.setFont('Times', 'normal')
+
+          currentY += 5 // Ajout d'un espace avant le prochain test
+
+          if (
+            test?.observations ||
+            test?.culture ||
+            test?.gram ||
+            test?.conclusion ||
+            test?.observations?.macroscopique.length > 0
+          ) {
+            let positionX = 100
+            if (
+              test?.observations &&
+              test?.observations?.macroscopique.length > 0
+            ) {
+              doc.text(
+                ` ${test?.typePrelevement} : ${test?.lieuPrelevement}  ${formattedDate}`,
+                20,
+                currentY - 10
+              )
             }
 
             if (
-              test?.observations?.microscopique &&
+              test?.observations &&
               test?.observations?.macroscopique.length > 0
             ) {
               doc.setFontSize(10)
               doc.setFont('Times', 'bold')
-              doc.text(`EXAMEN CYTOLOGIQUE`, 20, currentY)
-              // currentY += 5
-              // doc.text(`Etat Frais`, 25, currentY)
+              doc.text(`EXAMEN MACROSCOPIQUE`, 20, currentY)
               doc.setFontSize(10)
               doc.setFont('Times', 'normal')
-              currentY += 5 // Incrémentation après chaque élément
+              currentY += 5 // Incrémentation de currentY après chaque élément
 
-              // Leucocytes
-              if (test?.observations?.microscopique?.leucocytes) {
-                let leucocytesText = `${test.observations.microscopique.leucocytes}`
-                if (test.observations.microscopique.unite) {
-                  leucocytesText += `/${test.observations.microscopique.unite}`
-                }
-
-                doc.text('Leucocytes:', 20, currentY)
-                doc.text(leucocytesText, positionX, currentY)
-
-                currentY += 5
-              }
-
-              // Hématies
-              if (test?.observations?.microscopique?.hematies) {
-                let hematiesText = `${test.observations.microscopique.hematies}`
-                if (test.observations.microscopique.unite) {
-                  hematiesText += `/${test.observations.microscopique.unite}`
-                }
-
-                doc.text('Hématies:', 20, currentY)
-                doc.text(hematiesText, positionX, currentY)
-
-                currentY += 5
-              }
-
-              // pH
-              if (test?.observations?.microscopique?.ph) {
-                doc.text('pH:', 20, currentY)
-                doc.text(
-                  `${test.observations.microscopique.ph}`,
-                  positionX,
-                  currentY
-                )
-                currentY += 5
-              }
-
-              // Cellules épithéliales
-              if (test?.observations?.microscopique?.cellulesEpitheliales) {
-                doc.text('Cellules épithéliales:', 20, currentY)
-                doc.text(
-                  `${test.observations.microscopique.cellulesEpitheliales}`,
-                  positionX,
-                  currentY
-                )
-                currentY += 5
-              }
-
-              // Éléments levuriformes
-              if (test?.observations?.microscopique?.elementsLevuriforme) {
-                doc.text('Éléments levuriformes:', 20, currentY)
-                doc.text(
-                  `${test.observations.microscopique.elementsLevuriforme}`,
-                  positionX,
-                  currentY
-                )
-                currentY += 5
-              }
-
-              // Filaments mycéliens
-              if (test?.observations?.microscopique?.filamentsMyceliens) {
-                doc.text('Filaments mycéliens:', 20, currentY)
-                doc.text(
-                  `${test.observations.microscopique.filamentsMyceliens}`,
-                  positionX,
-                  currentY
-                )
-                currentY += 5
-              }
-
-              // Trichomonas vaginalis
-              if (test?.observations?.microscopique?.trichomonasVaginalis) {
-                doc.text('Trichomonas vaginalis:', 20, currentY)
-                doc.text(
-                  `${test.observations.microscopique.trichomonasVaginalis}`,
-                  positionX,
-                  currentY
-                )
-                currentY += 5
-              }
-
-              // Cristaux
-              if (test?.observations?.microscopique?.cristaux) {
-                doc.text('Cristaux:', 20, currentY)
-                doc.text(
-                  `${test.observations.microscopique.cristaux}`,
-                  positionX,
-                  currentY
-                )
-
-                // Vérifiez si des détails sur les cristaux sont disponibles et non vides
-                if (
-                  test.observations.microscopique.cristauxDetails &&
-                  test.observations.microscopique.cristauxDetails.length > 0
-                ) {
-                  // Concaténez tous les détails avec une virgule et un espace comme séparateur
-                  let detailsText =
-                    test.observations.microscopique.cristauxDetails.join(', ')
-
-                  // Réduire la taille de la police pour les détails
-                  doc.setFontSize(7)
-
-                  // Déterminer la largeur maximale pour le texte, ajuster selon les besoins
-                  let maxWidth = 85 // Ajustez cette valeur en fonction de la largeur disponible sur la page
-
-                  // Utilisez splitTextToSize pour gérer le débordement du texte
-                  let splitText = doc.splitTextToSize(
-                    `(${detailsText})`,
-                    maxWidth
-                  )
-
-                  // Imprime chaque ligne du texte divisé, ajustant la position Y pour chaque nouvelle ligne
-                  splitText.forEach((line) => {
-                    doc.text(line, positionX + 20, currentY) // Ajustez positionX + 20 si nécessaire
-                    currentY += 5 // Ajustez l'espacement entre les lignes si nécessaire
-                  })
-
-                  // Restaurez la taille de la police pour d'autres textes
-                  doc.setFontSize(10)
-                } else {
-                  // Augmenter currentY pour le prochain élément si aucun détail n'est ajouté
-                  currentY += 5
-                }
-              }
-
-              // Cylindres
-              if (test?.observations?.microscopique?.cylindres) {
-                doc.text('Cylindres:', 20, currentY)
-                doc.text(
-                  `${test.observations.microscopique.cylindres}`,
-                  positionX,
-                  currentY
-                )
-                currentY += 7
-              }
-
-              // Parasites
-              if (test?.observations?.microscopique?.parasites) {
-                doc.text('Parasites:', 20, currentY)
-                doc.text(
-                  `${test.observations.microscopique.parasites}`,
-                  positionX,
-                  currentY
-                )
-
-                // Vérifiez si des détails sur les parasites sont disponibles et non vides
-                if (
-                  test.observations.microscopique.parasitesDetails &&
-                  test.observations.microscopique.parasitesDetails.length > 0
-                ) {
-                  // Concaténez tous les détails avec une virgule et un espace comme séparateur
-                  let detailsText =
-                    test.observations.microscopique.parasitesDetails.join(', ')
-
-                  // Réduire la taille de la police pour les détails
-                  doc.setFontSize(7)
-
-                  // Déterminer la largeur maximale pour le texte, ajuster selon les besoins
-                  let maxWidth = 85 // Ajustez cette valeur en fonction de la largeur disponible sur la page
-
-                  // Utilisez splitTextToSize pour gérer le débordement du texte
-                  let splitText = doc.splitTextToSize(
-                    `(${detailsText})`,
-                    maxWidth
-                  )
-
-                  // Imprime chaque ligne du texte divisé, ajustant la position Y pour chaque nouvelle ligne
-                  splitText.forEach((line) => {
-                    doc.text(line, positionX + 20, currentY) // Ajustez positionX + 20 si nécessaire
-                    currentY += 5 // Ajustez l'espacement entre les lignes si nécessaire
-                  })
-
-                  // Restaurez la taille de la police pour d'autres textes
-                  doc.setFontSize(10)
-                } else {
-                  // Augmenter currentY pour le prochain élément si aucun détail n'est ajouté
-                  currentY += 5
-                }
-              }
-
-              // Trichomonas intestinales
-              if (test?.observations?.microscopique?.trichomonasIntestinales) {
-                doc.text('Trichomonas intestinales:', 20, currentY)
-                doc.text(
-                  `${test.observations.microscopique.trichomonasIntestinales}`,
-                  positionX,
-                  currentY
-                )
-                currentY += 5
-              }
-
-              // Œufs de Bilharzies
-              if (test?.observations?.microscopique?.oeufsDeBilharzies) {
-                doc.text('Œufs de Bilharzies:', 20, currentY)
-                doc.text(
-                  `${test.observations.microscopique.oeufsDeBilharzies}`,
-                  positionX,
-                  currentY
-                )
-                currentY += 5
-              }
-
-              // Clue Cells
-              if (test?.observations?.microscopique?.clueCells) {
-                doc.text('Clue Cells:', 20, currentY)
-                doc.text(
-                  `${test.observations.microscopique.clueCells}`,
-                  positionX,
-                  currentY
-                )
-                currentY += 5
-              }
-
-              // Gardnerella vaginalis
-              if (test?.observations?.microscopique?.gardnerellaVaginalis) {
-                doc.text('Gardnerella vaginalis:', 20, currentY)
-                doc.text(
-                  `${test.observations.microscopique.gardnerellaVaginalis}`,
-                  positionX,
-                  currentY
-                )
-                currentY += 5
-              }
-
-              // Bacilles de Doderlein
-              if (test?.observations?.microscopique?.bacillesDeDoderlein) {
-                doc.text('Bacilles de Doderlein:', 20, currentY)
-                doc.text(
-                  `${test.observations.microscopique.bacillesDeDoderlein}`,
-                  positionX,
-                  currentY
-                )
-                currentY += 5
-              }
-
-              // Type de Flore
-              if (test?.observations?.microscopique?.typeDeFlore) {
-                doc.text('Type de Flore:', 20, currentY)
-                doc.text(
-                  `${test.observations.microscopique.typeDeFlore}`,
-                  positionX,
-                  currentY
-                )
-                currentY += 5
-              }
-
-              // Recherche de Streptocoque B
-              if (test?.observations?.microscopique?.rechercheDeStreptocoqueB) {
-                doc.text('Recherche de Streptocoque B:', 20, currentY)
-                doc.text(
-                  `${test.observations.microscopique.rechercheDeStreptocoqueB}`,
-                  positionX,
-                  currentY
-                )
-                currentY += 5
-              }
-
-              // Monocytes
-              if (test?.observations?.microscopique?.monocytes) {
-                doc.text('Monocytes:', 20, currentY)
-                doc.text(
-                  `${test.observations.microscopique.monocytes}%`,
-                  positionX,
-                  currentY
-                )
-                currentY += 5 // Peut-être un peu plus d'espace après le dernier élément
-              }
-              // Polynucléaires neutrophiles altérées
               if (
-                test?.observations?.microscopique
-                  ?.polynucleairesNeutrophilesAlterees
+                Array.isArray(test?.observations?.macroscopique) &&
+                test.observations.macroscopique.length > 0
               ) {
-                doc.text('Polynucléaires neutrophiles altérées:', 20, currentY)
-                doc.text(
-                  `${test.observations.microscopique.polynucleairesNeutrophilesAlterees}%`,
-                  positionX, // Assurez-vous d'ajuster la position X selon la longueur du texte précédent
-                  currentY
-                )
-                currentY += 5 // Ajoute un espace après l'élément
-              }
+                // Convertir le tableau en une chaîne de caractères, séparée par des virgules et des espaces
+                const macroscopiqueText =
+                  test.observations.macroscopique.join(', ')
 
-              // Polynucléaires neutrophiles non altérées
-              if (
-                test?.observations?.microscopique
-                  ?.polynucleairesNeutrophilesNonAlterees
-              ) {
+                // Afficher le texte formaté dans le PDF
                 doc.text(
-                  'Polynucléaires neutrophiles non altérées:',
+                  `${test?.typePrelevement} : ${macroscopiqueText}`,
                   20,
                   currentY
                 )
-                doc.text(
-                  `${test.observations.microscopique.polynucleairesNeutrophilesNonAlterees}%`,
-                  positionX, // Ajustez cette valeur comme nécessaire
-                  currentY
-                )
-                currentY += 5 // Ajoute un espace après l'élément
+                currentY += 7 // Incrémenter currentY pour la prochaine section ou le prochain élément
               }
 
-              // Éosinophiles
-              if (test?.observations?.microscopique?.eosinophiles) {
-                doc.text('Éosinophiles:', 20, currentY)
-                doc.text(
-                  `${test.observations.microscopique.eosinophiles}%`,
-                  positionX, // Ajustez cette valeur comme nécessaire
-                  currentY
-                )
-                currentY += 5 // Ajoute un espace après l'élément
+              if (
+                test?.observations?.microscopique &&
+                test?.observations?.macroscopique.length > 0
+              ) {
+                doc.setFontSize(10)
+                doc.setFont('Times', 'bold')
+                doc.text(`EXAMEN CYTOLOGIQUE`, 20, currentY)
+                // currentY += 5
+                // doc.text(`Etat Frais`, 25, currentY)
+                doc.setFontSize(10)
+                doc.setFont('Times', 'normal')
+                currentY += 5 // Incrémentation après chaque élément
+
+                // Leucocytes
+                if (test?.observations?.microscopique?.leucocytes) {
+                  let leucocytesText = `${test.observations.microscopique.leucocytes}`
+                  if (test.observations.microscopique.unite) {
+                    leucocytesText += `/${test.observations.microscopique.unite}`
+                  }
+
+                  doc.text('Leucocytes:', 20, currentY)
+                  doc.text(leucocytesText, positionX, currentY)
+
+                  currentY += 5
+                }
+
+                // Hématies
+                if (test?.observations?.microscopique?.hematies) {
+                  let hematiesText = `${test.observations.microscopique.hematies}`
+                  if (test.observations.microscopique.unite) {
+                    hematiesText += `/${test.observations.microscopique.unite}`
+                  }
+
+                  doc.text('Hématies:', 20, currentY)
+                  doc.text(hematiesText, positionX, currentY)
+
+                  currentY += 5
+                }
+
+                // pH
+                if (test?.observations?.microscopique?.ph) {
+                  doc.text('pH:', 20, currentY)
+                  doc.text(
+                    `${test.observations.microscopique.ph}`,
+                    positionX,
+                    currentY
+                  )
+                  currentY += 5
+                }
+
+                // Cellules épithéliales
+                if (test?.observations?.microscopique?.cellulesEpitheliales) {
+                  doc.text('Cellules épithéliales:', 20, currentY)
+                  doc.text(
+                    `${test.observations.microscopique.cellulesEpitheliales}`,
+                    positionX,
+                    currentY
+                  )
+                  currentY += 5
+                }
+
+                // Éléments levuriformes
+                if (test?.observations?.microscopique?.elementsLevuriforme) {
+                  doc.text('Éléments levuriformes:', 20, currentY)
+                  doc.text(
+                    `${test.observations.microscopique.elementsLevuriforme}`,
+                    positionX,
+                    currentY
+                  )
+                  currentY += 5
+                }
+
+                // Filaments mycéliens
+                if (test?.observations?.microscopique?.filamentsMyceliens) {
+                  doc.text('Filaments mycéliens:', 20, currentY)
+                  doc.text(
+                    `${test.observations.microscopique.filamentsMyceliens}`,
+                    positionX,
+                    currentY
+                  )
+                  currentY += 5
+                }
+
+                // Trichomonas vaginalis
+                if (test?.observations?.microscopique?.trichomonasVaginalis) {
+                  doc.text('Trichomonas vaginalis:', 20, currentY)
+                  doc.text(
+                    `${test.observations.microscopique.trichomonasVaginalis}`,
+                    positionX,
+                    currentY
+                  )
+                  currentY += 5
+                }
+
+                // Cristaux
+                if (test?.observations?.microscopique?.cristaux) {
+                  doc.text('Cristaux:', 20, currentY)
+                  doc.text(
+                    `${test.observations.microscopique.cristaux}`,
+                    positionX,
+                    currentY
+                  )
+
+                  // Vérifiez si des détails sur les cristaux sont disponibles et non vides
+                  if (
+                    test.observations.microscopique.cristauxDetails &&
+                    test.observations.microscopique.cristauxDetails.length > 0
+                  ) {
+                    // Concaténez tous les détails avec une virgule et un espace comme séparateur
+                    let detailsText =
+                      test.observations.microscopique.cristauxDetails.join(', ')
+
+                    // Réduire la taille de la police pour les détails
+                    doc.setFontSize(7)
+
+                    // Déterminer la largeur maximale pour le texte, ajuster selon les besoins
+                    let maxWidth = 85 // Ajustez cette valeur en fonction de la largeur disponible sur la page
+
+                    // Utilisez splitTextToSize pour gérer le débordement du texte
+                    let splitText = doc.splitTextToSize(
+                      `(${detailsText})`,
+                      maxWidth
+                    )
+
+                    // Imprime chaque ligne du texte divisé, ajustant la position Y pour chaque nouvelle ligne
+                    splitText.forEach((line) => {
+                      doc.text(line, positionX + 20, currentY) // Ajustez positionX + 20 si nécessaire
+                      currentY += 5 // Ajustez l'espacement entre les lignes si nécessaire
+                    })
+
+                    // Restaurez la taille de la police pour d'autres textes
+                    doc.setFontSize(10)
+                  } else {
+                    // Augmenter currentY pour le prochain élément si aucun détail n'est ajouté
+                    currentY += 5
+                  }
+                }
+
+                // Cylindres
+                if (test?.observations?.microscopique?.cylindres) {
+                  doc.text('Cylindres:', 20, currentY)
+                  doc.text(
+                    `${test.observations.microscopique.cylindres}`,
+                    positionX,
+                    currentY
+                  )
+                  currentY += 7
+                }
+
+                // Parasites
+                if (test?.observations?.microscopique?.parasites) {
+                  doc.text('Parasites:', 20, currentY)
+                  doc.text(
+                    `${test.observations.microscopique.parasites}`,
+                    positionX,
+                    currentY
+                  )
+
+                  // Vérifiez si des détails sur les parasites sont disponibles et non vides
+                  if (
+                    test.observations.microscopique.parasitesDetails &&
+                    test.observations.microscopique.parasitesDetails.length > 0
+                  ) {
+                    // Concaténez tous les détails avec une virgule et un espace comme séparateur
+                    let detailsText =
+                      test.observations.microscopique.parasitesDetails.join(
+                        ', '
+                      )
+
+                    // Réduire la taille de la police pour les détails
+                    doc.setFontSize(7)
+
+                    // Déterminer la largeur maximale pour le texte, ajuster selon les besoins
+                    let maxWidth = 85 // Ajustez cette valeur en fonction de la largeur disponible sur la page
+
+                    // Utilisez splitTextToSize pour gérer le débordement du texte
+                    let splitText = doc.splitTextToSize(
+                      `(${detailsText})`,
+                      maxWidth
+                    )
+
+                    // Imprime chaque ligne du texte divisé, ajustant la position Y pour chaque nouvelle ligne
+                    splitText.forEach((line) => {
+                      doc.text(line, positionX + 20, currentY) // Ajustez positionX + 20 si nécessaire
+                      currentY += 5 // Ajustez l'espacement entre les lignes si nécessaire
+                    })
+
+                    // Restaurez la taille de la police pour d'autres textes
+                    doc.setFontSize(10)
+                  } else {
+                    // Augmenter currentY pour le prochain élément si aucun détail n'est ajouté
+                    currentY += 5
+                  }
+                }
+
+                // Trichomonas intestinales
+                if (
+                  test?.observations?.microscopique?.trichomonasIntestinales
+                ) {
+                  doc.text('Trichomonas intestinales:', 20, currentY)
+                  doc.text(
+                    `${test.observations.microscopique.trichomonasIntestinales}`,
+                    positionX,
+                    currentY
+                  )
+                  currentY += 5
+                }
+
+                // Œufs de Bilharzies
+                if (test?.observations?.microscopique?.oeufsDeBilharzies) {
+                  doc.text('Œufs de Bilharzies:', 20, currentY)
+                  doc.text(
+                    `${test.observations.microscopique.oeufsDeBilharzies}`,
+                    positionX,
+                    currentY
+                  )
+                  currentY += 5
+                }
+
+                // Clue Cells
+                if (test?.observations?.microscopique?.clueCells) {
+                  doc.text('Clue Cells:', 20, currentY)
+                  doc.text(
+                    `${test.observations.microscopique.clueCells}`,
+                    positionX,
+                    currentY
+                  )
+                  currentY += 5
+                }
+
+                // Gardnerella vaginalis
+                if (test?.observations?.microscopique?.gardnerellaVaginalis) {
+                  doc.text('Gardnerella vaginalis:', 20, currentY)
+                  doc.text(
+                    `${test.observations.microscopique.gardnerellaVaginalis}`,
+                    positionX,
+                    currentY
+                  )
+                  currentY += 5
+                }
+
+                // Bacilles de Doderlein
+                if (test?.observations?.microscopique?.bacillesDeDoderlein) {
+                  doc.text('Bacilles de Doderlein:', 20, currentY)
+                  doc.text(
+                    `${test.observations.microscopique.bacillesDeDoderlein}`,
+                    positionX,
+                    currentY
+                  )
+                  currentY += 5
+                }
+
+                // Type de Flore
+                if (test?.observations?.microscopique?.typeDeFlore) {
+                  doc.text('Type de Flore:', 20, currentY)
+                  doc.text(
+                    `${test.observations.microscopique.typeDeFlore}`,
+                    positionX,
+                    currentY
+                  )
+                  currentY += 5
+                }
+
+                // Recherche de Streptocoque B
+                if (
+                  test?.observations?.microscopique?.rechercheDeStreptocoqueB
+                ) {
+                  doc.text('Recherche de Streptocoque B:', 20, currentY)
+                  doc.text(
+                    `${test.observations.microscopique.rechercheDeStreptocoqueB}`,
+                    positionX,
+                    currentY
+                  )
+                  currentY += 5
+                }
+
+                // Monocytes
+                if (test?.observations?.microscopique?.monocytes) {
+                  doc.text('Monocytes:', 20, currentY)
+                  doc.text(
+                    `${test.observations.microscopique.monocytes}%`,
+                    positionX,
+                    currentY
+                  )
+                  currentY += 5 // Peut-être un peu plus d'espace après le dernier élément
+                }
+                // Polynucléaires neutrophiles altérées
+                if (
+                  test?.observations?.microscopique
+                    ?.polynucleairesNeutrophilesAlterees
+                ) {
+                  doc.text(
+                    'Polynucléaires neutrophiles altérées:',
+                    20,
+                    currentY
+                  )
+                  doc.text(
+                    `${test.observations.microscopique.polynucleairesNeutrophilesAlterees}%`,
+                    positionX, // Assurez-vous d'ajuster la position X selon la longueur du texte précédent
+                    currentY
+                  )
+                  currentY += 5 // Ajoute un espace après l'élément
+                }
+
+                // Polynucléaires neutrophiles non altérées
+                if (
+                  test?.observations?.microscopique
+                    ?.polynucleairesNeutrophilesNonAlterees
+                ) {
+                  doc.text(
+                    'Polynucléaires neutrophiles non altérées:',
+                    20,
+                    currentY
+                  )
+                  doc.text(
+                    `${test.observations.microscopique.polynucleairesNeutrophilesNonAlterees}%`,
+                    positionX, // Ajustez cette valeur comme nécessaire
+                    currentY
+                  )
+                  currentY += 5 // Ajoute un espace après l'élément
+                }
+
+                // Éosinophiles
+                if (test?.observations?.microscopique?.eosinophiles) {
+                  doc.text('Éosinophiles:', 20, currentY)
+                  doc.text(
+                    `${test.observations.microscopique.eosinophiles}%`,
+                    positionX, // Ajustez cette valeur comme nécessaire
+                    currentY
+                  )
+                  currentY += 5 // Ajoute un espace après l'élément
+                }
+
+                // Basophiles
+                if (test?.observations?.microscopique?.basophiles) {
+                  doc.text('Basophiles:', 20, currentY)
+                  doc.text(
+                    `${test.observations.microscopique.basophiles}%`,
+                    positionX, // Ajustez cette valeur comme nécessaire
+                    currentY
+                  )
+                  currentY += 7 // Ajoute un espace après l'élément
+                }
               }
 
-              // Basophiles
-              if (test?.observations?.microscopique?.basophiles) {
-                doc.text('Basophiles:', 20, currentY)
+              // Vérification pour l'ajout d'une page avant le total et les informations bancaires
+              if (currentY > 250) {
+                doc.addPage()
+                currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
+                doc.text(`Nº Dossier: ${invoice?.identifiant}`, 75, currentY)
+                currentY
                 doc.text(
-                  `${test.observations.microscopique.basophiles}%`,
-                  positionX, // Ajustez cette valeur comme nécessaire
+                  `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
+                  42,
                   currentY
                 )
-                currentY += 7 // Ajoute un espace après l'élément
+                currentY += 5
+                addFooter()
+              }
+              if (test?.observations?.chimie) {
+                const {
+                  proteinesTotales,
+                  proteinesArochies,
+                  glycorachie,
+                  acideUrique,
+                  LDH,
+                } = test.observations.chimie
+
+                // Vérifier si tous les champs sont vides
+                if (
+                  proteinesTotales ||
+                  proteinesArochies ||
+                  glycorachie ||
+                  acideUrique ||
+                  LDH
+                ) {
+                  doc.setFontSize(10)
+                  doc.setFont('Times', 'bold')
+                  doc.text(`CHIMIE`, 20, currentY)
+                  currentY += 5
+                  doc.setFontSize(10)
+                  doc.setFont('Times', 'normal')
+
+                  // Proteines Totales
+                  if (proteinesTotales) {
+                    doc.text('Proteines Totales:', 20, currentY)
+                    doc.text(proteinesTotales, positionX, currentY)
+                    doc.text('g/L', positionX + 10, currentY)
+                    currentY += 5
+                  }
+
+                  // Proteines Arochies
+                  if (proteinesArochies) {
+                    doc.text('Proteines Arochies:', 20, currentY)
+                    doc.text(proteinesArochies, positionX, currentY)
+                    doc.text(`g/L `, positionX + 10, currentY)
+                    doc.text(`(0,2-0,4)`, positionX + 17, currentY)
+                    currentY += 5
+                  }
+
+                  // Glycorachie
+                  if (glycorachie) {
+                    doc.text('Glycorachie:', 20, currentY)
+                    doc.text(glycorachie, positionX, currentY)
+                    doc.text(`g/L `, positionX + 10, currentY)
+                    doc.text(`(0,2-0,4)`, positionX + 17, currentY)
+                    currentY += 5
+                  }
+
+                  // Acide Urique
+                  if (acideUrique) {
+                    doc.text('Acide Urique:', 20, currentY)
+                    doc.text(acideUrique, positionX, currentY)
+                    doc.text('mg/L', positionX + 10, currentY)
+                    currentY += 5
+                  }
+
+                  // LDH
+                  if (LDH) {
+                    doc.text('LDH:', 20, currentY)
+                    doc.text(LDH, positionX, currentY)
+                    doc.text('U/I', positionX + 10, currentY)
+                    currentY += 7
+                  }
+                }
+              }
+
+              if (currentY > 250) {
+                doc.addPage()
+                currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
+                doc.text(`Nº Dossier: ${invoice?.identifiant}`, 75, currentY)
+                currentY
+                doc.text(
+                  `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
+                  42,
+                  currentY
+                )
+                currentY += 5
+                addFooter()
+              }
+            }
+            if (test?.gram) {
+              doc.setFontSize(10)
+              doc.setFont('Times', 'bold')
+              doc.text(
+                `EXAMEN BACTERIOLOGIE DIRECT  (Coloration de gram)`,
+                20,
+                currentY
+              )
+              currentY += 8
+              doc.setFontSize(10)
+              doc.setFont('Times', 'normal')
+              doc.text(`Gram:`, 20, currentY)
+
+              doc.text(`${test?.gram}`, positionX, currentY)
+              currentY += 8
+            }
+            // Vérification pour l'ajout d'une page avant le total et les informations bancaires
+            if (currentY > 250) {
+              doc.addPage()
+              currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
+              doc.text(`Nº Dossier: ${invoice?.identifiant}`, 75, currentY)
+              currentY
+              doc.text(
+                `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
+                42,
+                currentY
+              )
+              currentY += 5
+              addFooter()
+            }
+
+            if (test?.culture) {
+              const { culture, germeIdentifie, description } = test?.culture
+
+              if (
+                culture ||
+                (Array.isArray(germeIdentifie) && germeIdentifie.length > 0) ||
+                description
+              ) {
+                // Vérifier si au moins un des champs est présent
+                doc.setFontSize(10)
+                doc.setFont('Times', 'bold')
+                doc.text(`CULTURES SUR MILIEUX SPECIFIQUES:`, 20, currentY)
+                currentY += 5
+                doc.setFontSize(10)
+                doc.setFont('Times', 'normal')
+
+                if (culture) {
+                  doc.text(`Culture:`, 20, currentY)
+                  doc.text(culture, positionX, currentY)
+                  currentY += 5
+                }
+
+                if (
+                  Array.isArray(test.culture.germeIdentifie) &&
+                  test.culture.germeIdentifie.length > 0
+                ) {
+                  // Extraire uniquement les noms des germes
+                  const germeIdentifieText = test.culture.germeIdentifie
+                    .map((germe) => germe.nom)
+                    .join(', ')
+
+                  // Définir la largeur maximale pour le texte (85 caractères dans votre cas)
+                  const maxWidth = 95 // Ajuster cette valeur en fonction de la largeur disponible sur votre page PDF
+
+                  // Utiliser splitTextToSize pour gérer les retours à la ligne automatiquement
+                  let splitText = doc.splitTextToSize(
+                    germeIdentifieText,
+                    maxWidth
+                  )
+
+                  // Appliquer le texte avec des retours à la ligne
+                  doc.setFont('Times', 'italic') // Changer la police en italique
+                  doc.text(`Germe(s) Identifié(s):`, 20, currentY)
+                  splitText.forEach((line) => {
+                    doc.text(line, positionX, currentY)
+                    currentY += 5 // Incrémenter la position Y pour chaque nouvelle ligne
+                  })
+                  doc.setFont('Times', 'normal') // Revenir à la police normale
+                  currentY += 5 // Espace supplémentaire après la liste des germes
+                }
+
+                if (description) {
+                  doc.text(`Numeration:`, 20, currentY)
+                  doc.text(description, positionX, currentY)
+                  currentY += 7
+                }
               }
             }
 
@@ -886,361 +1188,185 @@ function GenerateResultatButton({ invoice }) {
               currentY += 5
               addFooter()
             }
-            if (test?.observations?.chimie) {
-              const {
-                proteinesTotales,
-                proteinesArochies,
-                glycorachie,
-                acideUrique,
-                LDH,
-              } = test.observations.chimie
 
-              // Vérifier si tous les champs sont vides
-              if (
-                proteinesTotales ||
-                proteinesArochies ||
-                glycorachie ||
-                acideUrique ||
-                LDH
-              ) {
+            // Recherche de Chlamydia
+            if (test?.observations?.rechercheChlamydia) {
+              const {
+                naturePrelevement,
+                rechercheAntigeneChlamydiaTrochomatis,
+              } = test.observations.rechercheChlamydia
+
+              if (naturePrelevement || rechercheAntigeneChlamydiaTrochomatis) {
                 doc.setFontSize(10)
                 doc.setFont('Times', 'bold')
-                doc.text(`CHIMIE`, 20, currentY)
+                doc.text('RECHERCHE DE CHLAMYDIA', 20, currentY)
                 currentY += 5
                 doc.setFontSize(10)
                 doc.setFont('Times', 'normal')
 
-                // Proteines Totales
-                if (proteinesTotales) {
-                  doc.text('Proteines Totales:', 20, currentY)
-                  doc.text(proteinesTotales, positionX, currentY)
-                  doc.text('g/L', positionX + 10, currentY)
+                // Nature du prélèvement
+                if (naturePrelevement) {
+                  doc.text('Nature du prélèvement:', 20, currentY)
+                  doc.text(naturePrelevement, positionX, currentY)
                   currentY += 5
                 }
 
-                // Proteines Arochies
-                if (proteinesArochies) {
-                  doc.text('Proteines Arochies:', 20, currentY)
-                  doc.text(proteinesArochies, positionX, currentY)
-                  doc.text(`g/L `, positionX + 10, currentY)
-                  doc.text(`(0,2-0,4)`, positionX + 17, currentY)
-                  currentY += 5
-                }
-
-                // Glycorachie
-                if (glycorachie) {
-                  doc.text('Glycorachie:', 20, currentY)
-                  doc.text(glycorachie, positionX, currentY)
-                  doc.text(`g/L `, positionX + 10, currentY)
-                  doc.text(`(0,2-0,4)`, positionX + 17, currentY)
-                  currentY += 5
-                }
-
-                // Acide Urique
-                if (acideUrique) {
-                  doc.text('Acide Urique:', 20, currentY)
-                  doc.text(acideUrique, positionX, currentY)
-                  doc.text('mg/L', positionX + 10, currentY)
-                  currentY += 5
-                }
-
-                // LDH
-                if (LDH) {
-                  doc.text('LDH:', 20, currentY)
-                  doc.text(LDH, positionX, currentY)
-                  doc.text('U/I', positionX + 10, currentY)
+                // Recherche d'antigène de Chlamydia trachomatis
+                if (rechercheAntigeneChlamydiaTrochomatis) {
+                  doc.text(
+                    "Recherche d'antigène de Chlamydia trachomatis:",
+                    20,
+                    currentY
+                  )
+                  doc.text(
+                    rechercheAntigeneChlamydiaTrochomatis,
+                    positionX,
+                    currentY
+                  )
                   currentY += 7
                 }
               }
             }
 
-            if (currentY > 250) {
-              doc.addPage()
-              currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
-              doc.text(`Nº Dossier: ${invoice?.identifiant}`, 75, currentY)
-              currentY
-              doc.text(
-                `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
-                42,
-                currentY
-              )
-              currentY += 5
-              addFooter()
-            }
-          }
-          if (test?.gram) {
-            doc.setFontSize(10)
-            doc.setFont('Times', 'bold')
-            doc.text(
-              `EXAMEN BACTERIOLOGIE DIRECT  (Coloration de gram)`,
-              20,
-              currentY
-            )
-            currentY += 8
-            doc.setFontSize(10)
-            doc.setFont('Times', 'normal')
-            doc.text(`Gram:`, 20, currentY)
-
-            doc.text(`${test?.gram}`, positionX, currentY)
-            currentY += 8
-          }
-          // Vérification pour l'ajout d'une page avant le total et les informations bancaires
-          if (currentY > 250) {
-            doc.addPage()
-            currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
-            doc.text(`Nº Dossier: ${invoice?.identifiant}`, 75, currentY)
-            currentY
-            doc.text(
-              `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
-              42,
-              currentY
-            )
-            currentY += 5
-            addFooter()
-          }
-
-          if (test?.culture) {
-            const { culture, germeIdentifie, description } = test?.culture
-
-            if (
-              culture ||
-              (Array.isArray(germeIdentifie) && germeIdentifie.length > 0) ||
-              description
-            ) {
-              // Vérifier si au moins un des champs est présent
-              doc.setFontSize(10)
-              doc.setFont('Times', 'bold')
-              doc.text(`CULTURES SUR MILIEUX SPECIFIQUES:`, 20, currentY)
-              currentY += 5
-              doc.setFontSize(10)
-              doc.setFont('Times', 'normal')
-
-              if (culture) {
-                doc.text(`Culture:`, 20, currentY)
-                doc.text(culture, positionX, currentY)
-                currentY += 5
-              }
+            // Recherche de Mycoplasmes
+            if (test?.observations?.rechercheMycoplasmes) {
+              const {
+                naturePrelevement,
+                rechercheUreaplasmaUrealyticum,
+                rechercheMycoplasmaHominis,
+              } = test.observations.rechercheMycoplasmes
 
               if (
-                Array.isArray(test.culture.germeIdentifie) &&
-                test.culture.germeIdentifie.length > 0
+                naturePrelevement ||
+                rechercheUreaplasmaUrealyticum ||
+                rechercheMycoplasmaHominis
               ) {
-                // Extraire uniquement les noms des germes
-                const germeIdentifieText = test.culture.germeIdentifie
-                  .map((germe) => germe.nom)
-                  .join(', ')
-
-                // Définir la largeur maximale pour le texte (85 caractères dans votre cas)
-                const maxWidth = 95 // Ajuster cette valeur en fonction de la largeur disponible sur votre page PDF
-
-                // Utiliser splitTextToSize pour gérer les retours à la ligne automatiquement
-                let splitText = doc.splitTextToSize(
-                  germeIdentifieText,
-                  maxWidth
-                )
-
-                // Appliquer le texte avec des retours à la ligne
-                doc.setFont('Times', 'italic') // Changer la police en italique
-                doc.text(`Germe(s) Identifié(s):`, 20, currentY)
-                splitText.forEach((line) => {
-                  doc.text(line, positionX, currentY)
-                  currentY += 5 // Incrémenter la position Y pour chaque nouvelle ligne
-                })
-                doc.setFont('Times', 'normal') // Revenir à la police normale
-                currentY += 5 // Espace supplémentaire après la liste des germes
-              }
-
-              if (description) {
-                doc.text(`Numeration:`, 20, currentY)
-                doc.text(description, positionX, currentY)
-                currentY += 7
-              }
-            }
-          }
-
-          // Vérification pour l'ajout d'une page avant le total et les informations bancaires
-          if (currentY > 250) {
-            doc.addPage()
-            currentY = 25 // Réinitialiser la position Y pour le contenu de la nouvelle page
-            doc.text(`Nº Dossier: ${invoice?.identifiant}`, 75, currentY)
-            currentY
-            doc.text(
-              `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
-              42,
-              currentY
-            )
-            currentY += 5
-            addFooter()
-          }
-
-          // Recherche de Chlamydia
-          if (test?.observations?.rechercheChlamydia) {
-            const { naturePrelevement, rechercheAntigeneChlamydiaTrochomatis } =
-              test.observations.rechercheChlamydia
-
-            if (naturePrelevement || rechercheAntigeneChlamydiaTrochomatis) {
-              doc.setFontSize(10)
-              doc.setFont('Times', 'bold')
-              doc.text('RECHERCHE DE CHLAMYDIA', 20, currentY)
-              currentY += 5
-              doc.setFontSize(10)
-              doc.setFont('Times', 'normal')
-
-              // Nature du prélèvement
-              if (naturePrelevement) {
-                doc.text('Nature du prélèvement:', 20, currentY)
-                doc.text(naturePrelevement, positionX, currentY)
-                currentY += 5
-              }
-
-              // Recherche d'antigène de Chlamydia trachomatis
-              if (rechercheAntigeneChlamydiaTrochomatis) {
-                doc.text(
-                  "Recherche d'antigène de Chlamydia trachomatis:",
-                  20,
-                  currentY
-                )
-                doc.text(
-                  rechercheAntigeneChlamydiaTrochomatis,
-                  positionX,
-                  currentY
-                )
-                currentY += 7
-              }
-            }
-          }
-
-          // Recherche de Mycoplasmes
-          if (test?.observations?.rechercheMycoplasmes) {
-            const {
-              naturePrelevement,
-              rechercheUreaplasmaUrealyticum,
-              rechercheMycoplasmaHominis,
-            } = test.observations.rechercheMycoplasmes
-
-            if (
-              naturePrelevement ||
-              rechercheUreaplasmaUrealyticum ||
-              rechercheMycoplasmaHominis
-            ) {
-              doc.setFontSize(10)
-              doc.setFont('Times', 'bold')
-              doc.text('RECHERCHE DE MYCOPLASMES', 20, currentY)
-              currentY += 5
-              doc.setFontSize(10)
-              doc.setFont('Times', 'normal')
-
-              // Nature du prélèvement
-              if (naturePrelevement) {
-                doc.text('Nature du prélèvement:', 20, currentY)
-                doc.text(naturePrelevement, positionX, currentY)
-                currentY += 5
-              }
-
-              // Recherche d'Ureaplasma urealyticum
-              if (rechercheUreaplasmaUrealyticum) {
-                doc.text("Recherche d'Ureaplasma urealyticum:", 20, currentY)
-                doc.text(rechercheUreaplasmaUrealyticum, positionX, currentY)
-                currentY += 5
-              }
-
-              // Recherche de Mycoplasma hominis
-              if (rechercheMycoplasmaHominis) {
-                doc.text('Recherche de Mycoplasma hominis:', 20, currentY)
-                doc.text(rechercheMycoplasmaHominis, positionX, currentY)
-                currentY += 7
-              }
-            }
-          }
-
-          if (test?.conclusion) {
-            doc.setFontSize(10)
-            doc.setFont('Times', 'bold')
-            doc.text('CONCLUSION', 20, currentY)
-            currentY += 5
-
-            const maxLineWidth = 100
-            const conclusionLines = doc.splitTextToSize(
-              test?.conclusion,
-              maxLineWidth
-            )
-            doc.text(conclusionLines, 20, currentY)
-
-            currentY += conclusionLines.length * 5 // Mise à jour de currentY basée sur le nombre de lignes de la conclusion
-            doc.setFontSize(10)
-            doc.setFont('Times', 'normal')
-            currentY += 5
-          }
-
-          if (test?.observations?.macroscopique.length > 0) {
-            if (test?.remarque) {
-              doc.text(`Remarque: ${test.remarque}`, 20, currentY)
-            }
-          }
-
-          currentY += 5
-
-          // Gérer les antibiogrammes
-          if (test.culture && Array.isArray(test.culture.germeIdentifie)) {
-            test.culture.germeIdentifie.forEach((germe) => {
-              // Vérifier si l'antibiogramme n'est pas vide
-              if (Object.keys(germe.antibiogramme).length > 0) {
-                doc.addPage() // Démarre chaque antibiogramme sur une nouvelle page
-                addFooter()
-                currentY = 15 // Position Y initiale pour chaque nouvelle page
-                doc.text(`Nº Dossier: ${invoice?.identifiant}`, 42, currentY)
-                
-                doc.text(
-                  `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
-                  42,
-                  currentY + 5
-                )
-                currentY += 10
-
                 doc.setFontSize(10)
                 doc.setFont('Times', 'bold')
-                doc.text(`ANTIBIOGRAMME : ${germe.nom}`, 42, currentY)
-                currentY += 7
-
-                doc.setFont('Times', 'normal')
-                // En-têtes de colonne avec bordures
-                const columnWidthAntibiotique = 70
-                const columnWidthSensibilite = 30
-                const lineHeight = 7
-
-                // Dessiner les bordures pour les en-têtes
-                doc.rect(40, currentY, columnWidthAntibiotique, lineHeight)
-                doc.rect(110, currentY, columnWidthSensibilite, lineHeight)
-                doc.text('Antibiotique', 42, currentY + 5)
-                doc.text('Sensibilité', 112, currentY + 5)
-                currentY += lineHeight
-
-                // Données de l'antibiogramme
-                Object.entries(germe.antibiogramme).forEach(
-                  ([antibiotique, sensibilite]) => {
-                    doc.rect(40, currentY, columnWidthAntibiotique, lineHeight)
-                    doc.rect(110, currentY, columnWidthSensibilite, lineHeight)
-                    doc.text(antibiotique, 42, currentY + 5)
-                    doc.text(sensibilite, 112, currentY + 5)
-                    currentY += lineHeight
-                  }
-                )
-
+                doc.text('RECHERCHE DE MYCOPLASMES', 20, currentY)
                 currentY += 5
-                doc.text(
-                  'S : Sensible    I : Intermédiaire     R : Résistant',
-                  42,
-                  currentY
-                )
+                doc.setFontSize(10)
+                doc.setFont('Times', 'normal')
+
+                // Nature du prélèvement
+                if (naturePrelevement) {
+                  doc.text('Nature du prélèvement:', 20, currentY)
+                  doc.text(naturePrelevement, positionX, currentY)
+                  currentY += 5
+                }
+
+                // Recherche d'Ureaplasma urealyticum
+                if (rechercheUreaplasmaUrealyticum) {
+                  doc.text("Recherche d'Ureaplasma urealyticum:", 20, currentY)
+                  doc.text(rechercheUreaplasmaUrealyticum, positionX, currentY)
+                  currentY += 5
+                }
+
+                // Recherche de Mycoplasma hominis
+                if (rechercheMycoplasmaHominis) {
+                  doc.text('Recherche de Mycoplasma hominis:', 20, currentY)
+                  doc.text(rechercheMycoplasmaHominis, positionX, currentY)
+                  currentY += 7
+                }
               }
-            })
+            }
+
+            if (test?.conclusion) {
+              doc.setFontSize(10)
+              doc.setFont('Times', 'bold')
+              doc.text('CONCLUSION', 20, currentY)
+              currentY += 5
+
+              const maxLineWidth = 100
+              const conclusionLines = doc.splitTextToSize(
+                test?.conclusion,
+                maxLineWidth
+              )
+              doc.text(conclusionLines, 20, currentY)
+
+              currentY += conclusionLines.length * 5 // Mise à jour de currentY basée sur le nombre de lignes de la conclusion
+              doc.setFontSize(10)
+              doc.setFont('Times', 'normal')
+              currentY += 5
+            }
+
+            if (test?.observations?.macroscopique.length > 0) {
+              if (test?.remarque) {
+                doc.text(`Remarque: ${test.remarque}`, 20, currentY)
+              }
+            }
+
+            currentY += 5
+
+            // Gérer les antibiogrammes
+            if (test.culture && Array.isArray(test.culture.germeIdentifie)) {
+              test.culture.germeIdentifie.forEach((germe) => {
+                // Vérifier si l'antibiogramme n'est pas vide
+                if (Object.keys(germe.antibiogramme).length > 0) {
+                  doc.addPage() // Démarre chaque antibiogramme sur une nouvelle page
+                  addFooter()
+                  currentY = 15 // Position Y initiale pour chaque nouvelle page
+                  doc.text(`Nº Dossier: ${invoice?.identifiant}`, 42, currentY)
+
+                  doc.text(
+                    `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
+                    42,
+                    currentY + 5
+                  )
+                  currentY += 10
+
+                  doc.setFontSize(10)
+                  doc.setFont('Times', 'bold')
+                  doc.text(`ANTIBIOGRAMME : ${germe.nom}`, 42, currentY)
+                  currentY += 7
+
+                  doc.setFont('Times', 'normal')
+                  // En-têtes de colonne avec bordures
+                  const columnWidthAntibiotique = 70
+                  const columnWidthSensibilite = 30
+                  const lineHeight = 7
+
+                  // Dessiner les bordures pour les en-têtes
+                  doc.rect(40, currentY, columnWidthAntibiotique, lineHeight)
+                  doc.rect(110, currentY, columnWidthSensibilite, lineHeight)
+                  doc.text('Antibiotique', 42, currentY + 5)
+                  doc.text('Sensibilité', 112, currentY + 5)
+                  currentY += lineHeight
+
+                  // Données de l'antibiogramme
+                  Object.entries(germe.antibiogramme).forEach(
+                    ([antibiotique, sensibilite]) => {
+                      doc.rect(
+                        40,
+                        currentY,
+                        columnWidthAntibiotique,
+                        lineHeight
+                      )
+                      doc.rect(
+                        110,
+                        currentY,
+                        columnWidthSensibilite,
+                        lineHeight
+                      )
+                      doc.text(antibiotique, 42, currentY + 5)
+                      doc.text(sensibilite, 112, currentY + 5)
+                      currentY += lineHeight
+                    }
+                  )
+
+                  currentY += 5
+                  doc.text(
+                    'S : Sensible    I : Intermédiaire     R : Résistant',
+                    42,
+                    currentY
+                  )
+                }
+              })
+            }
+            currentY += 5
           }
-          currentY += 5
-          
-          
-        }
+        })
       })
-    })
       function formatDateAndTime(dateString) {
         const date = new Date(dateString)
         return date.toLocaleString('fr-FR', {
@@ -1259,7 +1385,7 @@ function GenerateResultatButton({ invoice }) {
         doc.setFontSize(10)
         doc.setFont('Times', 'bold')
         doc.text(`Validé par: ${validatedBy}`, 110, currentY)
-        
+
         doc.setFont('Times', 'normal')
         doc.setFontSize(8)
         // doc.text(
@@ -1290,7 +1416,6 @@ function GenerateResultatButton({ invoice }) {
         doc.addImage(doctorLogo, 'PNG', 110, currentY, 50, doctorLogoHeight)
       }
 
-      
       addPageNumbers(doc)
       // doc.save(`facture-${invoice._id}.pdf`)
       const blob = doc.output('blob')
@@ -1298,10 +1423,10 @@ function GenerateResultatButton({ invoice }) {
       const url = URL.createObjectURL(blob)
       // Ouvrez le PDF dans un nouvel onglet
 
-          // Naviguez vers la nouvelle page avec l'URL du blob en tant qu'état
-          //corriger
+      // Naviguez vers la nouvelle page avec l'URL du blob en tant qu'état
+      //corriger
       // Ouvrez le PDF dans un nouvel onglet avec l'état
-    window.open(`/pdf-viewer?pdfBlobUrl=${encodeURIComponent(url)}`, '_blank')
+      window.open(`/pdf-viewer?pdfBlobUrl=${encodeURIComponent(url)}`, '_blank')
 
       // window.open(url, '_blank')
       // Optionnel : libérez l'URL du blob après ouverture
@@ -1312,8 +1437,6 @@ function GenerateResultatButton({ invoice }) {
       alert('Une erreur est survenue lors de la génération du PDF.')
     }
   }
-
-  
 
   return (
     <button className="btn btn-primary" onClick={generatePDF}>

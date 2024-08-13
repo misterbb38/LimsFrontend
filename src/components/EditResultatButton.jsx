@@ -872,15 +872,13 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
                     >
                       <option value="">Sélectionner une option</option>
                       <option value="Positif">Positif</option>
-    <option value="Négatif">Négatif</option>
-    <option value="Douteux">Douteux</option>
-    <option value="Positive">Positive</option>
-    <option value="Négative">Négative</option>
-    <option value="Douteuse">Douteuse</option>
-                      
+                      <option value="Négatif">Négatif</option>
+                      <option value="Douteux">Douteux</option>
+                      <option value="Positive">Positive</option>
+                      <option value="Négative">Négative</option>
+                      <option value="Douteuse">Douteuse</option>
                     </select>
                   </div>
-
                 </div>
 
                 <label className="label">Choisissez le genre de resultat</label>

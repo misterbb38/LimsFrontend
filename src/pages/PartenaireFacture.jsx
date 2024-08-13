@@ -1,26 +1,26 @@
-import { useState, useEffect } from 'react';
-import NavigationBreadcrumb from '../components/NavigationBreadcrumb';
-import Chatbot from '../components/Chatbot';
-import GenerateFacturePartenaire from '../components/GenerateFacturePartenaire';
+import { useState, useEffect } from 'react'
+import NavigationBreadcrumb from '../components/NavigationBreadcrumb'
+import Chatbot from '../components/Chatbot'
+import GenerateFacturePartenaire from '../components/GenerateFacturePartenaire'
 
-const apiUrl = import.meta.env.VITE_APP_API_BASE_URL;
+const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
 
 function PartenaireFacture() {
-  const [partners, setPartners] = useState([]);
-  const [filteredPartners, setFilteredPartners] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [mois, setMois] = useState('');
-  const [annee, setAnnee] = useState('');
+  const [partners, setPartners] = useState([])
+  const [filteredPartners, setFilteredPartners] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [mois, setMois] = useState('')
+  const [annee, setAnnee] = useState('')
 
   useEffect(() => {
-    fetchPartners();
-  }, []);
+    fetchPartners()
+  }, [])
 
   const fetchPartners = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-      const token = userInfo?.token;
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+      const token = userInfo?.token
 
       const response = await fetch(`${apiUrl}/api/eti/etiquettes`, {
         method: 'GET',
@@ -28,51 +28,54 @@ function PartenaireFacture() {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
       if (data.success) {
-        setPartners(data.data);
-        setFilteredPartners(data.data);
+        setPartners(data.data)
+        setFilteredPartners(data.data)
       }
-      setLoading(false);
+      setLoading(false)
     } catch (error) {
-      console.error('Erreur:', error);
-      setLoading(false);
+      console.error('Erreur:', error)
+      setLoading(false)
     }
-  };
+  }
 
   const handleFilter = () => {
-    const query = new URLSearchParams();
-    if (mois) query.append('mois', mois);
-    if (annee) query.append('annee', annee);
+    const query = new URLSearchParams()
+    if (mois) query.append('mois', mois)
+    if (annee) query.append('annee', annee)
     const fetchFilteredPartners = async () => {
-      setLoading(true);
+      setLoading(true)
       try {
-        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-        const token = userInfo?.token;
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+        const token = userInfo?.token
 
-        const response = await fetch(`${apiUrl}/api/eti/etiquettes?${query.toString()}`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
+        const response = await fetch(
+          `${apiUrl}/api/eti/etiquettes?${query.toString()}`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        )
 
-        const data = await response.json();
+        const data = await response.json()
         if (data.success) {
-          setFilteredPartners(data.data);
+          setFilteredPartners(data.data)
         }
-        setLoading(false);
+        setLoading(false)
       } catch (error) {
-        console.error('Erreur:', error);
-        setLoading(false);
+        console.error('Erreur:', error)
+        setLoading(false)
       }
-    };
+    }
 
-    fetchFilteredPartners();
-  };
+    fetchFilteredPartners()
+  }
 
   return (
     <div className="base-content bg-base-100 mx-auto p-4 min-h-[800px]">
@@ -103,14 +106,18 @@ function PartenaireFacture() {
       <div className="divider"></div>
 
       {loading ? (
-        <div className="loading loading-spinner text-primary">Chargement...</div>
+        <div className="loading loading-spinner text-primary">
+          Chargement...
+        </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="table w-full">
             <thead>
               <tr>
                 <th className="font-bold text-lg text-base-content">Nom</th>
-                <th className="font-bold text-lg text-base-content">Type Partenaire</th>
+                <th className="font-bold text-lg text-base-content">
+                  Type Partenaire
+                </th>
                 <th className="font-bold text-lg text-base-content">Somme</th>
                 <th className="font-bold text-lg text-base-content">Facture</th>
                 <th className="font-bold text-lg text-base-content">Actions</th>
@@ -124,7 +131,11 @@ function PartenaireFacture() {
                   <td>{partner.totalSomme}</td>
                   <td>{partner.count}</td>
                   <td>
-                    <GenerateFacturePartenaire partner={partner} mois={mois} annee={annee}  />
+                    <GenerateFacturePartenaire
+                      partner={partner}
+                      mois={mois}
+                      annee={annee}
+                    />
                   </td>
                 </tr>
               ))}
@@ -133,7 +144,7 @@ function PartenaireFacture() {
         </div>
       )}
     </div>
-  );
+  )
 }
 
-export default PartenaireFacture;
+export default PartenaireFacture

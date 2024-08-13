@@ -14,7 +14,7 @@ import AddExterneResultat from './AddExterneResultat'
 
 function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
   const [isLoading, setIsLoading] = useState(false)
-  const [isLoadingSMS, setIsLoadingSMS] = useState(false);
+  const [isLoadingSMS, setIsLoadingSMS] = useState(false)
 
   const [analyseData, setAnalyseData] = useState(null)
 
@@ -50,7 +50,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
   }
 
   const sendSMS = async () => {
-    setIsLoadingSMS(true); // Commencer le chargement
+    setIsLoadingSMS(true) // Commencer le chargement
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'))
       const token = userInfo?.token
@@ -80,7 +80,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
       setIsSuccess(false)
       setToastMessage("Erreur lors de l'envoi du SMS")
     } finally {
-      setIsLoadingSMS(false); // Arrêter le chargement
+      setIsLoadingSMS(false) // Arrêter le chargement
       setShowToast(true)
       setTimeout(() => setShowToast(false), 3000)
     }
@@ -243,32 +243,34 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
       </button>
       <dialog id={`my_modal_4_${analyseId}`} className="modal">
         <div className="modal-box w-11/12 max-w-7xl">
-          
+          <div className="">
+            <button
+              className="btn btn-primary"
+              onClick={sendSMS}
+              disabled={isLoadingSMS}
+            >
+              {isLoadingSMS ? (
+                <span className="loading loading-spinner"></span>
+              ) : (
+                'Envoyer SMS'
+              )}
+            </button>
+            <span className="ml-1">
+              {analyseData?.smsCount === 0
+                ? "Aucun SMS n'a encore été envoyé"
+                : `${analyseData?.smsCount} SMS ${analyseData?.smsCount === 1 ? 'a déjà été envoyé' : 'ont déjà été envoyés'}, renvoyez si nécessaire`}
+            </span>
+          </div>
 
-        <div className="">
-    <button className="btn btn-primary" onClick={sendSMS} disabled={isLoadingSMS}>
-      {isLoadingSMS ? (
-        <span className="loading loading-spinner"></span>
-      ) : (
-        'Envoyer SMS'
-      )}
-    </button>
-    <span className="ml-1">
-      {analyseData?.smsCount === 0
-        ? 'Aucun SMS n\'a encore été envoyé'
-        : `${analyseData?.smsCount} SMS ${analyseData?.smsCount === 1 ? 'a déjà été envoyé' : 'ont déjà été envoyés'}, renvoyez si nécessaire`}
-    </span>
-  </div>
-
-  {showToast && (
-    <div className="toast toast-center toast-middle">
-      <div
-        className={`alert ${isSuccess ? 'alert-success' : 'alert-error'}`}
-      >
-        <span className="text-white">{toastMessage}</span>
-      </div>
-    </div>
-  )}
+          {showToast && (
+            <div className="toast toast-center toast-middle">
+              <div
+                className={`alert ${isSuccess ? 'alert-success' : 'alert-error'}`}
+              >
+                <span className="text-white">{toastMessage}</span>
+              </div>
+            </div>
+          )}
 
           <div className="divider"></div>
           {/* Open the modal using document.getElementById('ID').showModal() method */}

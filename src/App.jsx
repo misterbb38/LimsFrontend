@@ -68,7 +68,6 @@ function PatientDashboardLayout() {
   )
 }
 
-
 function PartenaireDashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
@@ -109,14 +108,17 @@ function App() {
           <Route path="Devis" element={<Devis />} />
           <Route path="patient" element={<PatientList />} />
           <Route path="personnel" element={<Personnel />} />
-          <Route path="partenaireclinique" element={<PartenaireCliniqueList />} />
+          <Route
+            path="partenaireclinique"
+            element={<PartenaireCliniqueList />}
+          />
           <Route path="test" element={<TestList />} />
           <Route path="partenaire" element={<PartenaireList />} />
           <Route path="ettiquette" element={<Ettiquette />} />
           <Route path="Formulaire" element={<Formulaire />} />
           <Route path="partenairefacture" element={<PartenaireFacture />} />
           <Route path="notification" element={<Notifications />} />
-          
+
           <Route path="parametre" element={<Parametre />} />
         </Route>
 

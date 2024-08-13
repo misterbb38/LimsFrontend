@@ -153,7 +153,6 @@
 
 // export default PartenaireList
 
-
 import { useEffect, useState } from 'react'
 import EditpartenaireButton from '../components/EditPartenaireButton' // Ajustez le chemin d'importation selon votre structure de fichiers
 import NavigationBreadcrumb from '../components/NavigationBreadcrumb'
@@ -233,7 +232,10 @@ function PartenaireList() {
       let match = true
 
       // Filtrage par type de partenaire
-      if (filters.typePartenaire && partenaire.typePartenaire !== filters.typePartenaire) {
+      if (
+        filters.typePartenaire &&
+        partenaire.typePartenaire !== filters.typePartenaire
+      ) {
         match = false
       }
 

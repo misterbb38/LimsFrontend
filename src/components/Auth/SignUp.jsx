@@ -69,24 +69,28 @@ const SignUp = ({ onUser }) => {
 
   const formatPhoneNumber = (phoneNumber) => {
     // Supprimer tous les caractères non numériques
-    const digits = phoneNumber.replace(/\D/g, '');
-  
+    const digits = phoneNumber.replace(/\D/g, '')
+
     // Ajouter le préfixe international +221 s'il n'est pas déjà présent
     if (digits.startsWith('221')) {
-      return `+${digits}`;
-    } else if (digits.startsWith('77') || digits.startsWith('78') || digits.startsWith('78') ) {
-      return `+221${digits}`;
+      return `+${digits}`
+    } else if (
+      digits.startsWith('77') ||
+      digits.startsWith('78') ||
+      digits.startsWith('78')
+    ) {
+      return `+221${digits}`
     } else {
-      return phoneNumber; // Retourner tel quel si le format est inattendu
+      return phoneNumber // Retourner tel quel si le format est inattendu
     }
-  };
-  
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target
     // Format the phone number if the field is 'telephone'
-  const formattedValue = name === 'telephone' ? formatPhoneNumber(value) : value;
-    
+    const formattedValue =
+      name === 'telephone' ? formatPhoneNumber(value) : value
+
     setFormData({ ...formData, [name]: value })
   }
 
@@ -107,7 +111,7 @@ const SignUp = ({ onUser }) => {
     // setPasswordLengthError(false)
     const generatedPassword = `${nom}${prenom}` // Concaténation du nom et du prénom
     // Format the phone number before sending
-  const formattedPhoneNumber = formatPhoneNumber(telephone);
+    const formattedPhoneNumber = formatPhoneNumber(telephone)
 
     // if (password.length < 8) {
     //   // setPasswordLengthError(true)
@@ -366,33 +370,35 @@ const SignUp = ({ onUser }) => {
                   </select>
                 </div> */}
 
-                {usertype !== 'accueil' && usertype !== 'technicien' &&  usertype !== 'preleveur' && (
-                  <div className="mb-4">
-                    <label
-                      htmlFor="userType"
-                      className="mb-2.5 block font-medium base-content"
-                    >
-                      Type d'Utilisateur
-                    </label>
-                    <select
-                      id="userType"
-                      name="userType"
-                      value={userType}
-                      onChange={handleChange}
-                      required
-                      className="select select-primary w-full max-w-xs"
-                    >
-                      <option value="">Sélectionnez un type</option>
-                      <option value="patient">Patient</option>
-                      <option value="medecin">Medecin</option>
-                      <option value="technicien">Technicien</option>
-                      <option value="preleveur">Preleveur</option>
-                      <option value="acceuil">Accueil</option>
-                      <option value="superadmin">Superadmin</option>
-                      <option value="partenaire">Partenaire</option>
-                    </select>
-                  </div>
-                )}
+                {usertype !== 'accueil' &&
+                  usertype !== 'technicien' &&
+                  usertype !== 'preleveur' && (
+                    <div className="mb-4">
+                      <label
+                        htmlFor="userType"
+                        className="mb-2.5 block font-medium base-content"
+                      >
+                        Type d'Utilisateur
+                      </label>
+                      <select
+                        id="userType"
+                        name="userType"
+                        value={userType}
+                        onChange={handleChange}
+                        required
+                        className="select select-primary w-full max-w-xs"
+                      >
+                        <option value="">Sélectionnez un type</option>
+                        <option value="patient">Patient</option>
+                        <option value="medecin">Medecin</option>
+                        <option value="technicien">Technicien</option>
+                        <option value="preleveur">Preleveur</option>
+                        <option value="acceuil">Accueil</option>
+                        <option value="superadmin">Superadmin</option>
+                        <option value="partenaire">Partenaire</option>
+                      </select>
+                    </div>
+                  )}
 
                 {/* Sélection du Partenaire si le type d'utilisateur est partenaire */}
                 {userType === 'partenaire' && (

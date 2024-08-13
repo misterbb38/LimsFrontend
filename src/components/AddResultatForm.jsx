@@ -311,14 +311,13 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     setCulture((prev) => ({
       ...prev,
       germeIdentifie: prev.germeIdentifie.filter((g) => g.nom !== germeNom),
-    }));
+    }))
     setAntibiogrammes((prev) => {
-      const updated = { ...prev };
-      delete updated[germeNom];
-      return updated;
-    });
-  };
-  
+      const updated = { ...prev }
+      delete updated[germeNom]
+      return updated
+    })
+  }
 
   const handleAddAntibiogramme = (event, germeNom) => {
     event.preventDefault() // Prevent form submission
@@ -795,8 +794,9 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                 value={statutMachine}
                 onChange={(e) => setStatutMachine(e.target.value === 'true')}
               >
-                
-                <option selected value="true">A</option>
+                <option selected value="true">
+                  A
+                </option>
                 <option value="false">B</option>
               </select>
             </div>
@@ -1681,6 +1681,24 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
             {/* Répétez pour chaque champ microscopique */}
           </div>
         )}
+
+        <div>
+          <label>Conclusion</label>
+          <select
+            className="select select-bordered w-[250px] "
+            value={selectedConclusion}
+            onChange={(e) => setSelectedConclusion(e.target.value)}
+            disabled={!testId} // Désactivez le select si aucun test n'est sélectionné
+          >
+            <option value="">Sélectionner une conclusion</option>
+            {Array.isArray(conclusion) &&
+              conclusion.map((conclusion, index) => (
+                <option key={index} value={conclusion}>
+                  {conclusion}
+                </option>
+              ))}
+          </select>
+        </div>
 
         <div>
           <label className="label">Remarque</label>

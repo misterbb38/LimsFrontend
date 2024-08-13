@@ -69,9 +69,9 @@ function FiltreAnalyse({ onFilter }) {
         <option value="Approuvé">Approuvé</option>
         <option value="Échantillon collecté">Échantillon collecté</option>
         <option value="Livré au laboratoire">Livré au laboratoire</option>
-        
+
         <option value="Modification">Modification</option>
-        
+
         <option value="Validé">Validé</option>
         <option value="Validation technique">Validation technique</option>
       </select>

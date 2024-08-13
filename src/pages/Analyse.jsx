@@ -367,16 +367,15 @@ function Facture() {
                         {facture.fileResultat &&
                           facture.fileResultat.length > 0 && (
                             <a
-                            href={facture.fileResultat[0].path} // Utiliser directement l'URL Cloudinary
+                              href={facture.fileResultat[0].path} // Utiliser directement l'URL Cloudinary
                               target="_blank"
                               rel="noopener noreferrer"
                               className="btn btn-primary"
                             >
                               <FontAwesomeIcon icon={faDownload} />
                             </a>
-                            
                           )}
-                          
+
                         <ViewAnalyseButton
                           analyseId={facture._id}
                           onAnalyseRefresh={refreshFactures}

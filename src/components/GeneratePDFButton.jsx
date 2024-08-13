@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFilePdf } from '@fortawesome/free-solid-svg-icons'
@@ -79,19 +78,18 @@ function GeneratePDFButton({ invoice }) {
     return colorMap[colorName.toLowerCase()] || '#000000' // Retourne noir par défaut si la couleur n'est pas trouvée
   }
 
-  
-
-  const generatePDF =  async () => {
+  const generatePDF = async () => {
     const doc = new jsPDF()
     const userColor = getColorValue('gris') // Obtenez la couleur hexadécimale
 
     // Fonction pour charger une image
-    const loadImage = src => new Promise((resolve, reject) => {
-      const img = new Image()
-      img.onload = () => resolve(img)
-      img.onerror = reject
-      img.src = src
-    })
+    const loadImage = (src) =>
+      new Promise((resolve, reject) => {
+        const img = new Image()
+        img.onload = () => resolve(img)
+        img.onerror = reject
+        img.src = src
+      })
 
     function addPageNumbers(doc) {
       const pageCount = doc.internal.getNumberOfPages() // Obtenir le nombre total de pages
@@ -99,7 +97,7 @@ function GeneratePDFButton({ invoice }) {
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i) // Définir la page courante sur laquelle le numéro de page sera ajouté
         doc.setFontSize(9) // Définir la taille de la police pour le numéro de page
-        doc.setTextColor(0, 0, 0); // Définir la couleur du texte pour le numéro de page
+        doc.setTextColor(0, 0, 0) // Définir la couleur du texte pour le numéro de page
         // Ajouter le numéro de page au centre du pied de page de chaque page
         doc.text(` ${i}/${pageCount}`, 185, 275, { align: 'center' })
       }
@@ -109,7 +107,7 @@ function GeneratePDFButton({ invoice }) {
       // Charger les images
       const [imgLeft, imgRight] = await Promise.all([
         loadImage(logoLeft),
-        loadImage(logoRight)
+        loadImage(logoRight),
       ])
 
       // Ajout des images
@@ -147,7 +145,6 @@ function GeneratePDFButton({ invoice }) {
       // Ajouter le pied de page à la première page
       addFooter()
 
-   
       doc.setFontSize(12)
       doc.setFont('helvetica')
       doc.text("LABORATOIRE D'ANALYSES MEDICALES", 65, 10)
@@ -173,7 +170,7 @@ function GeneratePDFButton({ invoice }) {
 
       doc.setFont('helvetica')
       doc.setTextColor(userColor)
-    
+
       doc.setFontSize(14)
       doc.text('', 105, 30, null, null, 'center')
 
@@ -199,10 +196,10 @@ function GeneratePDFButton({ invoice }) {
       let ageDisplay
 
       if (invoice.userId.age) {
-      // Si l'âge est directement disponible, utilisez-le
+        // Si l'âge est directement disponible, utilisez-le
         ageDisplay = invoice.userId.age.toString()
       } else if (invoice.userId.dateNaissance) {
-      // Sinon, calculez l'âge à partir de la date de naissance
+        // Sinon, calculez l'âge à partir de la date de naissance
         const birthDate = new Date(invoice.userId.dateNaissance)
         const today = new Date()
         let age = today.getFullYear() - birthDate.getFullYear()
@@ -215,7 +212,7 @@ function GeneratePDFButton({ invoice }) {
 
         ageDisplay = age.toString()
       } else {
-      // Si ni l'âge ni la date de naissance ne sont disponibles, affichez un placeholder
+        // Si ni l'âge ni la date de naissance ne sont disponibles, affichez un placeholder
         ageDisplay = 'Non disponible'
       }
 
@@ -236,11 +233,11 @@ function GeneratePDFButton({ invoice }) {
       doc.setFont('helvetica')
       const date = new Date(invoice?.createdAt)
       const formattedDate =
-      date.getDate().toString().padStart(2, '0') +
-      '/' +
-      (date.getMonth() + 1).toString().padStart(2, '0') +
-      '/' + // Les mois commencent à 0
-      date.getFullYear()
+        date.getDate().toString().padStart(2, '0') +
+        '/' +
+        (date.getMonth() + 1).toString().padStart(2, '0') +
+        '/' + // Les mois commencent à 0
+        date.getFullYear()
 
       // Avant d'ajouter le texte, définissez la police sur 'bold' pour la partie "Date:"
       doc.setFont('helvetica')
@@ -252,7 +249,6 @@ function GeneratePDFButton({ invoice }) {
       // Réinitialisez la police en style normal pour la date réelle
       doc.setFont('helvetica', 'bold')
       doc.text(formattedDate, 35 + dateLabelWidth, currentY + 12)
-   
 
       doc.text(
         `Nature: ${invoice.partenaireId?.typePartenaire || 'paf'} `,
@@ -260,7 +256,6 @@ function GeneratePDFButton({ invoice }) {
         currentY + 17
       )
       doc.setFont('helvetica', 'normal')
-   
 
       // En-tête des articles avec fond vert
       currentY += 37 // Adjust for marginBottom and header height
@@ -269,7 +264,8 @@ function GeneratePDFButton({ invoice }) {
       // Vérifie si 'typePartenaire' est 'ipm' ou 'assurance'
       if (
         invoice.partenaireId?.typePartenaire === 'ipm' ||
-        invoice.partenaireId?.typePartenaire === 'assurance' || invoice.partenaireId?.typePartenaire === 'sococim'
+        invoice.partenaireId?.typePartenaire === 'assurance' ||
+        invoice.partenaireId?.typePartenaire === 'sococim'
       ) {
         doc.setTextColor(255, 255, 255)
         doc.text('Analyse', 42, currentY + 4)
@@ -277,7 +273,7 @@ function GeneratePDFButton({ invoice }) {
         doc.text('Total', 166, currentY + 4)
         currentY += 10
       } else {
-      // Ajustez l'affichage si 'typePartenaire' est différent de 'ipm' et 'assurance'
+        // Ajustez l'affichage si 'typePartenaire' est différent de 'ipm' et 'assurance'
         doc.setTextColor(255, 255, 255)
         doc.text('Analyse', 42, currentY + 4)
         // Notez que 'Coeficiant B' n'est pas affiché dans ce cas
@@ -288,16 +284,19 @@ function GeneratePDFButton({ invoice }) {
       doc.setFontSize(8)
       doc.setTextColor(0, 0, 0)
 
-
       let totalCoefB = 0 // Initialiser le total des coeficiantB
 
       invoice?.tests.forEach((test, index) => {
-      // Assurez-vous que test n'est pas undefined
+        // Assurez-vous que test n'est pas undefined
         if (!test) return
         // Votre logique existante ici pour afficher les détails de chaque test...
 
         // Additionner les coeficiantB si le type de partenaire est "ipm" ou "assurance"....
-        if (['ipm', 'assurance', 'sococim'].includes(invoice.partenaireId?.typePartenaire)) {
+        if (
+          ['ipm', 'assurance', 'sococim'].includes(
+            invoice.partenaireId?.typePartenaire
+          )
+        ) {
           totalCoefB += test.coeficiantB || 0 // Ajouter le coeficiantB à totalCoefB, en assumant 0 si non spécifié
         }
 
@@ -318,33 +317,29 @@ function GeneratePDFButton({ invoice }) {
 
         if (
           invoice.partenaireId?.typePartenaire === 'assurance' &&
-        test.prixAssurance !== undefined
+          test.prixAssurance !== undefined
         ) {
           prixChoisi = test.prixAssurance
           afficherCoefB = true // Afficher CoefB pour 'assurance'
         } else if (
           invoice.partenaireId?.typePartenaire === 'ipm' &&
-        test.prixIpm !== undefined
+          test.prixIpm !== undefined
         ) {
           prixChoisi = test.prixIpm
           afficherCoefB = true // Afficher CoefB pour 'ipm'
         } else if (
           invoice.partenaireId?.typePartenaire === 'sococim' &&
-        test.prixSococim !== undefined
+          test.prixSococim !== undefined
         ) {
           prixChoisi = test.prixSococim
           afficherCoefB = true // Afficher CoefB pour 'ipm'
         } else if (
           invoice.partenaireId?.typePartenaire === 'clinique' &&
-        test.prixClinique !== undefined
+          test.prixClinique !== undefined
         ) {
           prixChoisi = test.prixClinique
-          
-        }
-         else if (test.PrixPaf !== undefined) {
+        } else if (test.PrixPaf !== undefined) {
           prixChoisi = test.prixPaf
-          
-        
         }
 
         prixChoisi = prixChoisi || 0 // S'assurer que prixChoisi a une valeur par défaut
@@ -359,14 +354,18 @@ function GeneratePDFButton({ invoice }) {
         }
 
         // Calculer et afficher total
-        if (['ipm', 'assurance', 'sococim'].includes(invoice.partenaireId?.typePartenaire) || invoice.partenaireId?.typePartenaire == null) {
+        if (
+          ['ipm', 'assurance', 'sococim'].includes(
+            invoice.partenaireId?.typePartenaire
+          ) ||
+          invoice.partenaireId?.typePartenaire == null
+        ) {
           const total = prixChoisi * (test.coeficiantB || 1) // Assumer coeficiantB de 1 si non spécifié
           doc.text(`${total.toFixed(0)}`, 166, textY)
-        }else {
+        } else {
           const total = prixChoisi
           doc.text(`${total.toFixed(0)}`, 166, textY)
         }
-        
 
         currentY += testHeight // Mise à jour de Y pour le prochain test
 
@@ -399,7 +398,7 @@ function GeneratePDFButton({ invoice }) {
 
       if (invoice.pc1 > 0) {
         doc.text(`PC1: ${invoice.pc1} `, 35, currentYv)
-      // Ajustez selon l'espacement désiré entre les lignes
+        // Ajustez selon l'espacement désiré entre les lignes
       }
 
       if (invoice.pc2 > 0) {
@@ -408,7 +407,8 @@ function GeneratePDFButton({ invoice }) {
       // Ajouter un espace avant le Total B si nécessaire
       if (
         invoice.partenaireId?.typePartenaire === 'ipm' ||
-        invoice.partenaireId?.typePartenaire === 'assurance' || invoice.partenaireId?.typePartenaire === 'sococim'
+        invoice.partenaireId?.typePartenaire === 'assurance' ||
+        invoice.partenaireId?.typePartenaire === 'sococim'
       ) {
         doc.text(`Total B: ${totalCoefB.toFixed(0)}`, 97, currentY) // Ajustez la position Y selon vos besoins
       }
@@ -435,12 +435,11 @@ function GeneratePDFButton({ invoice }) {
       // Vérifie si 'typePartenaire' n'est ni 'ipm' ni 'assurance'
       if (
         invoice.partenaireId?.typePartenaire !== 'ipm' &&
-      invoice.partenaireId?.typePartenaire !== 'assurance' &&
-      invoice.partenaireId?.typePartenaire !== 'sococim'
-     
+        invoice.partenaireId?.typePartenaire !== 'assurance' &&
+        invoice.partenaireId?.typePartenaire !== 'sococim'
       ) {
-      doc.setFont('helvetica', 'bold')
-      // currentY += 2 // Ajuster selon vos besoins
+        doc.setFont('helvetica', 'bold')
+        // currentY += 2 // Ajuster selon vos besoins
         doc.text(
           `MONTANT TOTAL HT: ${invoice.prixPatient.toFixed(0)} `,
           122,
@@ -452,7 +451,7 @@ function GeneratePDFButton({ invoice }) {
 
       // Ajouter un espace avant la réduction si nécessaire
       if (invoice.reduction > 0) {
-      // Déterminez le suffixe à utiliser en fonction du type de réduction
+        // Déterminez le suffixe à utiliser en fonction du type de réduction
         const reductionSuffix = invoice.typeReduction === 'montant' ? ' ' : '%'
 
         // Construisez la chaîne de texte pour la réduction en incluant le suffixe approprié
@@ -461,8 +460,8 @@ function GeneratePDFButton({ invoice }) {
         // Affichez le texte de la réduction à la position Y actuelle
         doc.text(reductionText, 35, currentY) // Ajustez la position Y selon vos besoins
 
-      // Assurez-vous d'ajuster `currentY` si vous avez besoin d'ajouter d'autres lignes après
-      // currentY += 5 // Par exemple, ajoutez 5 pour l'espacement avant la prochaine ligne
+        // Assurez-vous d'ajuster `currentY` si vous avez besoin d'ajouter d'autres lignes après
+        // currentY += 5 // Par exemple, ajoutez 5 pour l'espacement avant la prochaine ligne
       }
 
       currentY += 2 // Ajuster l'espacement avant de tracer la ligne de fin
@@ -473,7 +472,7 @@ function GeneratePDFButton({ invoice }) {
       currentY += 2
       // Dernière ligne verte
       if (currentY > 250) {
-      // Encore une vérification avant d'ajouter la ligne finale
+        // Encore une vérification avant d'ajouter la ligne finale
         doc.addPage()
         currentY = 10
         addFooter()
@@ -482,9 +481,10 @@ function GeneratePDFButton({ invoice }) {
       // Vérifie si 'typePartenaire' est 'ipm' ou 'assurance'
       if (
         invoice.partenaireId?.typePartenaire === 'ipm' ||
-      invoice.partenaireId?.typePartenaire === 'assurance' || invoice.partenaireId?.typePartenaire === 'sococim'
+        invoice.partenaireId?.typePartenaire === 'assurance' ||
+        invoice.partenaireId?.typePartenaire === 'sococim'
       ) {
-      // Coordonnées initiales
+        // Coordonnées initiales
         let startX = 25 // Position de départ X
         let startY = currentY + 20 // Position de départ Y, ajusté selon votre description
         let tableWidth = 160 // Largeur totale du tableau
@@ -556,7 +556,9 @@ function GeneratePDFButton({ invoice }) {
         // Dessiner la ligne des pourcentages sous les montants
         // La colonne pour 'Total' reste vide pour les pourcentages
         doc.text('', startX + columnWidth * 0.5, startY, { align: 'center' }) // Ajout de 'Pourcentage' sous 'Prix total'
-        doc.text('100%', startX + columnWidth * 1.5, startY, { align: 'center' }) // Pourcentage du prix total
+        doc.text('100%', startX + columnWidth * 1.5, startY, {
+          align: 'center',
+        }) // Pourcentage du prix total
         doc.text(
           `${invoice.pourcentageCouverture}%`,
           startX + columnWidth * 2.5,
@@ -578,52 +580,48 @@ function GeneratePDFButton({ invoice }) {
         currentY = startY + cellHeight
       }
 
-  
       // Afficher le reliquat si l'état de la facture est "Reliquat"
-if (invoice.statusPayement === 'Reliquat') {
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(9)
-  currentY +=  5; // Ajuster la position Y pour le reliquat
-  doc.text(
-    `Reliquat: ${invoice?.reliquat.toFixed(0)} CFA`,
-    138,
-    currentY
-  )
+      if (invoice.statusPayement === 'Reliquat') {
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(9)
+        currentY += 5 // Ajuster la position Y pour le reliquat
+        doc.text(`Reliquat: ${invoice?.reliquat.toFixed(0)} CFA`, 138, currentY)
 
-  currentY += 5
+        currentY += 5
 
-  doc.text(
-    `Acompte: ${invoice?.avance.toFixed(0)} CFA`,
-    138,
-    currentY
-  )
-}
+        doc.text(`Acompte: ${invoice?.avance.toFixed(0)} CFA`, 138, currentY)
+      }
       currentY += 10
-      
 
       doc.setFontSize(10)
       doc.setFont('helvetica', 'bold')
-      const text = invoice.statusPayement === 'Reliquat' ? `Facture sous ${invoice.statusPayement}` : `Facture ${invoice.statusPayement}`
-
-
+      const text =
+        invoice.statusPayement === 'Reliquat'
+          ? `Facture sous ${invoice.statusPayement}`
+          : `Facture ${invoice.statusPayement}`
 
       // Dessiner le texte
       doc.text(text, 135, currentY)
 
       // Calculer la largeur et la hauteur du texte pour dessiner un rectangle autour
-      const textWidth = doc.getStringUnitWidth(text) * doc.internal.getFontSize() / doc.internal.scaleFactor
+      const textWidth =
+        (doc.getStringUnitWidth(text) * doc.internal.getFontSize()) /
+        doc.internal.scaleFactor
       const textHeight = doc.getFontSize() / doc.internal.scaleFactor
 
       // Ajouter un rectangle autour du texte (avec une bordure plus épaisse)
       const padding = 2 // Ajouter un peu d'espace entre le texte et le rectangle
       doc.setLineWidth(0.5) // Épaisseur de la bordure
-      doc.rect(135 - padding, currentY - textHeight - padding, textWidth + 2 * padding, textHeight + 2 * padding)
-
-      
+      doc.rect(
+        135 - padding,
+        currentY - textHeight - padding,
+        textWidth + 2 * padding,
+        textHeight + 2 * padding
+      )
 
       // Dernière ligne verte
       if (currentY > 250) {
-      // Encore une vérification avant d'ajouter la ligne finale
+        // Encore une vérification avant d'ajouter la ligne finale
         doc.addPage()
         currentY = 20
         addFooter()
@@ -631,56 +629,55 @@ if (invoice.statusPayement === 'Reliquat') {
       // Avant d'ajouter la mise en garde, assurez-vous qu'il y a assez d'espace pour elle et le pied de page
       // Calculez l'espace nécessaire pour la mise en garde
       // Conversion de la date de récupération au format souhaité
-      
 
       let miseEnGarde = `Facture à ramener au retrait des résultats. `
       // Vérifier si le type de partenaire est différent de "clinique"
-if (invoice.partenaireId?.typePartenaire !== 'clinique'){
-
-      // Vérifier si la date de récupération est définie
-      if (invoice.dateDeRecuperation) {
-        const dateDeRecuperation = new Date(invoice.dateDeRecuperation);
-        const options = {
+      if (invoice.partenaireId?.typePartenaire !== 'clinique') {
+        // Vérifier si la date de récupération est définie
+        if (invoice.dateDeRecuperation) {
+          const dateDeRecuperation = new Date(invoice.dateDeRecuperation)
+          const options = {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
             hour: 'numeric',
             minute: 'numeric',
             second: 'numeric',
-            hour12: false // Utiliser le format 24h
-        };
-        const formattedDateDeRecuperation = dateDeRecuperation.toLocaleString('fr-FR', options); // Ajustez 'fr-FR' au besoin
-    
-        // Ajouter la date formatée avec l'heure à la mise en garde
-        miseEnGarde += `\nRésultats à récupérer le ${formattedDateDeRecuperation}`;
-    }
-    
-    
+            hour12: false, // Utiliser le format 24h
+          }
+          const formattedDateDeRecuperation = dateDeRecuperation.toLocaleString(
+            'fr-FR',
+            options
+          ) // Ajustez 'fr-FR' au besoin
 
-      // Puis, utilisez `miseEnGarde` où vous avez besoin de l'afficher
-      doc.setFont('helvetica', 'bold')
-      const miseEnGardeWrapped = doc.splitTextToSize(miseEnGarde, 180) // Ajustez la largeur selon la mise en page de votre PDF
-      const miseEnGardeHeight = miseEnGardeWrapped.length * 10 // Estimation de la hauteur nécessaire pour le texte
-      doc.setFont('helvetica', 'normal')
-      // Calculez la hauteur disponible sur la page
-      const availableSpace = 297 - currentY // 297mm est la hauteur d'une page A4
+          // Ajouter la date formatée avec l'heure à la mise en garde
+          miseEnGarde += `\nRésultats à récupérer le ${formattedDateDeRecuperation}`
+        }
 
-      // Vérifiez si l'espace disponible est suffisant pour la mise en garde et le pied de page
-      // Supposons que le pied de page nécessite environ 20mm d'espace
-      if (availableSpace < miseEnGardeHeight + 20) {
-      // Ajoutez une nouvelle page si l'espace n'est pas suffisant
-        doc.addPage()
-        currentY = 20 // Réinitialisez la position Y pour le contenu de la nouvelle page
-        addFooter() // Appelez votre fonction pour ajouter un pied de page si nécessaire
+        // Puis, utilisez `miseEnGarde` où vous avez besoin de l'afficher
+        doc.setFont('helvetica', 'bold')
+        const miseEnGardeWrapped = doc.splitTextToSize(miseEnGarde, 180) // Ajustez la largeur selon la mise en page de votre PDF
+        const miseEnGardeHeight = miseEnGardeWrapped.length * 10 // Estimation de la hauteur nécessaire pour le texte
+        doc.setFont('helvetica', 'normal')
+        // Calculez la hauteur disponible sur la page
+        const availableSpace = 297 - currentY // 297mm est la hauteur d'une page A4
+
+        // Vérifiez si l'espace disponible est suffisant pour la mise en garde et le pied de page
+        // Supposons que le pied de page nécessite environ 20mm d'espace
+        if (availableSpace < miseEnGardeHeight + 20) {
+          // Ajoutez une nouvelle page si l'espace n'est pas suffisant
+          doc.addPage()
+          currentY = 20 // Réinitialisez la position Y pour le contenu de la nouvelle page
+          addFooter() // Appelez votre fonction pour ajouter un pied de page si nécessaire
+        }
+
+        // Positionnez `currentY` pour la mise en garde juste au-dessus du pied de page
+        // Supposons que le pied de page commence à 277mm du haut, laissez un espace de 5mm au-dessus du pied de page pour la mise en garde
+        currentY = 277 - miseEnGardeHeight - 5
+
+        // Ajoutez la mise en garde à la position calculée
+        doc.text(miseEnGardeWrapped, 20, currentY)
       }
-
-      // Positionnez `currentY` pour la mise en garde juste au-dessus du pied de page
-      // Supposons que le pied de page commence à 277mm du haut, laissez un espace de 5mm au-dessus du pied de page pour la mise en garde
-      currentY = 277 - miseEnGardeHeight - 5
-
-      // Ajoutez la mise en garde à la position calculée
-      doc.text(miseEnGardeWrapped, 20, currentY)
-    }
 
       // Continuer avec la logique de création du PDF comme avant
 
@@ -700,11 +697,7 @@ if (invoice.partenaireId?.typePartenaire !== 'clinique'){
     }
   }
 
-  return (
-   
-      <FontAwesomeIcon icon={faFilePdf} onClick={generatePDF} />
-    
-  )
+  return <FontAwesomeIcon icon={faFilePdf} onClick={generatePDF} />
 }
 
 GeneratePDFButton.propTypes = {

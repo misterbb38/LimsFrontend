@@ -7,7 +7,7 @@ function FiltrePartenaire({ onFilter }) {
   })
 
   const handleInputChange = (e) => {
-    setFilters({ ...filters, [ e.target.name ]: e.target.value })
+    setFilters({ ...filters, [e.target.name]: e.target.value })
   }
 
   const handleFilter = () => {

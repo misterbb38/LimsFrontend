@@ -24,20 +24,19 @@ function EtiquetteList() {
       const data = await response.json()
       if (data.success) {
         const sortedEtiquettes = data.data.sort((a, b) => {
-          return new Date(b.createdAt) - new Date(a.createdAt); // Tri décroissant par date
-        });
-        setEtiquettes(sortedEtiquettes);
-        setFilteredEtiquettes(sortedEtiquettes);
+          return new Date(b.createdAt) - new Date(a.createdAt) // Tri décroissant par date
+        })
+        setEtiquettes(sortedEtiquettes)
+        setFilteredEtiquettes(sortedEtiquettes)
       } else {
-        console.error('Failed to fetch etiquettes');
+        console.error('Failed to fetch etiquettes')
       }
     } catch (error) {
-      console.error('Error fetching etiquettes:', error);
+      console.error('Error fetching etiquettes:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
-
 
   const handleFilter = (filters) => {
     const isFiltersEmpty = Object.values(filters).every((value) => value === '')
@@ -194,8 +193,16 @@ function EtiquetteList() {
                   <tr key={etiquette._id}>
                     <td>{formatDate(etiquette.createdAt)}</td>
                     <td>{etiquette.analyseId?.identifiant}</td>
-                    <td>{etiquette.partenaireId ? etiquette.partenaireId.nom : 'Non disponible'}</td>
-    <td>{etiquette.partenaireId ? etiquette.partenaireId.typePartenaire : 'Non disponible'}</td>
+                    <td>
+                      {etiquette.partenaireId
+                        ? etiquette.partenaireId.nom
+                        : 'Non disponible'}
+                    </td>
+                    <td>
+                      {etiquette.partenaireId
+                        ? etiquette.partenaireId.typePartenaire
+                        : 'Non disponible'}
+                    </td>
                     <td>{`${etiquette.sommeAPayer} Cfa`}</td>
                   </tr>
                 ))}

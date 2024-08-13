@@ -124,7 +124,7 @@ function EditHistoriqueButton({ historiqueId, onHistoriqueUpdated }) {
                     'Validé',
                     'Annulé',
                     'Information',
-                    'Validation technique'
+                    'Validation technique',
                   ].map((status) => (
                     <option key={status} value={status}>
                       {status}

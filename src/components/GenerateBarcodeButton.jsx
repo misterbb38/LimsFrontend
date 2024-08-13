@@ -1,4 +1,3 @@
-
 // import React, { useState, useRef } from 'react'
 // import QRCode from 'qrcode.react'
 // import PropTypes from 'prop-types'

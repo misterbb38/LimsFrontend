@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from 'react'
 import { Bar } from 'react-chartjs-2'
 import {
@@ -37,8 +35,18 @@ const AnalysesPerMonthChart = () => {
         const data = await response.json()
         if (data.success) {
           const monthNames = [
-            'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-            'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+            'Janvier',
+            'Février',
+            'Mars',
+            'Avril',
+            'Mai',
+            'Juin',
+            'Juillet',
+            'Août',
+            'Septembre',
+            'Octobre',
+            'Novembre',
+            'Décembre',
           ]
           const labels = data.data.map((item) => monthNames[item._id - 1])
           const counts = data.data.map((item) => item.count)

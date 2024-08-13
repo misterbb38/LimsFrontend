@@ -1,90 +1,103 @@
-import { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEdit, faTimes } from '@fortawesome/free-solid-svg-icons'
 
-function EditFileResultatButton({ fileResultatId, analyseId, onFileResultatUpdated }) {
-  const [showModal, setShowModal] = useState(false);
-  const [fileData, setFileData] = useState(null);
-  const [newFile, setNewFile] = useState(null);
-  const apiUrl = import.meta.env.VITE_APP_API_BASE_URL;
+function EditFileResultatButton({
+  fileResultatId,
+  analyseId,
+  onFileResultatUpdated,
+}) {
+  const [showModal, setShowModal] = useState(false)
+  const [fileData, setFileData] = useState(null)
+  const [newFile, setNewFile] = useState(null)
+  const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
 
   useEffect(() => {
     if (showModal && fileResultatId) {
-      fetchFileResultatData(fileResultatId);
+      fetchFileResultatData(fileResultatId)
     }
-  }, [showModal, fileResultatId]);
+  }, [showModal, fileResultatId])
 
   const fetchFileResultatData = async (fileResultatId) => {
     try {
-      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-      const token = userInfo?.token;
-      const response = await fetch(`${apiUrl}/api/fileresultats/${fileResultatId}`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+      const token = userInfo?.token
+      const response = await fetch(
+        `${apiUrl}/api/fileresultats/${fileResultatId}`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
 
       if (!response.ok) {
-        const errorText = await response.text(); // Récupérer le texte de l'erreur pour plus de détails
-        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+        const errorText = await response.text() // Récupérer le texte de l'erreur pour plus de détails
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`)
       }
 
-      const data = await response.json();
+      const data = await response.json()
 
       if (data.success) {
-        setFileData(data.data);
+        setFileData(data.data)
       } else {
-        console.error('Erreur lors de la récupération du fichier:', data.message);
+        console.error(
+          'Erreur lors de la récupération du fichier:',
+          data.message
+        )
       }
     } catch (error) {
-      console.error('Erreur lors de la récupération du fichier:', error);
+      console.error('Erreur lors de la récupération du fichier:', error)
     }
-  };
+  }
 
   const handleFileChange = (e) => {
-    setNewFile(e.target.files[0]);
-  };
+    setNewFile(e.target.files[0])
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-      const ownerUser = userInfo?._id;
-    const formData = new FormData();
-    formData.append('file', newFile);
-    formData.append('analyseId', analyseId);
-    formData.append('updatedBy', ownerUser);
+    e.preventDefault()
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+    const ownerUser = userInfo?._id
+    const formData = new FormData()
+    formData.append('file', newFile)
+    formData.append('analyseId', analyseId)
+    formData.append('updatedBy', ownerUser)
 
     try {
-      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-      const token = userInfo?.token;
-      const response = await fetch(`${apiUrl}/api/fileresultats/${fileResultatId}`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+      const token = userInfo?.token
+      const response = await fetch(
+        `${apiUrl}/api/fileresultats/${fileResultatId}`,
+        {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      )
 
       if (!response.ok) {
-        const errorText = await response.text(); // Récupérer le texte de l'erreur pour plus de détails
-        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+        const errorText = await response.text() // Récupérer le texte de l'erreur pour plus de détails
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`)
       }
 
-      const data = await response.json();
+      const data = await response.json()
 
       if (data.success) {
-        setShowModal(false);
-        onFileResultatUpdated(); // Callback to refresh file result data
+        setShowModal(false)
+        onFileResultatUpdated() // Callback to refresh file result data
       } else {
-        console.error('La mise à jour a échoué:', data.message);
+        console.error('La mise à jour a échoué:', data.message)
       }
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du fichier:', error);
+      console.error('Erreur lors de la mise à jour du fichier:', error)
     }
-  };
+  }
 
   return (
     <>
@@ -95,8 +108,13 @@ function EditFileResultatButton({ fileResultatId, analyseId, onFileResultatUpdat
         <div className="modal modal-open">
           <div className="modal-box w-11/12 max-w-5xl">
             <div className="modal-header flex justify-between items-center">
-              <h3 className="font-bold text-lg">Modifier le Fichier de Résultat</h3>
-              <button className="btn btn-ghost" onClick={() => setShowModal(false)}>
+              <h3 className="font-bold text-lg">
+                Modifier le Fichier de Résultat
+              </h3>
+              <button
+                className="btn btn-ghost"
+                onClick={() => setShowModal(false)}
+              >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
@@ -144,13 +162,13 @@ function EditFileResultatButton({ fileResultatId, analyseId, onFileResultatUpdat
         </div>
       )}
     </>
-  );
+  )
 }
 
 EditFileResultatButton.propTypes = {
   fileResultatId: PropTypes.string.isRequired,
   analyseId: PropTypes.string.isRequired,
   onFileResultatUpdated: PropTypes.func.isRequired,
-};
+}
 
-export default EditFileResultatButton;
+export default EditFileResultatButton

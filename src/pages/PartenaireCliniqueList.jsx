@@ -171,7 +171,7 @@ function Personnel() {
               <tr>
                 <th className="font-bold text-lg text-base-content">Nom</th>
                 <th className="font-bold text-lg text-base-content">Email</th>
-               
+
                 <th className="font-bold text-lg text-base-content">
                   Téléphone
                 </th>
@@ -182,9 +182,9 @@ function Personnel() {
             <tbody>
               {personnel.map((patient) => (
                 <tr key={patient._id}>
-                 <td>{patient.partenaireId.nom}</td>
+                  <td>{patient.partenaireId.nom}</td>
                   <td>{patient.email}</td>
-                 
+
                   <td>{patient.telephone}</td>
                   <td>{patient.nip}</td>
                   <td>

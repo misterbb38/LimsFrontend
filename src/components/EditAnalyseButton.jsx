@@ -8,7 +8,7 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
   const [selectedTests, setSelectedTests] = useState([])
   const [availableTests, setAvailableTests] = useState([])
   const [ordonnancePdf, setOrdonnancePdf] = useState(null)
-  const [statusPayement, setStatusPayement] = useState('') 
+  const [statusPayement, setStatusPayement] = useState('')
   const [typeAnalyse, setTypeAnalyse] = useState('')
   const [pc1, setPc1] = useState(false)
   const [pc2, setPc2] = useState(false)
@@ -299,24 +299,24 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
                 </div>
               </div>
 
-
-               {/* // Type d analyse */}
-          <div className="form-control">
-            <label className="label">Type d'analyse(fait au labo ou pas)</label>
-            <select
-              className="select select-bordered"
-              value={typeAnalyse}
-              onChange={(e) => setTypeAnalyse(e.target.value)}
-            >
-              <option value="" disabled>
-                Choisissez
-              </option>
-              {/* option */}
-              <option value="Interne">Interne</option>
-              <option value="Externe">Externe</option>
-              
-            </select>
-          </div>
+              {/* // Type d analyse */}
+              <div className="form-control">
+                <label className="label">
+                  Type d'analyse(fait au labo ou pas)
+                </label>
+                <select
+                  className="select select-bordered"
+                  value={typeAnalyse}
+                  onChange={(e) => setTypeAnalyse(e.target.value)}
+                >
+                  <option value="" disabled>
+                    Choisissez
+                  </option>
+                  {/* option */}
+                  <option value="Interne">Interne</option>
+                  <option value="Externe">Externe</option>
+                </select>
+              </div>
 
               <div className="form-control">
                 <label className="cursor-pointer label">

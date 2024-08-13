@@ -18,8 +18,6 @@
 //     fetchTests()
 //   }, [currentPage]) // Dépendance ajoutée ici pour recharger à chaque changement de page
 
-  
-
 //   const fetchTests = async () => {
 //     setLoading(true)
 //     try {
@@ -224,33 +222,31 @@
 
 // export default TestList
 
-
-
-import { useEffect, useState } from 'react';
-import EditTestButton from '../components/EditTestButton';
-import ViewTestButton from '../components/ViewTestButton';
-import NavigationBreadcrumb from '../components/NavigationBreadcrumb';
-import AddTestForm from '../components/AddTestForm';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { useEffect, useState } from 'react'
+import EditTestButton from '../components/EditTestButton'
+import ViewTestButton from '../components/ViewTestButton'
+import NavigationBreadcrumb from '../components/NavigationBreadcrumb'
+import AddTestForm from '../components/AddTestForm'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTrash } from '@fortawesome/free-solid-svg-icons'
 
 function TestList() {
-  const [tests, setTests] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const apiUrl = import.meta.env.VITE_APP_API_BASE_URL;
+  const [tests, setTests] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(0)
+  const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
 
   useEffect(() => {
-    fetchTests();
-  }, [currentPage]); // Recharger à chaque changement de page
+    fetchTests()
+  }, [currentPage]) // Recharger à chaque changement de page
 
   const fetchTests = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-      const token = userInfo?.token;
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+      const token = userInfo?.token
       const response = await fetch(
         `${apiUrl}/api/test?page=${currentPage}&search=${searchTerm}`,
         {
@@ -259,60 +255,60 @@ function TestList() {
             Authorization: `Bearer ${token}`,
           },
         }
-      );
-      const data = await response.json();
+      )
+      const data = await response.json()
       if (data.success) {
-        setTests(data.data);
-        setTotalPages(data.totalPages); // Assumant que l'API renvoie le nombre total de pages
+        setTests(data.data)
+        setTotalPages(data.totalPages) // Assumant que l'API renvoie le nombre total de pages
       } else {
-        console.error('Failed to fetch tests');
+        console.error('Failed to fetch tests')
       }
     } catch (error) {
-      console.error('Error fetching tests:', error);
+      console.error('Error fetching tests:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleSearch = () => {
-    setCurrentPage(1); // Réinitialiser à la première page lors de la recherche
-    fetchTests();
-  };
+    setCurrentPage(1) // Réinitialiser à la première page lors de la recherche
+    fetchTests()
+  }
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber) => setCurrentPage(pageNumber)
 
   // Fonction pour supprimer un test
   const deleteTest = async (testId) => {
     const confirmDelete = window.confirm(
       'Êtes-vous sûr de vouloir supprimer ce test ?'
-    );
-    if (!confirmDelete) return;
+    )
+    if (!confirmDelete) return
 
     try {
-      setLoading(true);
-      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-      const token = userInfo?.token;
+      setLoading(true)
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+      const token = userInfo?.token
       const response = await fetch(`${apiUrl}/api/test/${testId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-      });
-      const data = await response.json();
+      })
+      const data = await response.json()
       if (data.success) {
-        alert('Test supprimé avec succès.');
-        fetchTests(); // Rafraîchir la liste des tests après la suppression
+        alert('Test supprimé avec succès.')
+        fetchTests() // Rafraîchir la liste des tests après la suppression
       } else {
-        throw new Error(data.message || 'Erreur lors de la suppression du test');
+        throw new Error(data.message || 'Erreur lors de la suppression du test')
       }
     } catch (error) {
-      console.error('Erreur lors de la suppression du test:', error);
-      alert('Erreur lors de la suppression du test: ' + error.message);
+      console.error('Erreur lors de la suppression du test:', error)
+      alert('Erreur lors de la suppression du test: ' + error.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="base-content bg-base-100 mx-auto p-4 min-h-[800px]">
@@ -341,7 +337,7 @@ function TestList() {
       </div>
 
       <dialog id="my_modal_3" className="modal">
-        <div className="modal-box">
+        <div className="modal-box  w-11/12 max-w-5xl">
           <AddTestForm onTestChange={fetchTests} />
           <div className="modal-action">
             <form method="dialog">
@@ -447,7 +443,7 @@ function TestList() {
         </>
       )}
     </div>
-  );
+  )
 }
 
-export default TestList;
+export default TestList

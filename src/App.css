@@ -1,8 +1,8 @@
 /* Ajoutez ce CSS dans votre fichier CSS global ou un module CSS */
 .custom-select option {
-    padding: 0.5rem; /* Espacement interne pour rendre les options plus spacieuses */
-    text-overflow: ellipsis; /* Ajoute des points de suspension si le texte est trop long */
-    overflow: hidden; /* Empêche le texte de déborder */
-    white-space: nowrap; /* Garde le texte sur une seule ligne */
-    max-width: 240px; /* Fixe une largeur maximale pour chaque option */
-  }
+  padding: 0.5rem; /* Espacement interne pour rendre les options plus spacieuses */
+  text-overflow: ellipsis; /* Ajoute des points de suspension si le texte est trop long */
+  overflow: hidden; /* Empêche le texte de déborder */
+  white-space: nowrap; /* Garde le texte sur une seule ligne */
+  max-width: 240px; /* Fixe une largeur maximale pour chaque option */
+}

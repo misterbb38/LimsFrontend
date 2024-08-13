@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
 function CreateAnalyseForm({ onAnalyseChange }) {
-  const [selectedPartenaireType, setSelectedPartenaireType] = useState('');
+  const [selectedPartenaireType, setSelectedPartenaireType] = useState('')
 
   const [selectedTests, setSelectedTests] = useState([])
   const [availableTests, setAvailableTests] = useState([])
@@ -35,7 +35,6 @@ function CreateAnalyseForm({ onAnalyseChange }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [searchTermPatient, setSearchTermPatient] = useState('')
   const [searchTermPartenaire, setSearchTermPartenaire] = useState('')
-  
 
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
 
@@ -136,29 +135,29 @@ function CreateAnalyseForm({ onAnalyseChange }) {
   }
 
   const handlePartenaireChange = (e) => {
-    const selectedId = e.target.value;
-    setSelectedPartenaireId(selectedId);
-    
+    const selectedId = e.target.value
+    setSelectedPartenaireId(selectedId)
+
     // Trouver le type de partenaire sélectionné
-    const selectedPartenaire = partenaires.find(partenaire => partenaire._id === selectedId);
+    const selectedPartenaire = partenaires.find(
+      (partenaire) => partenaire._id === selectedId
+    )
     if (selectedPartenaire) {
-      setSelectedPartenaireType(selectedPartenaire.typePartenaire);
+      setSelectedPartenaireType(selectedPartenaire.typePartenaire)
     } else {
-      setSelectedPartenaireType('');
+      setSelectedPartenaireType('')
     }
-  };
-  
+  }
 
   // Fonction pour filtrer les tests basée sur la recherche
   const filteredTests =
-  searchTerm.length > 0
-    ? availableTests
-        .filter((test) =>
-          test.nom.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-        .sort((a, b) => a.nom.localeCompare(b.nom)) // Ajout du tri alphabétique
-    : availableTests.sort((a, b) => a.nom.localeCompare(b.nom));
-
+    searchTerm.length > 0
+      ? availableTests
+          .filter((test) =>
+            test.nom.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+          .sort((a, b) => a.nom.localeCompare(b.nom)) // Ajout du tri alphabétique
+      : availableTests.sort((a, b) => a.nom.localeCompare(b.nom))
 
   // Fonction pour filtrer les patients basée sur la recherche
   const filteredPatients =
@@ -214,7 +213,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
     if (pc1) formData.append('pc1', 2000)
     if (pc2) formData.append('pc2', 4000)
     formData.append('statusPayement', statusPayement || 'Impayée')
-    formData.append('typeAnalyse', typeAnalyse || 'Interne' )
+    formData.append('typeAnalyse', typeAnalyse || 'Interne')
 
     if (statusPayement === 'Reliquat') {
       formData.append('avance', avance) // Ajouter l'avance au formData
@@ -245,9 +244,9 @@ function CreateAnalyseForm({ onAnalyseChange }) {
         body: formData, // Passer FormData comme corps de la requête
       })
       const data = await response.json()
-      
+
       if (data.success) {
-        console.log('les info de l api',data)
+        console.log('les info de l api', data)
         setToastMessage('Analyse ajoutée avec succès')
         setIsSuccess(true)
         onAnalyseChange()
@@ -305,7 +304,6 @@ function CreateAnalyseForm({ onAnalyseChange }) {
               onChange={handleUserChange}
               value={selectedUserId}
               required
-              
             >
               <option value="">Sélectionner un patient</option>
               {filteredPatients.map((user) => (
@@ -362,22 +360,23 @@ function CreateAnalyseForm({ onAnalyseChange }) {
             </div>
 
             {/* // Type d analyse */}
-          <div className="form-control">
-            <label className="label">Type d'analyse(fait au labo ou pas)</label>
-            <select
-              className="select select-bordered"
-              value={typeAnalyse}
-              onChange={handleTypeAnalyseChange}
-            >
-              <option value="" disabled>
-                Choisissez
-              </option>
-              {/* option */}
-              <option value="Interne">Interne</option>
-              <option value="Externe">Externe</option>
-              
-            </select>
-          </div>
+            <div className="form-control">
+              <label className="label">
+                Type d'analyse(fait au labo ou pas)
+              </label>
+              <select
+                className="select select-bordered"
+                value={typeAnalyse}
+                onChange={handleTypeAnalyseChange}
+              >
+                <option value="" disabled>
+                  Choisissez
+                </option>
+                {/* option */}
+                <option value="Interne">Interne</option>
+                <option value="Externe">Externe</option>
+              </select>
+            </div>
 
             {/* Ajout des boutons radio pour l'assurance */}
             <div className="form-control">
@@ -457,17 +456,19 @@ function CreateAnalyseForm({ onAnalyseChange }) {
                   </select>
                 </div>
 
-                {['ipm', 'assurance', 'sococim'].includes(selectedPartenaireType) && (
-      <div>
-        <label>Pourcentage de couverture</label>
-        <input
-          type="number"
-          className="input input-primary w-full max-w-xs"
-          value={pourcentageCouverture}
-          onChange={(e) => setPourcentageCouverture(e.target.value)}
-        />
-      </div>
-    )}
+                {['ipm', 'assurance', 'sococim'].includes(
+                  selectedPartenaireType
+                ) && (
+                  <div>
+                    <label>Pourcentage de couverture</label>
+                    <input
+                      type="number"
+                      className="input input-primary w-full max-w-xs"
+                      value={pourcentageCouverture}
+                      onChange={(e) => setPourcentageCouverture(e.target.value)}
+                    />
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -602,7 +603,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
               <span className="label-text">Date de récupération</span>
             </label>
             <input
-              type="date"
+              type="datetime-local"
               className="input input-bordered"
               value={dateDeRecuperation}
               onChange={(e) => setDateDeRecuperation(e.target.value)}

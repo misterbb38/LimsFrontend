@@ -40,7 +40,7 @@
 //          {/* <NavigationBreadcrumb pageName="Resultats" /> */}
 //       <div className="pdf-toolbar">
 //         <button className="btn btn-primary ml-1 mb-1" onClick={handlePrint}>
-//           <FontAwesomeIcon icon={faPrint} /> 
+//           <FontAwesomeIcon icon={faPrint} />
 //         </button>
 //         {/* <button className="btn btn-secondary" onClick={handleEmailShare}>
 //           <FontAwesomeIcon icon={faEnvelope} /> Partager par Email
@@ -66,11 +66,13 @@
 
 // export default PDFViewer
 
-
-
 import React, { useEffect, useRef } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEnvelope, faPrint, faDownload } from '@fortawesome/free-solid-svg-icons'
+import {
+  faEnvelope,
+  faPrint,
+  faDownload,
+} from '@fortawesome/free-solid-svg-icons'
 import NavigationBreadcrumb from '../components/NavigationBreadcrumb'
 import { useLocation } from 'react-router-dom'
 
@@ -83,12 +85,12 @@ const PDFViewer = () => {
 
   const handleEmailShare = () => {
     if (pdfBlobUrl) {
-      const subject = encodeURIComponent("Here is the PDF document")
-      const body = encodeURIComponent("Please find the attached PDF document.")
+      const subject = encodeURIComponent('Here is the PDF document')
+      const body = encodeURIComponent('Please find the attached PDF document.')
       const mailtoLink = `mailto:?subject=${subject}&body=${body}&attachment=${pdfBlobUrl}`
       window.location.href = mailtoLink
     } else {
-      alert('Le PDF n\'est pas prêt à être partagé.')
+      alert("Le PDF n'est pas prêt à être partagé.")
     }
   }
 
@@ -96,24 +98,31 @@ const PDFViewer = () => {
     if (iframeRef.current) {
       iframeRef.current.contentWindow.print()
     } else {
-      alert('Le PDF n\'est pas prêt à être imprimé.')
+      alert("Le PDF n'est pas prêt à être imprimé.")
     }
   }
 
   useEffect(() => {
     if (!pdfBlobUrl) {
-      alert('Le PDF n\'a pas été généré correctement.')
+      alert("Le PDF n'a pas été généré correctement.")
     }
   }, [pdfBlobUrl])
 
   return (
     <div className=" bg-base-100">
-         {/* <NavigationBreadcrumb pageName="Resultats" /> */}
+      {/* <NavigationBreadcrumb pageName="Resultats" /> */}
       <div className="pdf-toolbar">
-        <button className="btn btn-primary ml-1 mb-1 mt-1" onClick={handlePrint}>
-          <FontAwesomeIcon icon={faPrint} /> 
+        <button
+          className="btn btn-primary ml-1 mb-1 mt-1"
+          onClick={handlePrint}
+        >
+          <FontAwesomeIcon icon={faPrint} />
         </button>
-        <a href={pdfBlobUrl} download="document.pdf" className="btn btn-success ml-1 mb-1 mt-1">
+        <a
+          href={pdfBlobUrl}
+          download="document.pdf"
+          className="btn btn-success ml-1 mb-1 mt-1"
+        >
           <FontAwesomeIcon icon={faDownload} />
         </a>
       </div>
