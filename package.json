@@ -15,7 +15,7 @@
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
     "@fortawesome/free-solid-svg-icons": "^6.5.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
-    "apexcharts": "^3.45.2",
+    "apexcharts": "^3.54.0",
     "axios": "^1.6.8",
     "chart.js": "^4.4.2",
     "dotenv": "^16.4.1",
