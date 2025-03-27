@@ -5,7 +5,7 @@ import jsPDF from 'jspdf'
 import PropTypes from 'prop-types'
 import logoLeft from '../images/bioramlogo.png'
 import logoRight from '../images/logo2.png'
-import { useNavigate } from 'react-router-dom' // Importez useNavigate
+// import { useNavigate } from 'react-router-dom' // Importez useNavigate
 
 function GenerateResultatButton({ invoice }) {
   const [user, setUser] = useState({
@@ -18,8 +18,8 @@ function GenerateResultatButton({ invoice }) {
     logo: '',
   })
 
-  const navigate = useNavigate() // Utilisez useNavigate pour la navigation
-  // const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
+  // const navigate = useNavigate() // Utilisez useNavigate pour la navigation
+  // // const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -96,12 +96,6 @@ function GenerateResultatButton({ invoice }) {
         return acc
       }, [])
   }
-  const germeList = [
-    'Escherichia coli',
-    'Staphylococcus aureus',
-    'Pseudomonas aeruginosa',
-    // Ajoutez d'autres noms de germes ici
-  ]
 
   const generatePDF = async () => {
     const doc = new jsPDF()
@@ -131,7 +125,7 @@ function GenerateResultatButton({ invoice }) {
     try {
       // Charger les images
 
-      const [imgLeft, imgRight] = await Promise.all([
+      const [imgLeft] = await Promise.all([
         loadImage(logoLeft),
         loadImage(logoRight),
       ])
@@ -139,7 +133,7 @@ function GenerateResultatButton({ invoice }) {
       // Ajout des images
       const maxWidth = 30 // Exemple: 30 unités de largeur dans le PDF
       const leftHeight = maxWidth * (imgLeft.height / imgLeft.width)
-      const rightHeight = maxWidth * (imgRight.height / imgRight.width)
+      // const rightHeight = maxWidth * (imgRight.height / imgRight.width)
 
       doc.addImage(imgLeft, 'PNG', 20, 5, maxWidth, leftHeight)
       // doc.addImage(imgRight, 'PNG', 160, 5, maxWidth, rightHeight)
@@ -287,6 +281,19 @@ function GenerateResultatButton({ invoice }) {
       const sortedResults = sortResultsByCategory(invoice?.resultat)
       sortedResults.forEach((group) => {
         // Affichez le nom de la catégorie
+        console.log(`groupe ${currentY}`)
+        if (currentY > 240) {
+          doc.addPage()
+          doc.text(`Nº Dossier: ${invoice?.identifiant}`, 42, currentY)
+
+          doc.text(
+            `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
+            42,
+            currentY + 5
+          )
+          currentY += 15
+          addFooter()
+        }
         doc.setFontSize(12)
         doc.setFont('Times', 'bold')
         doc.text(group.category.toUpperCase(), 90, currentY)
@@ -301,12 +308,12 @@ function GenerateResultatButton({ invoice }) {
 
         currentY += 10 // Espace après la catégorie
 
-        group.results.forEach((test, index) => {
+        group.results.forEach((test) => {
           if (!test || !test.testId) return // Ignorer si test ou testId n'est pas défini
 
           const maxLineWidth = 100
           const maxLineWidthInt = 160
-          const maxvaluWidth = 50 // Largeur maximale du texte dans le PDF
+          // const maxvaluWidth = 50 // Largeur maximale du texte dans le PDF
           let nomTestLines = doc.splitTextToSize(
             `${test.testId.nom.toUpperCase()}`,
             maxLineWidth
@@ -316,26 +323,6 @@ function GenerateResultatButton({ invoice }) {
 
           doc.setFontSize(9) // Changer la taille de la police à 10
           doc.setFont('Courier', 'normal')
-          // let interpretationText = test.statutMachine
-          //   ? test.testId.interpretationA || "Pas d'interprétationA disponible"
-          //   : test.testId.interpretationB || "Pas d'interprétationB disponible"
-
-          // let interpretationLines = doc.splitTextToSize(
-          //   `Interprétation:\n${interpretationText}`,
-          //   maxLineWidthInt
-          // )
-
-          let interpretationLines = [] // Initialisation en tant que tableau vide
-
-          // Calcul de l'espace nécessaire pour ce bloc de test
-          const spaceNeeded =
-            10 * (nomTestLines.length + interpretationLines.length + 3) // Plus les autres lignes
-
-          // Gérer la pagination si nécessaire
-          // if (currentY + spaceNeeded > 280) {
-          //   doc.addPage()
-          //   currentY = 20 // Réinitialisation de la position Y pour la nouvelle page
-          // }
 
           // Ajout des informations du test
           doc.setFontSize(8)
@@ -386,6 +373,300 @@ function GenerateResultatButton({ invoice }) {
             if (test?.qualitatif) {
               doc.text(`(${test?.qualitatif})`, 86, currentY + 10)
             }
+
+            // On prévoit un excepY pour positionner le bloc d’exception
+            console.log(currentY)
+            let excepY = currentY + 15 // Par exemple, 15 px sous la valeur/qualitatif
+
+            // Vérifions s'il existe un test.exceptions
+            if (test?.exceptions) {
+              // 1) QBC
+              if (test.exceptions.qbc && test.exceptions.qbc.positivite) {
+                console.log(excepY)
+                // Vérifier si on dépasse la page
+                if (excepY > 250) {
+                  doc.addPage()
+                  addFooter()
+                  excepY = 25
+                }
+
+                // doc.setFont('Times', 'bold')
+                // doc.setFontSize(9)
+                // doc.text('QBC :', 20, excepY)
+                // excepY += 5
+                doc.setFont('Times', 'normal')
+
+                // Positivité
+                if (test.exceptions.qbc.positivite) {
+                  if (excepY > 250) {
+                    doc.addPage()
+                    addFooter()
+                    excepY = 25
+                  }
+                  doc.text(
+                    `Statut parasitaire : ${test.exceptions.qbc.positivite}`,
+                    25,
+                    excepY
+                  )
+
+                  excepY += 5
+                }
+                // Nombre de croix
+                if (typeof test.exceptions.qbc.nombreCroix === 'number') {
+                  if (excepY > 250) {
+                    doc.addPage()
+                    addFooter()
+                    excepY = 25
+                  }
+                  // Supposons que test.exceptions.qbc.nombreCroix vaut un nombre entre 0 et 4
+                  const numberOfCross = test.exceptions.qbc.nombreCroix || 0
+
+                  // Répéter le signe “+” autant de fois
+                  const crosses = '+ '.repeat(numberOfCross)
+
+                  // Puis afficher
+                  doc.text(`Niveau d’infestation : ${crosses}`, 25, excepY)
+
+                  excepY += 5
+                }
+                // Densité parasitaire => p/µL
+                if (test.exceptions.qbc.densiteParasitaire) {
+                  if (excepY > 250) {
+                    doc.addPage()
+                    addFooter()
+                    excepY = 25
+                  }
+                  doc.text(
+                    `Densité parasitaire : ${test.exceptions.qbc.densiteParasitaire} p/µL`,
+                    25,
+                    excepY
+                  )
+                  excepY += 5
+                }
+                // Espèces
+                if (
+                  Array.isArray(test.exceptions.qbc.especes) &&
+                  test.exceptions.qbc.especes.length > 0
+                ) {
+                  if (excepY > 250) {
+                    doc.addPage()
+                    addFooter()
+                    excepY = 25
+                  }
+                  doc.text(
+                    `Espèces : ${test.exceptions.qbc.especes.join(', ')}`,
+                    25,
+                    excepY
+                  )
+                  excepY += 7
+                }
+              }
+
+              // 2) Groupe sanguin
+              else if (
+                test.exceptions.groupeSanguin &&
+                (test.exceptions.groupeSanguin.abo ||
+                  test.exceptions.groupeSanguin.rhesus)
+              ) {
+                console.log(`page ${excepY}`)
+                if (excepY > 250) {
+                  doc.addPage()
+
+                  addFooter()
+                  excepY = 25
+                  console.log(`page ${excepY}`)
+                }
+
+                // doc.setFont('Times', 'bold')
+                // doc.setFontSize(9)
+                // doc.text('GROUPE SANGUIN :', 20, excepY)
+                // excepY += 5
+                doc.setFont('Times', 'normal')
+
+                if (test.exceptions.groupeSanguin.abo) {
+                  if (excepY > 250) {
+                    doc.addPage()
+
+                    addFooter()
+                    excepY = 25
+                  }
+                  doc.text(
+                    `Groupe ABO : ${test.exceptions.groupeSanguin.abo}`,
+                    25,
+                    excepY
+                  )
+                  excepY += 5
+                }
+                if (test.exceptions.groupeSanguin.rhesus) {
+                  if (excepY > 250) {
+                    doc.addPage()
+                    addFooter()
+                    excepY = 25
+                  }
+                  doc.text(
+                    `Rhésus (Antigène D) : ${test.exceptions.groupeSanguin.rhesus}`,
+                    25,
+                    excepY
+                  )
+                  excepY += 7
+                }
+              }
+
+              // 3) HGPO
+              else if (
+                test.exceptions.hgpo &&
+                (test.exceptions.hgpo.t0 ||
+                  test.exceptions.hgpo.t60 ||
+                  test.exceptions.hgpo.t120)
+              ) {
+                if (excepY > 250) {
+                  doc.addPage()
+                  addFooter()
+                  excepY = 25
+                }
+
+                // doc.setFont('Times', 'bold')
+                // doc.setFontSize(9)
+                // doc.text('HGPO :', 20, excepY)
+                // excepY += 5
+                doc.setFont('Times', 'normal')
+
+                if (test.exceptions.hgpo.t0) {
+                  if (excepY > 250) {
+                    doc.addPage()
+                    addFooter()
+                    excepY = 25
+                  }
+                  doc.text(
+                    `Glycémie T0 : ${test.exceptions.hgpo.t0} g/L`,
+                    25,
+                    excepY
+                  )
+                  excepY += 5
+                }
+                if (test.exceptions.hgpo.t60) {
+                  if (excepY > 250) {
+                    doc.addPage()
+                    addFooter()
+                    excepY = 25
+                  }
+                  doc.text(
+                    `Glycémie T60 : ${test.exceptions.hgpo.t60} g/L`,
+                    25,
+                    excepY
+                  )
+                  excepY += 5
+                }
+                if (test.exceptions.hgpo.t120) {
+                  if (excepY > 250) {
+                    doc.addPage()
+                    addFooter()
+                    excepY = 25
+                  }
+                  doc.text(
+                    `Glycémie T120 : ${test.exceptions.hgpo.t120} g/L`,
+                    25,
+                    excepY
+                  )
+                  excepY += 7
+                }
+              }
+
+              // 4) Ionogramme
+              else if (
+                test.exceptions.ionogramme &&
+                (test.exceptions.ionogramme.na ||
+                  test.exceptions.ionogramme.k ||
+                  test.exceptions.ionogramme.cl ||
+                  test.exceptions.ionogramme.ca ||
+                  test.exceptions.ionogramme.mg)
+              ) {
+                if (excepY > 250) {
+                  doc.addPage()
+                  addFooter()
+                  excepY = 25
+                }
+
+                // doc.setFont('Times', 'bold')
+                // doc.setFontSize(9)
+                // doc.text('IONOGRAMME :', 20, excepY)
+                // excepY += 5
+                doc.setFont('Times', 'normal')
+
+                if (test.exceptions.ionogramme.na) {
+                  if (excepY > 250) {
+                    doc.addPage()
+                    addFooter()
+                    excepY = 25
+                  }
+
+                  doc.text(
+                    `Na+ : ${test.exceptions.ionogramme.na} `,
+                    25,
+                    excepY
+                  )
+                  doc.text(`N: 137-145 mEq/L`, 110, excepY)
+                  excepY += 5
+                }
+                if (test.exceptions.ionogramme.k) {
+                  if (excepY > 250) {
+                    doc.addPage()
+                    addFooter()
+                    excepY = 25
+                  }
+                  doc.text(`K+ : ${test.exceptions.ionogramme.k} `, 25, excepY)
+                  doc.text(`N: 137-145 mEq/L`, 110, excepY)
+
+                  excepY += 5
+                }
+                if (test.exceptions.ionogramme.cl) {
+                  if (excepY > 250) {
+                    doc.addPage()
+                    addFooter()
+                    excepY = 25
+                  }
+                  doc.text(
+                    `Cl- : ${test.exceptions.ionogramme.cl} `,
+                    25,
+
+                    excepY
+                  )
+                  doc.text(`N: 137-145 mEq/L`, 110, excepY)
+                  excepY += 5
+                }
+                if (test.exceptions.ionogramme.ca) {
+                  if (excepY > 270) {
+                    doc.addPage()
+                    addFooter()
+                    excepY = 25
+                  }
+                  doc.text(
+                    `Ca2+ : ${test.exceptions.ionogramme.ca} `,
+                    25,
+                    excepY
+                  )
+                  doc.text(`137-145 mEq/L`, 110, excepY)
+                  excepY += 5
+                }
+                if (test.exceptions.ionogramme.mg) {
+                  if (excepY > 250) {
+                    doc.addPage()
+                    addFooter()
+                    excepY = 25
+                  }
+                  doc.text(
+                    `Mg2+ : ${test.exceptions.ionogramme.mg} `,
+                    25,
+                    excepY
+                  )
+                  doc.text(`137-145 mEq/L`, 110, excepY)
+                  excepY += 7
+                }
+              }
+            }
+
+            // Enfin, on recopie excepY dans currentY
+            currentY = excepY
           }
 
           if (test?.observations?.macroscopique.length === 0) {
@@ -447,77 +728,6 @@ function GenerateResultatButton({ invoice }) {
             }
           }
           currentY += 5 // Increment for one line
-          // if (test.statutInterpretation) {
-          //   const interpretation = test.statutMachine
-          //     ? test.testId.interpretationA
-          //     : test.testId.interpretationB
-
-          //   // Affiche "Interprétation:"
-          //   doc.setFontSize(10)
-          //   doc.setFont('Times', 'bold')
-          //   doc.text('Interprétation:', 20, currentY)
-          //   currentY += 5
-          //   if (interpretation.type === 'text') {
-          //     // Afficher le texte
-          //     const interpretationLines = doc.splitTextToSize(
-          //       interpretation.content,
-          //       maxLineWidthInt
-          //     )
-          //     doc.setFontSize(9) // Taille de police pour l'interprétation
-          //     doc.setFont('Courier', 'normal') // Police pour l'interprétation
-          //     doc.text(interpretationLines, 20, currentY)
-          //     currentY += 5 * interpretationLines.length // Mise à jour de Y en fonction du nombre de lignes
-          //   } else if (interpretation.type === 'table') {
-          //     // Afficher le tableau
-          //     const { columns, rows } = interpretation.content
-
-          //     // Afficher les en-têtes de colonne
-          //     doc.setFontSize(9)
-          //     doc.setFont('Times', 'bold')
-          //     columns.forEach((col, colIndex) => {
-          //       doc.text(col, 20 + colIndex * 40, currentY)
-          //     })
-          //     currentY += 5
-
-          //     // Afficher les lignes de données
-          //     doc.setFont('Times', 'normal')
-          //     rows.forEach((row) => {
-          //       row.forEach((cell, cellIndex) => {
-          //         doc.text(cell, 20 + cellIndex * 40, currentY)
-          //       })
-          //       currentY += 5
-          //     })
-          //   }
-          // }
-          // if (test.statutInterpretation) {
-          //   doc.setFontSize(10) // Changer la taille de la police à 10
-          //   doc.setFont('Times', 'normal') // Assurez-vous que la police est définie comme normale
-
-          //   const interpretationHeight = 4 * interpretationLines.length
-          //   const footerY = 277
-          //   const marginBottom = 5
-
-          //   // Vérifier si l'espace restant sur la page est suffisant
-          //   if (currentY + interpretationHeight + marginBottom > footerY) {
-          //     doc.addPage()
-          //     currentY = 20 // Réinitialisation de la position Y pour la nouvelle page
-          //     doc.text(`Nº Dossier: ${invoice?.identifiant}`, 42, currentY)
-
-          //     doc.text(
-          //       `Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`,
-          //       42,
-          //       currentY + 5
-          //     )
-          //     currentY += 15
-
-          //     addFooter()
-          //   }
-          //   doc.setFontSize(9) // Changer la taille de la police à 10
-          //   doc.setFont('Courier', 'normal') // Assurez-vous que la police est définie comme normale
-
-          //   doc.text(interpretationLines, 20, currentY)
-          //   currentY += interpretationHeight // Mise à jour de Y basée sur le nombre de lignes d'interprétation
-          // }
 
           if (test.statutInterpretation) {
             const interpretation = test.statutMachine
@@ -525,10 +735,6 @@ function GenerateResultatButton({ invoice }) {
               : test.testId.interpretationB
 
             // Affiche "Interprétation:"
-            doc.setFontSize(10)
-            doc.setFont('Times', 'bold')
-            doc.text('Interprétation:', 20, currentY)
-            currentY += 5
 
             let interpretationHeight = 0
             let interpretationLines = []
@@ -537,18 +743,18 @@ function GenerateResultatButton({ invoice }) {
               // Afficher le texte
               interpretationLines = doc.splitTextToSize(
                 interpretation.content,
-                maxLineWidthInt
+                100
               )
               interpretationHeight = 5 * interpretationLines.length
             } else if (interpretation.type === 'table') {
               // Afficher le tableau
-              const { columns, rows } = interpretation.content
+              const { rows } = interpretation.content
 
               // Calculer la hauteur nécessaire pour le tableau
               interpretationHeight = 5 + rows.length * 5
             }
 
-            const footerY = 277
+            const footerY = 265
             const marginBottom = 5
 
             // Vérifier si l'espace restant sur la page est suffisant
@@ -562,6 +768,10 @@ function GenerateResultatButton({ invoice }) {
                 42,
                 currentY + 5
               )
+              doc.setFontSize(10)
+              doc.setFont('Times', 'bold')
+              doc.text('Interprétation:', 20, currentY)
+              currentY += 5
               currentY += 15
 
               addFooter()

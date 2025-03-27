@@ -6,6 +6,32 @@ import { faTimes } from '@fortawesome/free-solid-svg-icons'
 function AddResultatForm({ analyseId, patientId, onResultatChange }) {
   const [testId, setTestId] = useState('')
   const [valeur, setValeur] = useState('')
+  const [excepValues, setExcepValues] = useState({
+    groupeSanguin: {
+      abo: '', // A, B, AB, O
+      rhesus: '', // Positif ou Négatif
+    },
+    qbc: {
+      positivite: '', // "Positif"/"Négatif"
+      nombreCroix: 0, // 0,1,2,3,4
+      densiteParasitaire: '',
+      especes: [], // tableau pouvant contenir jusqu’à 4 espèces
+    },
+    hgpo: {
+      t0: '',
+      t60: '',
+      t120: '',
+    },
+    ionogramme: {
+      na: '',
+      k: '',
+      cl: '',
+      ca: '',
+      mg: '',
+      // ajoutez les paramètres de votre choix
+    },
+  })
+  const [selectedTestCategory, setSelectedTestCategory] = useState('')
   const [methode, setMethode] = useState('')
   const [machineA, setMachineA] = useState('')
   const [machineB, setMachineB] = useState('')
@@ -511,6 +537,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
             : undefined,
         gram: currentView === 'complexe' ? gram : undefined,
         conclusion: currentView === 'complexe' ? selectedConclusion : undefined,
+        // ** Ajout important : exceptions (champs QBC, etc.) **
+        exceptions: excepValues, // On envoie l'objet complet
       }
       const response = await fetch(`${apiUrl}/api/resultats/`, {
         method: 'POST',
@@ -555,6 +583,18 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     setLieuPrelevement('')
     setDatePrelevement('')
     setRemarque('')
+    // Remettre excepValues à zéro
+    setExcepValues({
+      groupeSanguin: { abo: '', rhesus: '' },
+      qbc: {
+        positivite: '',
+        nombreCroix: 0,
+        densiteParasitaire: '',
+        especes: [],
+      },
+      hgpo: { t0: '', t60: '', t120: '' },
+      ionogramme: { na: '', k: '', cl: '', ca: '', mg: '' },
+    })
     setAntibiogrammes([])
     setMacroscopique('')
     setMicroscopique({
@@ -604,6 +644,65 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     })
     setGram('Non effectué')
     setConclusion('')
+  }
+
+  function getTestCategory(testName) {
+    if (!testName) return ''
+
+    const nameLower = testName.toLowerCase()
+    // Vous pouvez affiner ces conditions pour matcher plus précisément
+    if (nameLower.includes('groupe') && nameLower.includes('sanguin')) {
+      return 'groupeSanguin'
+    } else if (nameLower.includes('qbc')) {
+      return 'qbc'
+    } else if (nameLower.includes('hgpo')) {
+      return 'hgpo'
+    } else if (nameLower.includes('ionogram')) {
+      return 'ionogramme'
+    }
+
+    // Par défaut (pas une exception)
+    return 'normal'
+  }
+  useEffect(() => {
+    const selectedTest = tests.find((test) => test._id === testId)
+    if (selectedTest) {
+      // ...
+      const cat = getTestCategory(selectedTest.nom)
+      setSelectedTestCategory(cat)
+    } else {
+      setSelectedTestCategory('')
+    }
+  }, [testId, tests])
+
+  const handleEspecesCheckboxChange = (isChecked, especeName) => {
+    setExcepValues((prev) => {
+      const oldEspeces = prev.qbc.especes || []
+      let newEspeces = [...oldEspeces]
+
+      if (isChecked) {
+        // Si on coche → on ajoute
+        if (!newEspeces.includes(especeName)) {
+          newEspeces.push(especeName)
+        }
+      } else {
+        // Si on décoche → on retire
+        newEspeces = newEspeces.filter((item) => item !== especeName)
+      }
+
+      // on limite tout de même à 4
+      if (newEspeces.length > 4) {
+        newEspeces = newEspeces.slice(0, 4)
+      }
+
+      return {
+        ...prev,
+        qbc: {
+          ...prev.qbc,
+          especes: newEspeces,
+        },
+      }
+    })
   }
 
   return (
@@ -757,7 +856,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
           </div>
         </div>
 
-        {currentView === 'simple' && (
+        {/* {currentView === 'simple' && (
           <div
             id="simple"
             className="flex flex-nowrap gap-4 items-center w-full"
@@ -821,6 +920,346 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                 <option value="CLIA">CLIA</option>
               </select>
             </div>
+          </div>
+        )} */}
+
+        {currentView === 'simple' && (
+          <div id="simple" className="flex flex-col w-full gap-4">
+            {/* --------------------------------
+        1ère rangée : Valeur, Interprétation, Machine, Méthode
+        -------------------------------- */}
+            <div className="flex flex-wrap gap-4 items-center w-full">
+              {/* Valeur */}
+              <div>
+                <label className="label">Valeur</label>
+                <input
+                  type="text"
+                  value={valeur}
+                  onChange={(e) => setValeur(e.target.value)}
+                  className="input input-bordered"
+                />
+              </div>
+
+              {/* Statut Interprétation */}
+              <div>
+                <label className="label">Statut de l'Interprétation</label>
+                <select
+                  className="select select-bordered"
+                  value={statutInterpretation}
+                  onChange={(e) =>
+                    setStatutInterpretation(e.target.value === 'true')
+                  }
+                >
+                  <option value="false">Non</option>
+                  <option value="true">Oui</option>
+                </select>
+              </div>
+
+              {/* Machine (A / B) */}
+              <div>
+                <label className="label">Machine utilisée</label>
+                <select
+                  className="select select-bordered"
+                  value={statutMachine}
+                  onChange={(e) => setStatutMachine(e.target.value === 'true')}
+                >
+                  <option value="true">A</option>
+                  <option value="false">B</option>
+                </select>
+              </div>
+
+              {/* Méthode */}
+              <div>
+                <label className="label">Méthode</label>
+                <select
+                  value={methode}
+                  onChange={(e) => setMethode(e.target.value)}
+                  className="select select-bordered"
+                >
+                  <option value="">Sélectionner une méthode</option>
+                  <option value="PCR">PCR</option>
+                  <option value="Turbidimétrie">Turbidimétrie</option>
+                  <option value="Colorimétrie">Colorimétrie</option>
+                  <option value="Enzymatique">Enzymatique</option>
+                  <option value="Turbidimétrie/colorimétrie">
+                    Turbidimétrie/colorimétrie
+                  </option>
+                  <option value="Gazométrie">Gazométrie</option>
+                  <option value="ELFA">ELFA</option>
+                  <option value="CLIA">CLIA</option>
+                </select>
+              </div>
+            </div>
+
+            {/* --------------------------------
+        2ème partie : SI le test est QBC
+        -------------------------------- */}
+            {selectedTestCategory === 'qbc' && (
+              <div className="flex flex-col w-full gap-4">
+                {/* Ligne 1: Positivité / Nombre de croix / Densité parasitaire */}
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex flex-col">
+                    <label className="label">Positivité</label>
+                    <select
+                      className="select select-bordered w-[120px]"
+                      value={excepValues.qbc.positivite}
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          qbc: {
+                            ...prev.qbc,
+                            positivite: e.target.value,
+                          },
+                        }))
+                      }
+                    >
+                      <option value="">-- Choisir --</option>
+                      <option value="Négatif">Négatif</option>
+                      <option value="Positif">Positif</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label className="label">Nombre de croix (0 à 4)</label>
+                    <input
+                      type="number"
+                      className="input input-bordered w-[90px]"
+                      min={0}
+                      max={4}
+                      value={excepValues.qbc.nombreCroix}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10)
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          qbc: {
+                            ...prev.qbc,
+                            nombreCroix: val >= 0 && val <= 4 ? val : 0,
+                          },
+                        }))
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label className="label">Densité parasitaire</label>
+                    <input
+                      type="text"
+                      className="input input-bordered w-[100px]"
+                      value={excepValues.qbc.densiteParasitaire}
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          qbc: {
+                            ...prev.qbc,
+                            densiteParasitaire: e.target.value,
+                          },
+                        }))
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* Ligne 2: Cases à cocher (4 espèces) */}
+                <div className="flex flex-col">
+                  <label className="label">Espèces</label>
+                  <div className="flex gap-4">
+                    {[
+                      'Plasmodium falciparum',
+                      'Plasmodium ovale',
+                      'Plasmodium vivax',
+                      'Plasmodium malariae',
+                    ].map((sp) => (
+                      <label
+                        key={sp}
+                        className="cursor-pointer flex items-center gap-1"
+                      >
+                        <input
+                          type="checkbox"
+                          className="checkbox checkbox-primary"
+                          checked={excepValues.qbc.especes.includes(sp)}
+                          onChange={(e) =>
+                            handleEspecesCheckboxChange(e.target.checked, sp)
+                          }
+                        />
+                        <span className="label-text">{sp}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* 3ème partie : SI le test est groupe sanguin */}
+            {selectedTestCategory === 'groupeSanguin' && (
+              <div className="flex flex-nowrap gap-4 items-center w-full mt-2">
+                <div>
+                  <label className="label">Groupe ABO</label>
+                  <select
+                    className="select select-bordered"
+                    value={excepValues.groupeSanguin.abo}
+                    onChange={(e) =>
+                      setExcepValues((prev) => ({
+                        ...prev,
+                        groupeSanguin: {
+                          ...prev.groupeSanguin,
+                          abo: e.target.value,
+                        },
+                      }))
+                    }
+                  >
+                    <option value="">-- Choisir --</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="AB">AB</option>
+                    <option value="O">O</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="label">Rhésus</label>
+                  <select
+                    className="select select-bordered"
+                    value={excepValues.groupeSanguin.rhesus}
+                    onChange={(e) =>
+                      setExcepValues((prev) => ({
+                        ...prev,
+                        groupeSanguin: {
+                          ...prev.groupeSanguin,
+                          rhesus: e.target.value,
+                        },
+                      }))
+                    }
+                  >
+                    <option value="">-- Choisir --</option>
+                    <option value="Positif">Positif (Rh+)</option>
+                    <option value="Négatif">Négatif (Rh-)</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {/* // 4 eme partie pour hgpo */}
+            {selectedTestCategory === 'hgpo' && (
+              <div className="flex flex-nowrap gap-4 items-center w-full mt-2">
+                <div>
+                  <label className="label">Glycémie T0</label>
+                  <input
+                    type="text"
+                    className="input input-bordered"
+                    value={excepValues.hgpo.t0}
+                    onChange={(e) =>
+                      setExcepValues((prev) => ({
+                        ...prev,
+                        hgpo: { ...prev.hgpo, t0: e.target.value },
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="label">Glycémie T60</label>
+                  <input
+                    type="text"
+                    className="input input-bordered"
+                    value={excepValues.hgpo.t60}
+                    onChange={(e) =>
+                      setExcepValues((prev) => ({
+                        ...prev,
+                        hgpo: { ...prev.hgpo, t60: e.target.value },
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="label">Glycémie T120</label>
+                  <input
+                    type="text"
+                    className="input input-bordered"
+                    value={excepValues.hgpo.t120}
+                    onChange={(e) =>
+                      setExcepValues((prev) => ({
+                        ...prev,
+                        hgpo: { ...prev.hgpo, t120: e.target.value },
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+            )}
+            {/* //5 eme ionigramme */}
+            {selectedTestCategory === 'ionogramme' && (
+              <div className="flex flex-wrap gap-4 items-center w-full mt-2">
+                <div>
+                  <label className="label">Na+</label>
+                  <input
+                    type="text"
+                    className="input input-bordered"
+                    value={excepValues.ionogramme.na}
+                    onChange={(e) =>
+                      setExcepValues((prev) => ({
+                        ...prev,
+                        ionogramme: { ...prev.ionogramme, na: e.target.value },
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="label">K+</label>
+                  <input
+                    type="text"
+                    className="input input-bordered"
+                    value={excepValues.ionogramme.k}
+                    onChange={(e) =>
+                      setExcepValues((prev) => ({
+                        ...prev,
+                        ionogramme: { ...prev.ionogramme, k: e.target.value },
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="label">Cl-</label>
+                  <input
+                    type="text"
+                    className="input input-bordered"
+                    value={excepValues.ionogramme.cl}
+                    onChange={(e) =>
+                      setExcepValues((prev) => ({
+                        ...prev,
+                        ionogramme: { ...prev.ionogramme, cl: e.target.value },
+                      }))
+                    }
+                  />
+                </div>
+                {/* <div>
+                  <label className="label">Ca2+</label>
+                  <input
+                    type="text"
+                    className="input input-bordered"
+                    value={excepValues.ionogramme.ca}
+                    onChange={(e) =>
+                      setExcepValues((prev) => ({
+                        ...prev,
+                        ionogramme: { ...prev.ionogramme, ca: e.target.value },
+                      }))
+                    }
+                  />
+                </div> */}
+                {/* <div>
+                  <label className="label">Mg2+</label>
+                  <input
+                    type="text"
+                    className="input input-bordered"
+                    value={excepValues.ionogramme.mg}
+                    onChange={(e) =>
+                      setExcepValues((prev) => ({
+                        ...prev,
+                        ionogramme: { ...prev.ionogramme, mg: e.target.value },
+                      }))
+                    }
+                  />
+                </div> */}
+                {/* Ajoutez d’autres ions si besoin */}
+              </div>
+            )}
           </div>
         )}
 
@@ -1682,7 +2121,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
           </div>
         )}
 
-        <div>
+        <div className="mt-4">
           <label>Conclusion</label>
           <select
             className="select select-bordered w-[250px] "

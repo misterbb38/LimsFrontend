@@ -87,11 +87,53 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
 
     gram: '',
     conclusion: '',
+
+    // === AJOUTEZ ICI ===
+    exceptions: {
+      groupeSanguin: {
+        abo: '', // A, B, AB, O
+        rhesus: '', // Positif ou Négatif
+      },
+      qbc: {
+        positivite: '', // "Positif"/"Négatif"
+        nombreCroix: 0, // 0 à 4
+        densiteParasitaire: '',
+        especes: [], // tableau pouvant contenir jusqu’à 4 espèces
+      },
+      hgpo: {
+        t0: '',
+        t60: '',
+        t120: '',
+      },
+      ionogramme: {
+        na: '',
+        k: '',
+        cl: '',
+        ca: '',
+        mg: '',
+      },
+    },
   })
   const [isLoading, setIsLoading] = useState(false)
-
+  const [selectedTestCategory, setSelectedTestCategory] = useState('')
   const [formErrors, setFormErrors] = useState({})
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
+
+  function getTestCategory(testName = '') {
+    const nameLower = testName.toLowerCase()
+
+    if (nameLower.includes('groupe') && nameLower.includes('sanguin')) {
+      return 'groupeSanguin'
+    } else if (nameLower.includes('qbc')) {
+      return 'qbc'
+    } else if (nameLower.includes('hgpo')) {
+      return 'hgpo'
+    } else if (nameLower.includes('ionogram')) {
+      return 'ionogramme'
+    }
+
+    return 'normal'
+  }
 
   useEffect(() => {
     if (showModal && resultatId) {
@@ -130,6 +172,19 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
               antibiogrammesInitial[germe.nom] = []
             }
           })
+        }
+
+        // 1) Récupérer l'objet exceptions s’il existe, sinon votre structure de base
+        const fetchedExceptions = data.data.exceptions || {
+          groupeSanguin: { abo: '', rhesus: '' },
+          qbc: {
+            positivite: '',
+            nombreCroix: 0,
+            densiteParasitaire: '',
+            especes: [],
+          },
+          hgpo: { t0: '', t60: '', t120: '' },
+          ionogramme: { na: '', k: '', cl: '', ca: '', mg: '' },
         }
 
         const datePrelevementFormatted = data.data.datePrelevement
@@ -248,6 +303,8 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
 
           gram: data.data?.gram || '',
           conclusion: data.data?.conclusion || '',
+          // === AJOUTEZ ICI ===
+          exceptions: fetchedExceptions,
         })
         setAntibiogrammes(antibiogrammesInitial)
         setSelectedConclusion(data.data.conclusion)
@@ -735,6 +792,17 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
     }
   }
 
+  // Puis, dans un useEffect :
+  useEffect(() => {
+    const selectedTest = tests.find((test) => test._id === formData.testId)
+    if (selectedTest) {
+      const cat = getTestCategory(selectedTest.nom)
+      setSelectedTestCategory(cat)
+    } else {
+      setSelectedTestCategory('')
+    }
+  }, [formData.testId, tests])
+
   return (
     <>
       <button className="btn btn-secondary" onClick={() => setShowModal(true)}>
@@ -900,8 +968,9 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
 
               {currentView === 'simple' ? (
                 <>
-                  <div className="flex flex-nowrap gap-4 items-center w-full">
-                    {/* Ajouter ici les champs de formulaire pour la vue simple */}
+                  {/* Ligne principale : Valeur, Interprétation, Machine, Méthode */}
+                  <div className="flex flex-wrap gap-4 items-center w-full">
+                    {/* Valeur simple */}
                     <div className="form-control">
                       <label className="label">Valeur</label>
                       <input
@@ -911,9 +980,9 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
                         value={formData.valeur}
                         onChange={handleChange}
                       />
-                      {/* {renderError('valeur')} */}
                     </div>
 
+                    {/* Statut interprétation */}
                     <div className="form-control">
                       <label className="label">
                         Statut de l'Interprétation
@@ -929,7 +998,8 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
                       </select>
                     </div>
 
-                    <div>
+                    {/* Machine A / B */}
+                    <div className="form-control">
                       <label className="label">Machine utiliser</label>
                       <select
                         className="select select-bordered"
@@ -942,8 +1012,9 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
                       </select>
                     </div>
 
+                    {/* Méthode */}
                     <div className="form-control">
-                      <label className="label">Methode</label>
+                      <label className="label">Méthode</label>
                       <select
                         className="select select-bordered"
                         name="methode"
@@ -964,6 +1035,393 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
                       </select>
                     </div>
                   </div>
+
+                  {/* BLOC QBC (si c'est QBC) */}
+                  {selectedTestCategory === 'qbc' && (
+                    <div className="my-2 p-2 border w-full">
+                      <h4 className="font-bold mb-2">Paramètre QBC</h4>
+
+                      <div className="flex flex-wrap gap-4 w-full">
+                        {/* Positivité */}
+                        <div className="flex flex-col">
+                          <label className="label">Positivité</label>
+                          <select
+                            className="select select-bordered"
+                            value={formData.exceptions.qbc.positivite}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                exceptions: {
+                                  ...prev.exceptions,
+                                  qbc: {
+                                    ...prev.exceptions.qbc,
+                                    positivite: e.target.value,
+                                  },
+                                },
+                              }))
+                            }
+                          >
+                            <option value="">- Choisir -</option>
+                            <option value="Négatif">Négatif</option>
+                            <option value="Positif">Positif</option>
+                          </select>
+                        </div>
+
+                        {/* Nombre de croix */}
+                        <div className="flex flex-col">
+                          <label className="label">
+                            Nombre de croix (0 à 4)
+                          </label>
+                          <input
+                            type="number"
+                            min={0}
+                            max={4}
+                            className="input input-bordered"
+                            value={formData.exceptions.qbc.nombreCroix}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value, 10)
+                              setFormData((prev) => ({
+                                ...prev,
+                                exceptions: {
+                                  ...prev.exceptions,
+                                  qbc: {
+                                    ...prev.exceptions.qbc,
+                                    nombreCroix: val,
+                                  },
+                                },
+                              }))
+                            }}
+                          />
+                        </div>
+
+                        {/* Densité parasitaire */}
+                        <div className="flex flex-col">
+                          <label className="label">Densité parasitaire</label>
+                          <input
+                            type="text"
+                            className="input input-bordered"
+                            value={formData.exceptions.qbc.densiteParasitaire}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                exceptions: {
+                                  ...prev.exceptions,
+                                  qbc: {
+                                    ...prev.exceptions.qbc,
+                                    densiteParasitaire: e.target.value,
+                                  },
+                                },
+                              }))
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      {/* Espèces (checkbox) en bas */}
+                      <div className="mt-4">
+                        <label className="label">Espèces (max 4)</label>
+                        {[
+                          'Plasmodium falciparum',
+                          'Plasmodium ovale',
+                          'Plasmodium vivax',
+                          'Plasmodium malariae',
+                        ].map((sp) => (
+                          <label key={sp} className="mr-4 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              className="checkbox checkbox-primary mr-1"
+                              checked={formData.exceptions.qbc.especes.includes(
+                                sp
+                              )}
+                              onChange={(e) => {
+                                const isChecked = e.target.checked
+                                setFormData((prev) => {
+                                  let newEspeces = [
+                                    ...prev.exceptions.qbc.especes,
+                                  ]
+                                  if (isChecked && !newEspeces.includes(sp)) {
+                                    // on ajoute
+                                    newEspeces.push(sp)
+                                  } else if (!isChecked) {
+                                    // on retire
+                                    newEspeces = newEspeces.filter(
+                                      (item) => item !== sp
+                                    )
+                                  }
+                                  // limiter à 4
+                                  if (newEspeces.length > 4) {
+                                    newEspeces = newEspeces.slice(0, 4)
+                                  }
+                                  return {
+                                    ...prev,
+                                    exceptions: {
+                                      ...prev.exceptions,
+                                      qbc: {
+                                        ...prev.exceptions.qbc,
+                                        especes: newEspeces,
+                                      },
+                                    },
+                                  }
+                                })
+                              }}
+                            />
+                            {sp}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* BLOC GROUPE SANGUIN */}
+                  {selectedTestCategory === 'groupeSanguin' && (
+                    <div className="my-2 p-2 border w-full">
+                      <h4 className="font-bold mb-2">Groupe Sanguin</h4>
+                      {/* ABO */}
+                      <div className="flex flex-wrap gap-4">
+                        <div className="flex flex-col">
+                          <label className="label">Groupe ABO</label>
+                          <select
+                            className="select select-bordered"
+                            value={formData.exceptions.groupeSanguin.abo}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                exceptions: {
+                                  ...prev.exceptions,
+                                  groupeSanguin: {
+                                    ...prev.exceptions.groupeSanguin,
+                                    abo: e.target.value,
+                                  },
+                                },
+                              }))
+                            }
+                          >
+                            <option value="">--Choisir--</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="AB">AB</option>
+                            <option value="O">O</option>
+                          </select>
+                        </div>
+
+                        {/* Rhésus */}
+                        <div className="flex flex-col">
+                          <label className="label">Rhésus</label>
+                          <select
+                            className="select select-bordered"
+                            value={formData.exceptions.groupeSanguin.rhesus}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                exceptions: {
+                                  ...prev.exceptions,
+                                  groupeSanguin: {
+                                    ...prev.exceptions.groupeSanguin,
+                                    rhesus: e.target.value,
+                                  },
+                                },
+                              }))
+                            }
+                          >
+                            <option value="">--Choisir--</option>
+                            <option value="Positif">Positif (Rh+)</option>
+                            <option value="Négatif">Négatif (Rh-)</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* BLOC HGPO */}
+                  {selectedTestCategory === 'hgpo' && (
+                    <div className="my-2 p-2 border w-full">
+                      <h4 className="font-bold mb-2">HGPO</h4>
+                      <div className="flex flex-wrap gap-4">
+                        {/* T0 */}
+                        <div className="flex flex-col">
+                          <label className="label">Glycémie T0</label>
+                          <input
+                            type="text"
+                            className="input input-bordered"
+                            value={formData.exceptions.hgpo.t0}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                exceptions: {
+                                  ...prev.exceptions,
+                                  hgpo: {
+                                    ...prev.exceptions.hgpo,
+                                    t0: e.target.value,
+                                  },
+                                },
+                              }))
+                            }
+                          />
+                        </div>
+
+                        {/* T60 */}
+                        <div className="flex flex-col">
+                          <label className="label">Glycémie T60</label>
+                          <input
+                            type="text"
+                            className="input input-bordered"
+                            value={formData.exceptions.hgpo.t60}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                exceptions: {
+                                  ...prev.exceptions,
+                                  hgpo: {
+                                    ...prev.exceptions.hgpo,
+                                    t60: e.target.value,
+                                  },
+                                },
+                              }))
+                            }
+                          />
+                        </div>
+
+                        {/* T120 */}
+                        <div className="flex flex-col">
+                          <label className="label">Glycémie T120</label>
+                          <input
+                            type="text"
+                            className="input input-bordered"
+                            value={formData.exceptions.hgpo.t120}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                exceptions: {
+                                  ...prev.exceptions,
+                                  hgpo: {
+                                    ...prev.exceptions.hgpo,
+                                    t120: e.target.value,
+                                  },
+                                },
+                              }))
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* BLOC IONOGRAMME */}
+                  {selectedTestCategory === 'ionogramme' && (
+                    <div className="my-2 p-2 border w-full">
+                      <h4 className="font-bold mb-2">Ionogramme</h4>
+                      <div className="flex flex-wrap gap-4">
+                        {/* Na */}
+                        <div className="flex flex-col">
+                          <label className="label">Na+</label>
+                          <input
+                            type="text"
+                            className="input input-bordered"
+                            value={formData.exceptions.ionogramme.na}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                exceptions: {
+                                  ...prev.exceptions,
+                                  ionogramme: {
+                                    ...prev.exceptions.ionogramme,
+                                    na: e.target.value,
+                                  },
+                                },
+                              }))
+                            }
+                          />
+                        </div>
+                        {/* K */}
+                        <div className="flex flex-col">
+                          <label className="label">K+</label>
+                          <input
+                            type="text"
+                            className="input input-bordered"
+                            value={formData.exceptions.ionogramme.k}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                exceptions: {
+                                  ...prev.exceptions,
+                                  ionogramme: {
+                                    ...prev.exceptions.ionogramme,
+                                    k: e.target.value,
+                                  },
+                                },
+                              }))
+                            }
+                          />
+                        </div>
+
+                        {/* Cl */}
+                        <div className="flex flex-col">
+                          <label className="label">Cl-</label>
+                          <input
+                            type="text"
+                            className="input input-bordered"
+                            value={formData.exceptions.ionogramme.cl}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                exceptions: {
+                                  ...prev.exceptions,
+                                  ionogramme: {
+                                    ...prev.exceptions.ionogramme,
+                                    cl: e.target.value,
+                                  },
+                                },
+                              }))
+                            }
+                          />
+                        </div>
+
+                        {/* Ca */}
+                        <div className="flex flex-col">
+                          <label className="label">Ca2+</label>
+                          <input
+                            type="text"
+                            className="input input-bordered"
+                            value={formData.exceptions.ionogramme.ca}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                exceptions: {
+                                  ...prev.exceptions,
+                                  ionogramme: {
+                                    ...prev.exceptions.ionogramme,
+                                    ca: e.target.value,
+                                  },
+                                },
+                              }))
+                            }
+                          />
+                        </div>
+
+                        {/* Mg */}
+                        <div className="flex flex-col">
+                          <label className="label">Mg2+</label>
+                          <input
+                            type="text"
+                            className="input input-bordered"
+                            value={formData.exceptions.ionogramme.mg}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                exceptions: {
+                                  ...prev.exceptions,
+                                  ionogramme: {
+                                    ...prev.exceptions.ionogramme,
+                                    mg: e.target.value,
+                                  },
+                                },
+                              }))
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </>
               ) : (
                 <>
@@ -997,7 +1455,7 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
                         <option value="Verdâtres">Verdâtres</option>
                         <option value="Brunâtres">Brunâtres</option>
                         <option value="Molles">Molles</option>
-                        // Ajoutez d'autres options selon besoin
+                        {/* // Ajoutez d'autres options selon besoin */}
                       </select>
                       <div className="flex flex-wrap gap-2 mt-2">
                         {Array.isArray(formData.observations.macroscopique) &&
