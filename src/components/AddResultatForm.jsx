@@ -30,6 +30,129 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
       mg: '',
       // ajoutez les paramètres de votre choix
     },
+
+    // 👇 Nouvel ajout : NFS
+    nfs: {
+      hematiesEtConstantes: {
+        gr: { valeur: '', unite: '10^6/uL', reference: '3.80-5.90' },
+        hgb: { valeur: '', unite: 'g/dL', reference: '11.5-16.0' },
+        hct: { valeur: '', unite: '%', reference: '34.0-48.0' },
+        vgm: { valeur: '', unite: 'fL', reference: '80.0-97.0' },
+        tcmh: { valeur: '', unite: 'pg', reference: '26.0-32.0' },
+        ccmh: { valeur: '', unite: 'g/dL', reference: '30.0-36.0' },
+        idr_cv: { valeur: '', unite: '%', reference: '11.0-16.0' },
+      },
+      leucocytesEtFormules: {
+        gb: { valeur: '', unite: '10^3/uL', reference: '4.00-10.00', flag: '' },
+        neut: {
+          valeur: '',
+          unite: '10^3/uL',
+          pourcentage: '',
+          referenceValeur: '1.50-7.50',
+          referencePourcentage: '37.0-72.0',
+          flag: '',
+        },
+        lymph: {
+          valeur: '',
+          unite: '10^3/uL',
+          pourcentage: '',
+          referenceValeur: '1.50-4.00',
+          referencePourcentage: '20.0-50.0',
+          flag: '',
+        },
+        mono: {
+          valeur: '',
+          unite: '10^3/uL',
+          pourcentage: '',
+          referenceValeur: '0.10-1.00',
+          referencePourcentage: '0.0-14.0',
+          flag: '',
+        },
+        eo: {
+          valeur: '',
+          unite: '10^3/uL',
+          pourcentage: '',
+          referenceValeur: '0.01-0.50',
+          referencePourcentage: '0.0-6.0',
+          flag: '',
+        },
+        baso: {
+          valeur: '',
+          unite: '10^3/uL',
+          pourcentage: '',
+          referenceValeur: '0.00-0.10',
+          referencePourcentage: '0.0-1.0',
+          flag: '',
+        },
+        plt: { valeur: '', unite: '10^3/uL', reference: '150-450', flag: '' },
+
+        // === Ajout des blastes et cellules immatures :
+        proerythroblastes: {
+          valeur: '',
+          unite: '10^3/uL',
+          pourcentage: '',
+          referenceValeur: '0.00-0.01',
+          referencePourcentage: '0-0.2',
+          flag: '',
+        },
+        erythroblastes: {
+          valeur: '',
+          unite: '10^3/uL',
+          pourcentage: '',
+          referenceValeur: '0.00-0.01',
+          referencePourcentage: '0-0.2',
+          flag: '',
+        },
+        myeloblastes: {
+          valeur: '',
+          unite: '10^3/uL',
+          pourcentage: '',
+          referenceValeur: '0.00-0.01',
+          referencePourcentage: '0-0.2',
+          flag: '',
+        },
+        promyelocytes: {
+          valeur: '',
+          unite: '10^3/uL',
+          pourcentage: '',
+          referenceValeur: '0.00-0.01',
+          referencePourcentage: '0-0.2',
+          flag: '',
+        },
+        myelocytes: {
+          valeur: '',
+          unite: '10^3/uL',
+          pourcentage: '',
+          referenceValeur: '0.00-0.02',
+          referencePourcentage: '0-0.5',
+          flag: '',
+        },
+        metamyelocytes: {
+          valeur: '',
+          unite: '10^3/uL',
+          pourcentage: '',
+          referenceValeur: '0.00-0.02',
+          referencePourcentage: '0-0.5',
+          flag: '',
+        },
+        monoblastes: {
+          valeur: '',
+          unite: '10^3/uL',
+          pourcentage: '',
+          referenceValeur: '0.00-0.01',
+          referencePourcentage: '0-0.2',
+          flag: '',
+        },
+        lymphoblastes: {
+          valeur: '',
+          unite: '10^3/uL',
+          pourcentage: '',
+          referenceValeur: '0.00-0.01',
+          referencePourcentage: '0-0.2',
+          flag: '',
+        },
+      },
+    },
   })
   const [selectedTestCategory, setSelectedTestCategory] = useState('')
   const [methode, setMethode] = useState('')
@@ -594,6 +717,66 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
       },
       hgpo: { t0: '', t60: '', t120: '' },
       ionogramme: { na: '', k: '', cl: '', ca: '', mg: '' },
+      nfs: {
+        hematiesEtConstantes: {
+          gr: { valeur: '', unite: '10^6/uL', reference: '3.80-5.90' },
+          hgb: { valeur: '', unite: 'g/dL', reference: '11.5-16.0' },
+          hct: { valeur: '', unite: '%', reference: '34.0-48.0' },
+          vgm: { valeur: '', unite: 'fL', reference: '80.0-97.0' },
+          tcmh: { valeur: '', unite: 'pg', reference: '26.0-32.0' },
+          ccmh: { valeur: '', unite: 'g/dL', reference: '30.0-36.0' },
+          idr_cv: { valeur: '', unite: '%', reference: '11.0-16.0' },
+        },
+        leucocytesEtFormules: {
+          gb: {
+            valeur: '',
+            unite: '10^3/uL',
+            reference: '4.00-10.00',
+            flag: '',
+          },
+          neut: {
+            valeur: '',
+            unite: '10^3/uL',
+            referenceValeur: '1.50-7.50',
+            referencePourcentage: '37.0-72.0',
+            pourcentage: '',
+            flag: '',
+          },
+          lymph: {
+            valeur: '',
+            unite: '10^3/uL',
+            referenceValeur: '1.50-4.00',
+            referencePourcentage: '20.0-50.0',
+            pourcentage: '',
+            flag: '',
+          },
+          mono: {
+            valeur: '',
+            unite: '10^3/uL',
+            referenceValeur: '0.10-1.00',
+            referencePourcentage: '0.0-14.0',
+            pourcentage: '',
+            flag: '',
+          },
+          eo: {
+            valeur: '',
+            unite: '10^3/uL',
+            referenceValeur: '0.01-0.50',
+            referencePourcentage: '0.0-6.0',
+            pourcentage: '',
+            flag: '',
+          },
+          baso: {
+            valeur: '',
+            unite: '10^3/uL',
+            referenceValeur: '0.00-0.10',
+            referencePourcentage: '0.0-1.0',
+            pourcentage: '',
+            flag: '',
+          },
+          plt: { valeur: '', unite: '10^3/uL', reference: '150-450', flag: '' },
+        },
+      },
     })
     setAntibiogrammes([])
     setMacroscopique('')
@@ -650,7 +833,6 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     if (!testName) return ''
 
     const nameLower = testName.toLowerCase()
-    // Vous pouvez affiner ces conditions pour matcher plus précisément
     if (nameLower.includes('groupe') && nameLower.includes('sanguin')) {
       return 'groupeSanguin'
     } else if (nameLower.includes('qbc')) {
@@ -659,11 +841,13 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
       return 'hgpo'
     } else if (nameLower.includes('ionogram')) {
       return 'ionogramme'
+    } else if (nameLower.includes('nfs') || nameLower.includes('numération')) {
+      return 'nfs'
     }
 
-    // Par défaut (pas une exception)
     return 'normal'
   }
+
   useEffect(() => {
     const selectedTest = tests.find((test) => test._id === testId)
     if (selectedTest) {
@@ -990,7 +1174,6 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                 </select>
               </div>
             </div>
-
             {/* --------------------------------
         2ème partie : SI le test est QBC
         -------------------------------- */}
@@ -1136,7 +1319,6 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                 </div>
               </div>
             )}
-
             {/* // 4 eme partie pour hgpo */}
             {selectedTestCategory === 'hgpo' && (
               <div className="flex flex-nowrap gap-4 items-center w-full mt-2">
@@ -1260,6 +1442,803 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                 {/* Ajoutez d’autres ions si besoin */}
               </div>
             )}
+            {/* fns */}
+            {selectedTestCategory === 'nfs' && excepValues.nfs && (
+              <>
+                {/* ---------------------------------------------------------------------- */}
+                {/* Bloc HÉMATIES et Constantes                                            */}
+                {/* ---------------------------------------------------------------------- */}
+                <div className="border p-4 mt-4">
+                  <h3 className="font-bold mb-2">Hématies (GR, HGB, HCT)</h3>
+
+                  <div className="flex flex-wrap gap-4">
+                    {/* GR */}
+                    <div className="flex flex-col mb-2">
+                      <label className="label font-semibold">
+                        GR (Globules Rouges)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered w-[150px]"
+                        placeholder="ex: 4.5"
+                        value={
+                          excepValues.nfs?.hematiesEtConstantes?.gr?.valeur ||
+                          ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              hematiesEtConstantes: {
+                                ...prev.nfs.hematiesEtConstantes,
+                                gr: {
+                                  ...prev.nfs.hematiesEtConstantes.gr,
+                                  valeur: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>
+                        Unité :{' '}
+                        {excepValues.nfs?.hematiesEtConstantes?.gr?.unite ||
+                          'N/A'}
+                        {' | '}Référence :{' '}
+                        {excepValues.nfs?.hematiesEtConstantes?.gr?.reference ||
+                          'N/A'}
+                      </small>
+                    </div>
+
+                    {/* HGB */}
+                    <div className="flex flex-col mb-2">
+                      <label className="label font-semibold">
+                        HGB (Hémoglobine)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered w-[150px]"
+                        placeholder="ex: 13.2"
+                        value={
+                          excepValues.nfs?.hematiesEtConstantes?.hgb?.valeur ||
+                          ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              hematiesEtConstantes: {
+                                ...prev.nfs.hematiesEtConstantes,
+                                hgb: {
+                                  ...prev.nfs.hematiesEtConstantes.hgb,
+                                  valeur: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>
+                        Unité :{' '}
+                        {excepValues.nfs?.hematiesEtConstantes?.hgb?.unite ||
+                          'N/A'}
+                        {' | '}Référence :{' '}
+                        {excepValues.nfs?.hematiesEtConstantes?.hgb
+                          ?.reference || 'N/A'}
+                      </small>
+                    </div>
+
+                    {/* HCT */}
+                    <div className="flex flex-col mb-2">
+                      <label className="label font-semibold">
+                        HCT (Hématocrite)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered w-[150px]"
+                        placeholder="ex: 40"
+                        value={
+                          excepValues.nfs?.hematiesEtConstantes?.hct?.valeur ||
+                          ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              hematiesEtConstantes: {
+                                ...prev.nfs.hematiesEtConstantes,
+                                hct: {
+                                  ...prev.nfs.hematiesEtConstantes.hct,
+                                  valeur: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>
+                        Unité :{' '}
+                        {excepValues.nfs?.hematiesEtConstantes?.hct?.unite ||
+                          'N/A'}
+                        {' | '}Référence :{' '}
+                        {excepValues.nfs?.hematiesEtConstantes?.hct
+                          ?.reference || 'N/A'}
+                      </small>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-4 mt-4">
+                    {/* ecartType (pour IDR-CV) */}
+                    <div className="flex flex-col mb-2">
+                      <label className="label font-semibold">
+                        Écart Type (RDW)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered w-[150px]"
+                        placeholder="ex: 12"
+                        value={
+                          excepValues.nfs?.hematiesEtConstantes?.idr_cv
+                            ?.ecartType || ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              hematiesEtConstantes: {
+                                ...prev.nfs.hematiesEtConstantes,
+                                idr_cv: {
+                                  ...prev.nfs.hematiesEtConstantes.idr_cv,
+                                  ecartType: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>(Utilisé pour calculer IDR-CV)</small>
+                    </div>
+
+                    {/* IDR-CV */}
+                    <div className="flex flex-col mb-2">
+                      <label className="label font-semibold">IDR-CV (%)</label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered w-[150px]"
+                        placeholder="ex: 13.0"
+                        value={
+                          excepValues.nfs?.hematiesEtConstantes?.idr_cv
+                            ?.valeur || ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              hematiesEtConstantes: {
+                                ...prev.nfs.hematiesEtConstantes,
+                                idr_cv: {
+                                  ...prev.nfs.hematiesEtConstantes.idr_cv,
+                                  valeur: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>
+                        Référence :{' '}
+                        {excepValues.nfs?.hematiesEtConstantes?.idr_cv
+                          ?.reference || 'N/A'}
+                      </small>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ---------------------------------------------------------------------- */}
+                {/* Bloc LEUCOCYTES et Formule (affichage 3 colonnes par ligne)            */}
+                {/* ---------------------------------------------------------------------- */}
+                <div className="border p-4 mt-4">
+                  <h3 className="font-bold mb-2">Leucocytes (GB) et Formule</h3>
+
+                  <div className="flex flex-wrap gap-4">
+                    {/* GB : Valeur totale leucocytes */}
+                    <div className="flex flex-col mb-2 w-[200px]">
+                      <label className="label font-semibold">
+                        GB (Leucocytes Totaux)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered"
+                        placeholder="ex: 7.2"
+                        value={
+                          excepValues.nfs?.leucocytesEtFormules?.gb?.valeur ||
+                          ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              leucocytesEtFormules: {
+                                ...prev.nfs.leucocytesEtFormules,
+                                gb: {
+                                  ...prev.nfs.leucocytesEtFormules.gb,
+                                  valeur: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>
+                        Unité :{' '}
+                        {excepValues.nfs?.leucocytesEtFormules?.gb?.unite ||
+                          'N/A'}
+                        {' | '}Réf :{' '}
+                        {excepValues.nfs?.leucocytesEtFormules?.gb?.reference ||
+                          'N/A'}
+                      </small>
+                    </div>
+
+                    {/* Neut (%) */}
+                    <div className="flex flex-col mb-2 w-[200px]">
+                      <label className="label font-semibold">
+                        Neutrophiles (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered"
+                        placeholder="ex: 55"
+                        value={
+                          excepValues.nfs?.leucocytesEtFormules?.neut
+                            ?.pourcentage || ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              leucocytesEtFormules: {
+                                ...prev.nfs.leucocytesEtFormules,
+                                neut: {
+                                  ...prev.nfs.leucocytesEtFormules.neut,
+                                  pourcentage: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>
+                        Réf. % :{' '}
+                        {excepValues.nfs?.leucocytesEtFormules?.neut
+                          ?.referencePourcentage || 'N/A'}
+                      </small>
+                    </div>
+
+                    {/* Lymph (%) */}
+                    <div className="flex flex-col mb-2 w-[200px]">
+                      <label className="label font-semibold">
+                        Lymphocytes (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered"
+                        placeholder="ex: 35"
+                        value={
+                          excepValues.nfs?.leucocytesEtFormules?.lymph
+                            ?.pourcentage || ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              leucocytesEtFormules: {
+                                ...prev.nfs.leucocytesEtFormules,
+                                lymph: {
+                                  ...prev.nfs.leucocytesEtFormules.lymph,
+                                  pourcentage: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>
+                        Réf. % :{' '}
+                        {excepValues.nfs?.leucocytesEtFormules?.lymph
+                          ?.referencePourcentage || 'N/A'}
+                      </small>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-4 mt-2">
+                    {/* Mono (%) */}
+                    <div className="flex flex-col mb-2 w-[200px]">
+                      <label className="label font-semibold">
+                        Monocytes (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered"
+                        placeholder="ex: 6"
+                        value={
+                          excepValues.nfs?.leucocytesEtFormules?.mono
+                            ?.pourcentage || ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              leucocytesEtFormules: {
+                                ...prev.nfs.leucocytesEtFormules,
+                                mono: {
+                                  ...prev.nfs.leucocytesEtFormules.mono,
+                                  pourcentage: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>
+                        Réf. % :{' '}
+                        {excepValues.nfs?.leucocytesEtFormules?.mono
+                          ?.referencePourcentage || 'N/A'}
+                      </small>
+                    </div>
+
+                    {/* Eo (%) */}
+                    <div className="flex flex-col mb-2 w-[200px]">
+                      <label className="label font-semibold">
+                        Éosinophiles (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered"
+                        placeholder="ex: 2"
+                        value={
+                          excepValues.nfs?.leucocytesEtFormules?.eo
+                            ?.pourcentage || ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              leucocytesEtFormules: {
+                                ...prev.nfs.leucocytesEtFormules,
+                                eo: {
+                                  ...prev.nfs.leucocytesEtFormules.eo,
+                                  pourcentage: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>
+                        Réf. % :{' '}
+                        {excepValues.nfs?.leucocytesEtFormules?.eo
+                          ?.referencePourcentage || 'N/A'}
+                      </small>
+                    </div>
+
+                    {/* Baso (%) */}
+                    <div className="flex flex-col mb-2 w-[200px]">
+                      <label className="label font-semibold">
+                        Basophiles (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered"
+                        placeholder="ex: 1"
+                        value={
+                          excepValues.nfs?.leucocytesEtFormules?.baso
+                            ?.pourcentage || ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              leucocytesEtFormules: {
+                                ...prev.nfs.leucocytesEtFormules,
+                                baso: {
+                                  ...prev.nfs.leucocytesEtFormules.baso,
+                                  pourcentage: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>
+                        Réf. % :{' '}
+                        {excepValues.nfs?.leucocytesEtFormules?.baso
+                          ?.referencePourcentage || 'N/A'}
+                      </small>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-4 mt-2">
+                    {/* PLT */}
+                    <div className="flex flex-col mb-2 w-[200px]">
+                      <label className="label font-semibold">
+                        Plaquettes (PLT)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered"
+                        placeholder="ex: 250"
+                        value={
+                          excepValues.nfs?.leucocytesEtFormules?.plt?.valeur ||
+                          ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              leucocytesEtFormules: {
+                                ...prev.nfs.leucocytesEtFormules,
+                                plt: {
+                                  ...prev.nfs.leucocytesEtFormules.plt,
+                                  valeur: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>
+                        Unité :{' '}
+                        {excepValues.nfs?.leucocytesEtFormules?.plt?.unite ||
+                          'N/A'}
+                        {' | '}Réf :{' '}
+                        {excepValues.nfs?.leucocytesEtFormules?.plt
+                          ?.reference || 'N/A'}
+                      </small>
+                    </div>
+                  </div>
+
+                  {/* ---------------------------------------------------------------------- */}
+                  {/* BLOC DES BLASTES / CELLULES IMMATURES                                  */}
+                  {/* ---------------------------------------------------------------------- */}
+                  <h4 className="mt-4 font-semibold">
+                    Cellules immatures / Blastes
+                  </h4>
+
+                  <div className="flex flex-wrap gap-4 mt-2">
+                    {/* Proérythroblastes (%) */}
+                    <div className="flex flex-col mb-2 w-[200px]">
+                      <label className="label font-semibold">
+                        Proérythroblastes (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered"
+                        placeholder="ex: 0.1"
+                        value={
+                          excepValues.nfs?.leucocytesEtFormules
+                            ?.proerythroblastes?.pourcentage || ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              leucocytesEtFormules: {
+                                ...prev.nfs.leucocytesEtFormules,
+                                proerythroblastes: {
+                                  ...prev.nfs.leucocytesEtFormules
+                                    .proerythroblastes,
+                                  pourcentage: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>
+                        Réf. % :{' '}
+                        {excepValues.nfs?.leucocytesEtFormules
+                          ?.proerythroblastes?.referencePourcentage || 'N/A'}
+                      </small>
+                    </div>
+
+                    {/* Erythroblastes (%) */}
+                    <div className="flex flex-col mb-2 w-[200px]">
+                      <label className="label font-semibold">
+                        Erythroblastes (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered"
+                        placeholder="ex: 0.05"
+                        value={
+                          excepValues.nfs?.leucocytesEtFormules?.erythroblastes
+                            ?.pourcentage || ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              leucocytesEtFormules: {
+                                ...prev.nfs.leucocytesEtFormules,
+                                erythroblastes: {
+                                  ...prev.nfs.leucocytesEtFormules
+                                    .erythroblastes,
+                                  pourcentage: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>
+                        Réf. % :{' '}
+                        {excepValues.nfs?.leucocytesEtFormules?.erythroblastes
+                          ?.referencePourcentage || 'N/A'}
+                      </small>
+                    </div>
+
+                    {/* Myéloblastes (%) */}
+                    <div className="flex flex-col mb-2 w-[200px]">
+                      <label className="label font-semibold">
+                        Myéloblastes (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered"
+                        placeholder="ex: 0.2"
+                        value={
+                          excepValues.nfs?.leucocytesEtFormules?.myeloblastes
+                            ?.pourcentage || ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              leucocytesEtFormules: {
+                                ...prev.nfs.leucocytesEtFormules,
+                                myeloblastes: {
+                                  ...prev.nfs.leucocytesEtFormules.myeloblastes,
+                                  pourcentage: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>
+                        Réf. % :{' '}
+                        {excepValues.nfs?.leucocytesEtFormules?.myeloblastes
+                          ?.referencePourcentage || 'N/A'}
+                      </small>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-4 mt-2">
+                    {/* Promyélocytes (%) */}
+                    <div className="flex flex-col mb-2 w-[200px]">
+                      <label className="label font-semibold">
+                        Promyélocytes (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered"
+                        placeholder="ex: 0.2"
+                        value={
+                          excepValues.nfs?.leucocytesEtFormules?.promyelocytes
+                            ?.pourcentage || ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              leucocytesEtFormules: {
+                                ...prev.nfs.leucocytesEtFormules,
+                                promyelocytes: {
+                                  ...prev.nfs.leucocytesEtFormules
+                                    .promyelocytes,
+                                  pourcentage: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>
+                        Réf. % :{' '}
+                        {excepValues.nfs?.leucocytesEtFormules?.promyelocytes
+                          ?.referencePourcentage || 'N/A'}
+                      </small>
+                    </div>
+
+                    {/* Myélocytes (%) */}
+                    <div className="flex flex-col mb-2 w-[200px]">
+                      <label className="label font-semibold">
+                        Myélocytes (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered"
+                        placeholder="ex: 0.5"
+                        value={
+                          excepValues.nfs?.leucocytesEtFormules?.myelocytes
+                            ?.pourcentage || ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              leucocytesEtFormules: {
+                                ...prev.nfs.leucocytesEtFormules,
+                                myelocytes: {
+                                  ...prev.nfs.leucocytesEtFormules.myelocytes,
+                                  pourcentage: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>
+                        Réf. % :{' '}
+                        {excepValues.nfs?.leucocytesEtFormules?.myelocytes
+                          ?.referencePourcentage || 'N/A'}
+                      </small>
+                    </div>
+
+                    {/* Métamyélocytes (%) */}
+                    <div className="flex flex-col mb-2 w-[200px]">
+                      <label className="label font-semibold">
+                        Métamyélocytes (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered"
+                        placeholder="ex: 0.2"
+                        value={
+                          excepValues.nfs?.leucocytesEtFormules?.metamyelocytes
+                            ?.pourcentage || ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              leucocytesEtFormules: {
+                                ...prev.nfs.leucocytesEtFormules,
+                                metamyelocytes: {
+                                  ...prev.nfs.leucocytesEtFormules
+                                    .metamyelocytes,
+                                  pourcentage: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>
+                        Réf. % :{' '}
+                        {excepValues.nfs?.leucocytesEtFormules?.metamyelocytes
+                          ?.referencePourcentage || 'N/A'}
+                      </small>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-4 mt-2">
+                    {/* Monoblastes (%) */}
+                    <div className="flex flex-col mb-2 w-[200px]">
+                      <label className="label font-semibold">
+                        Monoblastes (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered"
+                        placeholder="ex: 0.1"
+                        value={
+                          excepValues.nfs?.leucocytesEtFormules?.monoblastes
+                            ?.pourcentage || ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              leucocytesEtFormules: {
+                                ...prev.nfs.leucocytesEtFormules,
+                                monoblastes: {
+                                  ...prev.nfs.leucocytesEtFormules.monoblastes,
+                                  pourcentage: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>
+                        Réf. % :{' '}
+                        {excepValues.nfs?.leucocytesEtFormules?.monoblastes
+                          ?.referencePourcentage || 'N/A'}
+                      </small>
+                    </div>
+
+                    {/* Lymphoblastes (%) */}
+                    <div className="flex flex-col mb-2 w-[200px]">
+                      <label className="label font-semibold">
+                        Lymphoblastes (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        className="input input-bordered"
+                        placeholder="ex: 0.1"
+                        value={
+                          excepValues.nfs?.leucocytesEtFormules?.lymphoblastes
+                            ?.pourcentage || ''
+                        }
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            nfs: {
+                              ...prev.nfs,
+                              leucocytesEtFormules: {
+                                ...prev.nfs.leucocytesEtFormules,
+                                lymphoblastes: {
+                                  ...prev.nfs.leucocytesEtFormules
+                                    .lymphoblastes,
+                                  pourcentage: e.target.value,
+                                },
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small>
+                        Réf. % :{' '}
+                        {excepValues.nfs?.leucocytesEtFormules?.lymphoblastes
+                          ?.referencePourcentage || 'N/A'}
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Add other blocks: macroscopie, microscopie, chimie, etc. */}
           </div>
         )}
 

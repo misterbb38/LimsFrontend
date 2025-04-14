@@ -377,6 +377,131 @@ function GenerateResultatButton({ invoice }) {
             // On prévoit un excepY pour positionner le bloc d’exception
             console.log(currentY)
             let excepY = currentY + 15 // Par exemple, 15 px sous la valeur/qualitatif
+            function hasHematiesValues(hematies) {
+              if (!hematies) return false
+              const { gr, hgb, hct, vgm, tcmh, ccmh, idr_cv } = hematies
+              return (
+                gr?.valeur ||
+                hgb?.valeur ||
+                hct?.valeur ||
+                vgm?.valeur ||
+                tcmh?.valeur ||
+                ccmh?.valeur ||
+                idr_cv?.valeur
+              )
+            }
+
+            function hasLeucocytesValues(leuco) {
+              if (!leuco) return false
+              const {
+                gb,
+                neut,
+                lymph,
+                mono,
+                eo,
+                baso,
+                plt,
+                proerythroblastes,
+                erythroblastes,
+                myeloblastes,
+                promyelocytes,
+                myelocytes,
+                metamyelocytes,
+                monoblastes,
+                lymphoblastes,
+              } = leuco
+
+              return (
+                gb?.valeur ||
+                neut?.valeur ||
+                neut?.pourcentage ||
+                lymph?.valeur ||
+                lymph?.pourcentage ||
+                mono?.valeur ||
+                mono?.pourcentage ||
+                eo?.valeur ||
+                eo?.pourcentage ||
+                baso?.valeur ||
+                baso?.pourcentage ||
+                plt?.valeur ||
+                proerythroblastes?.valeur ||
+                proerythroblastes?.pourcentage ||
+                erythroblastes?.valeur ||
+                erythroblastes?.pourcentage ||
+                myeloblastes?.valeur ||
+                myeloblastes?.pourcentage ||
+                promyelocytes?.valeur ||
+                promyelocytes?.pourcentage ||
+                myelocytes?.valeur ||
+                myelocytes?.pourcentage ||
+                metamyelocytes?.valeur ||
+                metamyelocytes?.pourcentage ||
+                monoblastes?.valeur ||
+                monoblastes?.pourcentage ||
+                lymphoblastes?.valeur ||
+                lymphoblastes?.pourcentage
+              )
+            }
+
+            /**
+             * Affiche une ligne “Hématies” :
+             *   Nom (X=25)
+             *   Valeur (X=70)
+             *   Unité   (X=90)
+             *   Référence (X=110)   (ex. "3.80-5.90")
+             */
+            function printHematiesLine(doc, posY, label, value, unit, ref) {
+              doc.text(label, 25, posY) // Nom
+              doc.text(value, 85, posY) // Valeur
+              if (unit) {
+                doc.text(unit, 100, posY)
+              }
+              if (ref) {
+                doc.text(ref, 120, posY) // Valeurs usuelles
+              }
+              return posY + 5
+            }
+
+            /**
+             * Affiche une ligne “Leucocytes” :
+             *   Nom (X=25)
+             *   Pourcentage (X=70)  => ex. "55" => doc.text("55%", 70, posY)
+             *   Valeur absolue (X=85)
+             *   Unité (X=100)
+             *   Référence (X=120)   (ex. "37.0-72.0")
+             */
+            function printLeucocytesLine(
+              doc,
+              posY,
+              label,
+              pctValue, // ex. "55" => on affichera "55%"
+              mainValue, // ex. "3.96"
+              unit,
+              reference
+            ) {
+              // Nom
+              doc.text(label, 25, posY)
+
+              // Pourcentage
+              if (pctValue) {
+                doc.text(`${pctValue}%`, 70, posY)
+              }
+
+              // Valeur absolue
+              doc.text(mainValue, 85, posY)
+
+              // Unité
+              if (unit) {
+                doc.text(unit, 100, posY)
+              }
+
+              // Référence
+              if (reference) {
+                doc.text(reference, 120, posY)
+              }
+
+              return posY + 5
+            }
 
             // Vérifions s'il existe un test.exceptions
             if (test?.exceptions) {
@@ -605,7 +730,9 @@ function GenerateResultatButton({ invoice }) {
                     25,
                     excepY
                   )
-                  doc.text(`N: 137-145 mEq/L`, 110, excepY)
+                  doc.text(`Valeur de référence`, 110, excepY - 8)
+
+                  doc.text(`137-145 mEq/L`, 110, excepY)
                   excepY += 5
                 }
                 if (test.exceptions.ionogramme.k) {
@@ -615,7 +742,7 @@ function GenerateResultatButton({ invoice }) {
                     excepY = 25
                   }
                   doc.text(`K+ : ${test.exceptions.ionogramme.k} `, 25, excepY)
-                  doc.text(`N: 137-145 mEq/L`, 110, excepY)
+                  doc.text(`3.5-5.0 mEq/L`, 110, excepY)
 
                   excepY += 5
                 }
@@ -631,7 +758,7 @@ function GenerateResultatButton({ invoice }) {
 
                     excepY
                   )
-                  doc.text(`N: 137-145 mEq/L`, 110, excepY)
+                  doc.text(`98.0-107.0 mEq/L`, 110, excepY)
                   excepY += 5
                 }
                 if (test.exceptions.ionogramme.ca) {
@@ -661,6 +788,316 @@ function GenerateResultatButton({ invoice }) {
                   )
                   doc.text(`137-145 mEq/L`, 110, excepY)
                   excepY += 7
+                }
+              } else if (test.exceptions.nfs) {
+                const { hematiesEtConstantes, leucocytesEtFormules } =
+                  test.exceptions.nfs
+
+                const showHematies = hasHematiesValues(hematiesEtConstantes)
+                const showLeucocytes = hasLeucocytesValues(leucocytesEtFormules)
+
+                if (!showHematies && !showLeucocytes) {
+                  // rien
+                } else {
+                  // Titre principal NFS
+                  if (excepY > 250) {
+                    doc.addPage()
+                    addFooter()
+                    excepY = 25
+                  }
+                  doc.setFont('Times', 'bold')
+                  doc.setFontSize(10)
+                  doc.text('NFS (Numération Formule Sanguine)', 25, excepY)
+                  excepY += 7
+                  doc.setFont('Times', 'normal')
+                  doc.setFontSize(9)
+                  doc.text('Valeurs de références', 120, excepY)
+                  excepY += 3
+
+                  /*********************************
+                   * HÉMATIES ET CONSTANTES
+                   *********************************/
+                  if (showHematies) {
+                    doc.setFont('Times', 'bold')
+                    doc.text('HEMATIES ET CONSTANTES', 25, excepY)
+                    excepY += 7
+                    doc.setFont('Times', 'normal')
+
+                    // Hematies (au lieu de "GR")
+                    if (hematiesEtConstantes.gr?.valeur) {
+                      excepY = printHematiesLine(
+                        doc,
+                        excepY,
+                        'Hématies',
+                        String(hematiesEtConstantes.gr.valeur),
+                        hematiesEtConstantes.gr.unite || '',
+                        hematiesEtConstantes.gr.reference || ''
+                      )
+                    }
+                    // Hémoglobine
+                    if (hematiesEtConstantes.hgb?.valeur) {
+                      excepY = printHematiesLine(
+                        doc,
+                        excepY,
+                        'Hémoglobine',
+                        String(hematiesEtConstantes.hgb.valeur),
+                        hematiesEtConstantes.hgb.unite || '',
+                        hematiesEtConstantes.hgb.reference || ''
+                      )
+                    }
+                    // Hématocrite
+                    if (hematiesEtConstantes.hct?.valeur) {
+                      excepY = printHematiesLine(
+                        doc,
+                        excepY,
+                        'Hématocrite',
+                        String(hematiesEtConstantes.hct.valeur),
+                        hematiesEtConstantes.hct.unite || '',
+                        hematiesEtConstantes.hct.reference || ''
+                      )
+                    }
+                    // VGM
+                    if (hematiesEtConstantes.vgm?.valeur) {
+                      excepY = printHematiesLine(
+                        doc,
+                        excepY,
+                        'VGM',
+                        String(hematiesEtConstantes.vgm.valeur),
+                        hematiesEtConstantes.vgm.unite || '',
+                        hematiesEtConstantes.vgm.reference || ''
+                      )
+                    }
+                    // TCMH
+                    if (hematiesEtConstantes.tcmh?.valeur) {
+                      excepY = printHematiesLine(
+                        doc,
+                        excepY,
+                        'TCMH',
+                        String(hematiesEtConstantes.tcmh.valeur),
+                        hematiesEtConstantes.tcmh.unite || '',
+                        hematiesEtConstantes.tcmh.reference || ''
+                      )
+                    }
+                    // CCMH
+                    if (hematiesEtConstantes.ccmh?.valeur) {
+                      excepY = printHematiesLine(
+                        doc,
+                        excepY,
+                        'CCMH',
+                        String(hematiesEtConstantes.ccmh.valeur),
+                        hematiesEtConstantes.ccmh.unite || '',
+                        hematiesEtConstantes.ccmh.reference || ''
+                      )
+                    }
+                    // IDR-CV (pas d'écartType)
+                    if (hematiesEtConstantes.idr_cv?.valeur) {
+                      excepY = printHematiesLine(
+                        doc,
+                        excepY,
+                        'IDR-CV',
+                        String(hematiesEtConstantes.idr_cv.valeur),
+                        hematiesEtConstantes.idr_cv.unite || '',
+                        hematiesEtConstantes.idr_cv.reference || ''
+                      )
+                    }
+
+                    excepY += 5
+                  }
+
+                  /*********************************
+                   * LEUCOCYTES ET FORMULE
+                   *********************************/
+                  if (showLeucocytes) {
+                    if (excepY > 250) {
+                      doc.addPage()
+                      addFooter()
+                      excepY = 25
+                    }
+                    doc.setFont('Times', 'bold')
+                    doc.text('LEUCOCYTES ET FORMULE', 25, excepY)
+                    excepY += 7
+                    doc.setFont('Times', 'normal')
+
+                    const {
+                      gb,
+                      neut,
+                      lymph,
+                      mono,
+                      eo,
+                      baso,
+                      plt,
+                      proerythroblastes,
+                      erythroblastes,
+                      myeloblastes,
+                      promyelocytes,
+                      myelocytes,
+                      metamyelocytes,
+                      monoblastes,
+                      lymphoblastes,
+                    } = leucocytesEtFormules
+
+                    // => GB (pas de pourcentage)
+                    if (gb?.valeur) {
+                      excepY = printLeucocytesLine(
+                        doc,
+                        excepY,
+                        'Leucocytes',
+                        null, // pas de %
+                        String(gb.valeur),
+                        gb.unite || '',
+                        gb.reference || ''
+                      )
+                    }
+
+                    // => NEUT
+                    if (neut?.valeur || neut?.pourcentage) {
+                      let p = neut?.pourcentage
+                        ? String(neut.pourcentage)
+                        : null
+                      let v = neut?.valeur ? String(neut.valeur) : ''
+                      excepY = printLeucocytesLine(
+                        doc,
+                        excepY,
+                        'Neutrophiles',
+                        p,
+                        v,
+                        neut.unite || '',
+                        neut.referencePourcentage || ''
+                      )
+                    }
+
+                    // => LYMPH
+                    if (lymph?.valeur || lymph?.pourcentage) {
+                      let p = lymph?.pourcentage
+                        ? String(lymph.pourcentage)
+                        : null
+                      let v = lymph?.valeur ? String(lymph.valeur) : ''
+                      excepY = printLeucocytesLine(
+                        doc,
+                        excepY,
+                        'Lymphocytes',
+                        p,
+                        v,
+                        lymph.unite || '',
+                        lymph.referencePourcentage || ''
+                      )
+                    }
+
+                    // => MONO
+                    if (mono?.valeur || mono?.pourcentage) {
+                      let p = mono?.pourcentage
+                        ? String(mono.pourcentage)
+                        : null
+                      let v = mono?.valeur ? String(mono.valeur) : ''
+                      excepY = printLeucocytesLine(
+                        doc,
+                        excepY,
+                        'Monocytes',
+                        p,
+                        v,
+                        mono.unite || '',
+                        mono.referencePourcentage || ''
+                      )
+                    }
+
+                    // => EO
+                    if (eo?.valeur || eo?.pourcentage) {
+                      let p = eo?.pourcentage ? String(eo.pourcentage) : null
+                      let v = eo?.valeur ? String(eo.valeur) : ''
+                      excepY = printLeucocytesLine(
+                        doc,
+                        excepY,
+                        'Eosinophiles',
+                        p,
+                        v,
+                        eo.unite || '',
+                        eo.referencePourcentage || ''
+                      )
+                    }
+
+                    // => BASO
+                    if (baso?.valeur || baso?.pourcentage) {
+                      let p = baso?.pourcentage
+                        ? String(baso.pourcentage)
+                        : null
+                      let v = baso?.valeur ? String(baso.valeur) : ''
+                      excepY = printLeucocytesLine(
+                        doc,
+                        excepY,
+                        'Basophiles',
+                        p,
+                        v,
+                        baso.unite || '',
+                        baso.referencePourcentage || ''
+                      )
+                    }
+                    // Petit espace avant Plaquettes
+                    excepY += 8
+                    doc.setFont('Times', 'bold')
+                    doc.text('PLAQUETTES', 25, excepY)
+                    excepY += 5
+
+                    // => PLAQUETTES (en gras, dernier)
+                    if (plt?.valeur) {
+                      doc.setFont('Times', 'normal')
+                      excepY = printLeucocytesLine(
+                        doc,
+                        excepY,
+                        'Plaquettes',
+                        null, // pas de %
+
+                        String(plt.valeur),
+                        plt.unite || '',
+                        plt.reference || ''
+                      )
+                      doc.setFont('Times', 'normal')
+                    }
+
+                    excepY += 7
+                    // Titre "AUTRES" pour les blastes
+                    doc.setFont('Times', 'bold')
+                    doc.text('AUTRES', 25, excepY)
+                    excepY += 7
+                    doc.setFont('Times', 'normal')
+
+                    // => Blastes / immatures
+                    const immatures = [
+                      { label: 'Proérythroblastes', key: 'proerythroblastes' },
+                      { label: 'Erythroblastes', key: 'erythroblastes' },
+                      { label: 'Myéloblastes', key: 'myeloblastes' },
+                      { label: 'Promyélocytes', key: 'promyelocytes' },
+                      { label: 'Myélocytes', key: 'myelocytes' },
+                      { label: 'Métamyélocytes', key: 'metamyelocytes' },
+                      { label: 'Monoblastes', key: 'monoblastes' },
+                      { label: 'Lymphoblastes', key: 'lymphoblastes' },
+                    ]
+
+                    immatures.forEach((item) => {
+                      const obj = leucocytesEtFormules[item.key]
+                      if (obj?.valeur || obj?.pourcentage) {
+                        if (excepY > 250) {
+                          doc.addPage()
+                          addFooter()
+                          excepY = 25
+                        }
+                        let p = obj?.pourcentage
+                          ? String(obj.pourcentage)
+                          : null
+                        let v = obj?.valeur ? String(obj.valeur) : ''
+                        excepY = printLeucocytesLine(
+                          doc,
+                          excepY,
+                          item.label,
+                          p,
+                          v,
+                          obj.unite || '',
+                          obj.referencePourcentage || ''
+                        )
+                      }
+                    })
+
+                    excepY += 5
+                  }
                 }
               }
             }
