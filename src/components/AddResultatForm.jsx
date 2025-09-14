@@ -31,6 +31,116 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
       // ajoutez les paramètres de votre choix
     },
 
+    // === REMPLACEMENT DE LA SECTION DES NOUVEAUX PARAMÈTRES ===
+    // Remplacer les lignes ~140-280 de excepValues par ceci :
+
+    // PSA Rapport
+    psaRapport: {
+      psaLibre: { valeur: '', unite: 'ng/mL' },
+      psaTotal: { valeur: '', unite: 'ng/mL' },
+      rapport: { valeur: '', unite: '%' },
+    },
+
+    // Réticulocytes (AVEC 2 RÉSULTATS)
+    reticulocytes: {
+      pourcentage: { valeur: '', unite: '%' },
+      gbRouges: { valeur: '', unite: '/µL' },
+      valeurAbsolue: { valeur: '', unite: '/µL' },
+      pourcentageCalcule: { valeur: '', unite: '%' }, // NOUVEAU CHAMP
+    },
+
+    // Clairance créatinine (UNITÉ CORRIGÉE)
+    clairanceCreatinine: {
+      age: { valeur: '', unite: 'années' },
+      poids: { valeur: '', unite: 'kg' },
+      sexe: '',
+      creatinineMgL: { valeur: '', unite: 'mg/L' }, // CORRIGÉ : creatinineUmol → creatinineMgL
+      clairance: { valeur: '', unite: 'mL/min' },
+    },
+
+    // DFG (UNITÉ CORRIGÉE)
+    dfg: {
+      creatinineMgL: { valeur: '', unite: 'mg/L' }, // CORRIGÉ : creatinineMgDl → creatinineMgL
+      age: { valeur: '', unite: 'années' },
+      sexe: '',
+      dfgValue: { valeur: '', unite: 'mL/min/1.73m²' },
+    },
+
+    // Saturation transferrine (UNITÉ CORRIGÉE)
+    saturationTransferrine: {
+      ferSerique: { valeur: '', unite: 'µg/dL' }, // CORRIGÉ : µmol/L → µg/dL
+      transferrine: { valeur: '', unite: 'g/L' },
+      ctff: { valeur: '', unite: 'µmol/L' },
+      coefficient: { valeur: '', unite: '%' },
+    },
+
+    // Compte d'Addis
+    compteAddis: {
+      leucocytesParMinute: { valeur: '', unite: 'éléments/minute' },
+      leucocytesTotaux: { valeur: '', unite: 'éléments' },
+      hematiesParMinute: { valeur: '', unite: 'éléments/minute' },
+      hematiesTotales: { valeur: '', unite: 'éléments' },
+      dureeRecueil: { valeur: '', unite: 'minutes' },
+    },
+
+    // Calcium corrigé (CHAMP RENOMMÉ + UNITÉS CORRIGÉES)
+    calciumCorrige: {
+      calciumMesure: { valeur: '', unite: 'mg/L' }, // CORRIGÉ : calciumTotal → calciumMesure + mmol/L → mg/L
+      albumine: { valeur: '', unite: 'g/L' },
+      calciumCorrige: { valeur: '', unite: 'mmol/L' }, // Résultat en mmol/L
+    },
+
+    // Rapport albuminurie (UNITÉS CORRIGÉES)
+    rapportAlbuminurie: {
+      albumineUrinaire: { valeur: '', unite: 'mg/L' },
+      creatinineUrinaire: { valeur: '', unite: 'g/L' }, // CORRIGÉ : mmol/L → g/L
+      rapport: { valeur: '', unite: 'mg/g' }, // CORRIGÉ : mg/mmol → mg/g
+    },
+
+    // Rapport protéines (UNITÉS CORRIGÉES)
+    rapportProteines: {
+      proteinesUrinaires: { valeur: '', unite: 'mg/dL' },
+      creatinineUrinaire: { valeur: '', unite: 'mg/dL' },
+      rapport: { valeur: '', unite: 'mg/mg' },
+    },
+
+    // Cholestérol LDL (CONDITION CORRIGÉE)
+    cholesterolLdl: {
+      cholesterolTotal: { valeur: '', unite: 'g/L' },
+      hdl: { valeur: '', unite: 'g/L' },
+      triglycerides: { valeur: '', unite: 'g/L' },
+      ldl: { valeur: '', unite: 'g/L' },
+    },
+
+    // Lipides totaux (AVEC PHOSPHOLIPIDES OPTIONNEL)
+    lipidesTotaux: {
+      cholesterolTotal: { valeur: '', unite: 'g/L' },
+      triglycerides: { valeur: '', unite: 'g/L' },
+      phospholipides: { valeur: '', unite: 'g/L' }, // NOUVEAU CHAMP OPTIONNEL
+      lipidesTotaux: { valeur: '', unite: 'g/L' },
+    },
+
+    // Microalbuminurie 24h (CHAMP RENOMMÉ)
+    microalbuminurie24h: {
+      albumineUrinaire: { valeur: '', unite: 'mg/L' },
+      volumeUrinaire24h: { valeur: '', unite: 'L' }, // CORRIGÉ : diurese24h → volumeUrinaire24h
+      microalbuminurie: { valeur: '', unite: 'mg/24h' },
+    },
+
+    // Protéinurie 24h (CHAMP RENOMMÉ + UNITÉ CORRIGÉE)
+    proteinurie24h: {
+      proteinesUrinaires: { valeur: '', unite: 'mg/L' }, // CORRIGÉ : g/L → mg/L
+      volumeUrinaire24h: { valeur: '', unite: 'L' }, // CORRIGÉ : diurese24h → volumeUrinaire24h
+      proteinurie: { valeur: '', unite: 'mg/24h' }, // CORRIGÉ : g/24h → mg/24h
+    },
+
+    // Bilirubine indirecte (UNITÉS CORRIGÉES)
+    bilirubineIndirecte: {
+      bilirubineTotale: { valeur: '', unite: 'mg/L' }, // CORRIGÉ : µmol/L → mg/L
+      bilirubineDirecte: { valeur: '', unite: 'mg/L' }, // CORRIGÉ : µmol/L → mg/L
+      bilirubineIndirecte: { valeur: '', unite: 'mg/L' }, // CORRIGÉ : µmol/L → mg/L
+    },
+
     // 👇 Nouvel ajout : NFS
     nfs: {
       hematiesEtConstantes: {
@@ -727,6 +837,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
           ccmh: { valeur: '', unite: 'g/dL', reference: '30.0-36.0' },
           idr_cv: { valeur: '', unite: '%', reference: '11.0-16.0' },
         },
+
         leucocytesEtFormules: {
           gb: {
             valeur: '',
@@ -776,6 +887,86 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
           },
           plt: { valeur: '', unite: '10^3/uL', reference: '150-450', flag: '' },
         },
+      },
+      // === RESET DES NOUVEAUX PARAMÈTRES CORRIGÉS ===
+      psaRapport: {
+        psaLibre: { valeur: '', unite: 'ng/mL' },
+        psaTotal: { valeur: '', unite: 'ng/mL' },
+        rapport: { valeur: '', unite: '%' },
+      },
+      reticulocytes: {
+        pourcentage: { valeur: '', unite: '%' },
+        gbRouges: { valeur: '', unite: '/µL' },
+        valeurAbsolue: { valeur: '', unite: '/µL' },
+        pourcentageCalcule: { valeur: '', unite: '%' }, // NOUVEAU CHAMP
+      },
+      clairanceCreatinine: {
+        age: { valeur: '', unite: 'années' },
+        poids: { valeur: '', unite: 'kg' },
+        sexe: '',
+        creatinineMgL: { valeur: '', unite: 'mg/L' }, // CORRIGÉ : creatinineUmol → creatinineMgL
+        clairance: { valeur: '', unite: 'mL/min' },
+      },
+      dfg: {
+        creatinineMgL: { valeur: '', unite: 'mg/L' }, // CORRIGÉ : creatinineMgDl → creatinineMgL
+        age: { valeur: '', unite: 'années' },
+        sexe: '',
+        dfgValue: { valeur: '', unite: 'mL/min/1.73m²' },
+      },
+      saturationTransferrine: {
+        ferSerique: { valeur: '', unite: 'µg/dL' }, // CORRIGÉ : µmol/L → µg/dL
+        transferrine: { valeur: '', unite: 'g/L' },
+        ctff: { valeur: '', unite: 'µmol/L' },
+        coefficient: { valeur: '', unite: '%' },
+      },
+      compteAddis: {
+        leucocytesParMinute: { valeur: '', unite: 'éléments/minute' },
+        leucocytesTotaux: { valeur: '', unite: 'éléments' },
+        hematiesParMinute: { valeur: '', unite: 'éléments/minute' },
+        hematiesTotales: { valeur: '', unite: 'éléments' },
+        dureeRecueil: { valeur: '', unite: 'minutes' },
+      },
+      calciumCorrige: {
+        calciumMesure: { valeur: '', unite: 'mg/L' }, // CORRIGÉ : calciumTotal → calciumMesure + mmol/L → mg/L
+        albumine: { valeur: '', unite: 'g/L' },
+        calciumCorrige: { valeur: '', unite: 'mmol/L' },
+      },
+      rapportAlbuminurie: {
+        albumineUrinaire: { valeur: '', unite: 'mg/L' },
+        creatinineUrinaire: { valeur: '', unite: 'g/L' }, // CORRIGÉ : mmol/L → g/L
+        rapport: { valeur: '', unite: 'mg/g' }, // CORRIGÉ : mg/mmol → mg/g
+      },
+      rapportProteines: {
+        proteinesUrinaires: { valeur: '', unite: 'mg/dL' },
+        creatinineUrinaire: { valeur: '', unite: 'mg/dL' },
+        rapport: { valeur: '', unite: 'mg/mg' },
+      },
+      cholesterolLdl: {
+        cholesterolTotal: { valeur: '', unite: 'g/L' },
+        hdl: { valeur: '', unite: 'g/L' },
+        triglycerides: { valeur: '', unite: 'g/L' },
+        ldl: { valeur: '', unite: 'g/L' },
+      },
+      lipidesTotaux: {
+        cholesterolTotal: { valeur: '', unite: 'g/L' },
+        triglycerides: { valeur: '', unite: 'g/L' },
+        phospholipides: { valeur: '', unite: 'g/L' }, // NOUVEAU CHAMP
+        lipidesTotaux: { valeur: '', unite: 'g/L' },
+      },
+      microalbuminurie24h: {
+        albumineUrinaire: { valeur: '', unite: 'mg/L' },
+        volumeUrinaire24h: { valeur: '', unite: 'L' }, // CORRIGÉ : diurese24h → volumeUrinaire24h
+        microalbuminurie: { valeur: '', unite: 'mg/24h' },
+      },
+      proteinurie24h: {
+        proteinesUrinaires: { valeur: '', unite: 'mg/L' }, // CORRIGÉ : g/L → mg/L
+        volumeUrinaire24h: { valeur: '', unite: 'L' }, // CORRIGÉ : diurese24h → volumeUrinaire24h
+        proteinurie: { valeur: '', unite: 'mg/24h' }, // CORRIGÉ : g/24h → mg/24h
+      },
+      bilirubineIndirecte: {
+        bilirubineTotale: { valeur: '', unite: 'mg/L' }, // CORRIGÉ : µmol/L → mg/L
+        bilirubineDirecte: { valeur: '', unite: 'mg/L' }, // CORRIGÉ : µmol/L → mg/L
+        bilirubineIndirecte: { valeur: '', unite: 'mg/L' }, // CORRIGÉ : µmol/L → mg/L
       },
     })
     setAntibiogrammes([])
@@ -843,6 +1034,140 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
       return 'ionogramme'
     } else if (nameLower.includes('nfs') || nameLower.includes('numération')) {
       return 'nfs'
+    }
+    // 1. PSA Rapport - Patterns possibles
+    else if (
+      (nameLower.includes('psa') &&
+        (nameLower.includes('rapport') || nameLower.includes('libre'))) ||
+      (nameLower.includes('rapport') &&
+        nameLower.includes('psa') &&
+        (nameLower.includes('total') || nameLower.includes('libre')))
+    ) {
+      return 'psaRapport'
+    }
+
+    // 2. Réticulocytes
+    else if (
+      nameLower.includes('réticulocyte') ||
+      nameLower.includes('reticulocyte') ||
+      nameLower.includes('reticulocytes')
+    ) {
+      return 'reticulocytes'
+    }
+
+    // 3. Clairance créatinine
+    else if (
+      (nameLower.includes('clairance') && nameLower.includes('créatinine')) ||
+      (nameLower.includes('clairance') && nameLower.includes('creatinine')) ||
+      nameLower.includes('cockcroft')
+    ) {
+      return 'clairanceCreatinine'
+    }
+
+    // 4. DFG
+    else if (
+      nameLower.includes('dfg') ||
+      nameLower.includes('filtration') ||
+      nameLower.includes('ckd-epi') ||
+      nameLower.includes('débit de filtration')
+    ) {
+      return 'dfg'
+    }
+
+    // 5. Saturation transferrine
+    else if (
+      (nameLower.includes('transferrine') &&
+        nameLower.includes('saturation')) ||
+      (nameLower.includes('coefficient') &&
+        nameLower.includes('transferrine')) ||
+      nameLower.includes('ctff')
+    ) {
+      return 'saturationTransferrine'
+    }
+
+    // 6. Compte d'Addis - Patterns possibles
+    else if (
+      nameLower.includes('addis') ||
+      (nameLower.includes('compte') && nameLower.includes('addis')) ||
+      nameLower.includes('hlm') // Hématies Leucocytes par Minute
+    ) {
+      return 'compteAddis'
+    }
+
+    // 7. Calcium corrigé
+    else if (
+      (nameLower.includes('calcium') && nameLower.includes('corrigé')) ||
+      (nameLower.includes('calcium') && nameLower.includes('corrige'))
+    ) {
+      return 'calciumCorrige'
+    }
+
+    // 8. Rapport albuminurie/créatininurie
+    else if (
+      (nameLower.includes('albuminurie') && nameLower.includes('créatinine')) ||
+      (nameLower.includes('albuminurie') && nameLower.includes('creatinine')) ||
+      (nameLower.includes('rapport') && nameLower.includes('albuminurie')) ||
+      nameLower.includes('rac') // Rapport Albuminurie/Créatininurie
+    ) {
+      return 'rapportAlbuminurie'
+    }
+
+    // 9. Rapport protéinurie/créatininurie - Patterns possibles
+    else if (
+      (nameLower.includes('protéinurie') && nameLower.includes('créatinine')) ||
+      (nameLower.includes('proteinurie') && nameLower.includes('creatinine')) ||
+      (nameLower.includes('rapport') && nameLower.includes('protéinurie')) ||
+      (nameLower.includes('rapport') && nameLower.includes('proteinurie')) ||
+      nameLower.includes('rpc') // Rapport Protéinurie/Créatininurie
+    ) {
+      return 'rapportProteines'
+    }
+
+    // 10. Cholestérol LDL - Patterns possibles
+    else if (
+      nameLower.includes('ldl') ||
+      (nameLower.includes('cholestérol') && nameLower.includes('ldl')) ||
+      (nameLower.includes('cholesterol') && nameLower.includes('ldl')) ||
+      nameLower.includes('friedewald')
+    ) {
+      return 'cholesterolLdl'
+    }
+
+    // 11. Lipides totaux
+    else if (
+      nameLower.includes('lipides totaux') ||
+      nameLower.includes('lipides total') ||
+      (nameLower.includes('lipides') && nameLower.includes('total'))
+    ) {
+      return 'lipidesTotaux'
+    }
+
+    // 12. Microalbuminurie 24h - Patterns possibles
+    else if (
+      (nameLower.includes('microalbuminurie') && nameLower.includes('24')) ||
+      (nameLower.includes('micro') &&
+        nameLower.includes('albumine') &&
+        nameLower.includes('24'))
+    ) {
+      return 'microalbuminurie24h'
+    }
+
+    // 13. Protéinurie 24h - Patterns possibles
+    else if (
+      (nameLower.includes('protéinurie') && nameLower.includes('24')) ||
+      (nameLower.includes('proteinurie') && nameLower.includes('24')) ||
+      (nameLower.includes('protéines') && nameLower.includes('24h')) ||
+      (nameLower.includes('proteins') && nameLower.includes('24'))
+    ) {
+      return 'proteinurie24h'
+    }
+
+    // 14. Bilirubine indirecte
+    else if (
+      (nameLower.includes('bilirubine') && nameLower.includes('indirecte')) ||
+      (nameLower.includes('bilirubine') && nameLower.includes('indirect'))
+    ) {
+      return 'bilirubineIndirecte'
     }
 
     return 'normal'
@@ -2238,6 +2563,1217 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
               </>
             )}
 
+            {/* ==================== NOUVEAUX PARAMÈTRES CALCULÉS ==================== */}
+
+            {/* ==================== REMPLACEMENTS D'INTERFACE ==================== */}
+
+            {/* ==================== VÉRIFIEZ QUE TOUTES CES CONDITIONS SONT PRÉSENTES ==================== */}
+
+            {/* 1. PSA Rapport */}
+            {selectedTestCategory === 'psaRapport' && (
+              <div className="border p-4 mt-4">
+                <h3 className="font-bold mb-2">Rapport PSA libre/PSA total</h3>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div>
+                    <label className="label">PSA libre (ng/mL)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 2.5"
+                      value={excepValues.psaRapport?.psaLibre?.valeur || ''}
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          psaRapport: {
+                            ...prev.psaRapport,
+                            psaLibre: {
+                              ...prev.psaRapport.psaLibre,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : ng/mL</small>
+                  </div>
+                  <div>
+                    <label className="label">PSA total (ng/mL)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 10.0"
+                      value={excepValues.psaRapport?.psaTotal?.valeur || ''}
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          psaRapport: {
+                            ...prev.psaRapport,
+                            psaTotal: {
+                              ...prev.psaRapport.psaTotal,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : ng/mL</small>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                    <label className="label font-semibold text-blue-700">
+                      Rapport calculé
+                    </label>
+                    <div className="text-lg font-bold text-blue-800">
+                      {excepValues.psaRapport?.rapport?.valeur ||
+                        'Auto-calculé'}{' '}
+                      %
+                    </div>
+                    <small className="text-blue-600">
+                      Formule: (PSA libre / PSA total) × 100
+                    </small>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 2. Réticulocytes */}
+            {selectedTestCategory === 'reticulocytes' && (
+              <div className="border p-4 mt-4">
+                <h3 className="font-bold mb-2">Taux de réticulocytes</h3>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div>
+                    <label className="label">Pourcentage (%)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 1.5"
+                      value={
+                        excepValues.reticulocytes?.pourcentage?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          reticulocytes: {
+                            ...prev.reticulocytes,
+                            pourcentage: {
+                              ...prev.reticulocytes.pourcentage,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : %</small>
+                  </div>
+                  <div>
+                    <label className="label">Globules rouges (/µL)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 4500000"
+                      value={excepValues.reticulocytes?.gbRouges?.valeur || ''}
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          reticulocytes: {
+                            ...prev.reticulocytes,
+                            gbRouges: {
+                              ...prev.reticulocytes.gbRouges,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : /µL</small>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                    <div className="mb-2">
+                      <label className="label font-semibold text-blue-700">
+                        Valeur absolue
+                      </label>
+                      <div className="text-lg font-bold text-blue-800">
+                        {excepValues.reticulocytes?.valeurAbsolue?.valeur ||
+                          'Auto-calculé'}{' '}
+                        /µL
+                      </div>
+                    </div>
+                    <div>
+                      <label className="label font-semibold text-blue-700">
+                        Pourcentage calculé
+                      </label>
+                      <div className="text-lg font-bold text-blue-800">
+                        {excepValues.reticulocytes?.pourcentageCalcule
+                          ?.valeur || 'Auto-calculé'}{' '}
+                        %
+                      </div>
+                    </div>
+                    <small className="text-blue-600">
+                      Formule: (% × GR) / 100
+                    </small>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 3. Clairance créatinine */}
+            {selectedTestCategory === 'clairanceCreatinine' && (
+              <div className="border p-4 mt-4">
+                <h3 className="font-bold mb-2">
+                  Clairance créatinine (Cockcroft-Gault)
+                </h3>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div>
+                    <label className="label">Âge (années)</label>
+                    <input
+                      type="number"
+                      className="input input-bordered w-[120px]"
+                      placeholder="ex: 65"
+                      value={excepValues.clairanceCreatinine?.age?.valeur || ''}
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          clairanceCreatinine: {
+                            ...prev.clairanceCreatinine,
+                            age: {
+                              ...prev.clairanceCreatinine.age,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : années</small>
+                  </div>
+                  <div>
+                    <label className="label">Poids (kg)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[120px]"
+                      placeholder="ex: 70"
+                      value={
+                        excepValues.clairanceCreatinine?.poids?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          clairanceCreatinine: {
+                            ...prev.clairanceCreatinine,
+                            poids: {
+                              ...prev.clairanceCreatinine.poids,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : kg</small>
+                  </div>
+                  <div>
+                    <label className="label">Sexe</label>
+                    <select
+                      className="select select-bordered w-[120px]"
+                      value={excepValues.clairanceCreatinine?.sexe || ''}
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          clairanceCreatinine: {
+                            ...prev.clairanceCreatinine,
+                            sexe: e.target.value,
+                          },
+                        }))
+                      }
+                    >
+                      <option value="">Choisir</option>
+                      <option value="M">Masculin</option>
+                      <option value="F">Féminin</option>
+                    </select>
+                    <small>K = 1.23 (M), 1.04 (F)</small>
+                  </div>
+                  <div>
+                    <label className="label">Créatinine (mg/L)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 10"
+                      value={
+                        excepValues.clairanceCreatinine?.creatinineMgL
+                          ?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          clairanceCreatinine: {
+                            ...prev.clairanceCreatinine,
+                            creatinineMgL: {
+                              ...prev.clairanceCreatinine.creatinineMgL,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : mg/L</small>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                    <label className="label font-semibold text-blue-700">
+                      Clairance calculée
+                    </label>
+                    <div className="text-lg font-bold text-blue-800">
+                      {excepValues.clairanceCreatinine?.clairance?.valeur ||
+                        'Auto-calculé'}{' '}
+                      mL/min
+                    </div>
+                    <small className="text-blue-600">
+                      Formule: ((140-âge) × poids × K) / (créat × 8.84)
+                    </small>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 4. DFG */}
+            {selectedTestCategory === 'dfg' && (
+              <div className="border p-4 mt-4">
+                <h3 className="font-bold mb-2">DFG (CKD-EPI)</h3>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div>
+                    <label className="label">Créatinine sérique (mg/L)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 10"
+                      value={excepValues.dfg?.creatinineMgL?.valeur || ''}
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          dfg: {
+                            ...prev.dfg,
+                            creatinineMgL: {
+                              ...prev.dfg.creatinineMgL,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : mg/L</small>
+                  </div>
+                  <div>
+                    <label className="label">Âge (années)</label>
+                    <input
+                      type="number"
+                      className="input input-bordered w-[120px]"
+                      placeholder="ex: 65"
+                      value={excepValues.dfg?.age?.valeur || ''}
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          dfg: {
+                            ...prev.dfg,
+                            age: { ...prev.dfg.age, valeur: e.target.value },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : années</small>
+                  </div>
+                  <div>
+                    <label className="label">Sexe</label>
+                    <select
+                      className="select select-bordered w-[120px]"
+                      value={excepValues.dfg?.sexe || ''}
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          dfg: {
+                            ...prev.dfg,
+                            sexe: e.target.value,
+                          },
+                        }))
+                      }
+                    >
+                      <option value="">Choisir</option>
+                      <option value="M">Masculin</option>
+                      <option value="F">Féminin</option>
+                    </select>
+                    <small>κ = 1.159 (M), 1.018 (F)</small>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                    <label className="label font-semibold text-blue-700">
+                      DFG calculé
+                    </label>
+                    <div className="text-lg font-bold text-blue-800">
+                      {excepValues.dfg?.dfgValue?.valeur || 'Auto-calculé'}{' '}
+                      mL/min/1.73m²
+                    </div>
+                    <small className="text-blue-600">
+                      Formule CKD-EPI avec constantes corrigées
+                    </small>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 5. Saturation transferrine */}
+            {selectedTestCategory === 'saturationTransferrine' && (
+              <div className="border p-4 mt-4">
+                <h3 className="font-bold mb-2">
+                  Coefficient de saturation de la transferrine
+                </h3>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div>
+                    <label className="label">Fer sérique (µg/dL)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 100"
+                      value={
+                        excepValues.saturationTransferrine?.ferSerique
+                          ?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          saturationTransferrine: {
+                            ...prev.saturationTransferrine,
+                            ferSerique: {
+                              ...prev.saturationTransferrine.ferSerique,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : µg/dL</small>
+                  </div>
+                  <div>
+                    <label className="label">Transferrine (g/L)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 2.5"
+                      value={
+                        excepValues.saturationTransferrine?.transferrine
+                          ?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          saturationTransferrine: {
+                            ...prev.saturationTransferrine,
+                            transferrine: {
+                              ...prev.saturationTransferrine.transferrine,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : g/L</small>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                    <div className="mb-2">
+                      <label className="label font-semibold text-blue-700">
+                        CTFF calculé
+                      </label>
+                      <div className="text-lg font-bold text-blue-800">
+                        {excepValues.saturationTransferrine?.ctff?.valeur ||
+                          'Auto-calculé'}{' '}
+                        µmol/L
+                      </div>
+                      <small className="text-blue-600">
+                        Transferrine × 1.395
+                      </small>
+                    </div>
+                    <div>
+                      <label className="label font-semibold text-blue-700">
+                        Coefficient calculé
+                      </label>
+                      <div className="text-lg font-bold text-blue-800">
+                        {excepValues.saturationTransferrine?.coefficient
+                          ?.valeur || 'Auto-calculé'}{' '}
+                        %
+                      </div>
+                      <small className="text-blue-600">
+                        Formule: (Fer / CTFF) × 100
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 6. Compte d'Addis */}
+            {selectedTestCategory === 'compteAddis' && (
+              <div className="border p-4 mt-4">
+                <h3 className="font-bold mb-2">Compte d'Addis</h3>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div>
+                    <label className="label">Leucocytes totaux</label>
+                    <input
+                      type="number"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 120000"
+                      value={
+                        excepValues.compteAddis?.leucocytesTotaux?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          compteAddis: {
+                            ...prev.compteAddis,
+                            leucocytesTotaux: {
+                              ...prev.compteAddis.leucocytesTotaux,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Nombre total d'éléments</small>
+                  </div>
+                  <div>
+                    <label className="label">Hématies totales</label>
+                    <input
+                      type="number"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 80000"
+                      value={
+                        excepValues.compteAddis?.hematiesTotales?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          compteAddis: {
+                            ...prev.compteAddis,
+                            hematiesTotales: {
+                              ...prev.compteAddis.hematiesTotales,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Nombre total d'éléments</small>
+                  </div>
+                  <div>
+                    <label className="label">Durée recueil (minutes)</label>
+                    <input
+                      type="number"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 1440"
+                      value={
+                        excepValues.compteAddis?.dureeRecueil?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          compteAddis: {
+                            ...prev.compteAddis,
+                            dureeRecueil: {
+                              ...prev.compteAddis.dureeRecueil,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Ex: 1440 min = 24h</small>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                    <div className="mb-2">
+                      <label className="label font-semibold text-blue-700">
+                        Leucocytes/minute
+                      </label>
+                      <div className="text-lg font-bold text-blue-800">
+                        {excepValues.compteAddis?.leucocytesParMinute?.valeur ||
+                          'Auto-calculé'}{' '}
+                        éléments/min
+                      </div>
+                    </div>
+                    <div>
+                      <label className="label font-semibold text-blue-700">
+                        Hématies/minute
+                      </label>
+                      <div className="text-lg font-bold text-blue-800">
+                        {excepValues.compteAddis?.hematiesParMinute?.valeur ||
+                          'Auto-calculé'}{' '}
+                        éléments/min
+                      </div>
+                    </div>
+                    <small className="text-blue-600">
+                      Formule: Total / Durée (min)
+                    </small>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 7. Calcium corrigé */}
+            {selectedTestCategory === 'calciumCorrige' && (
+              <div className="border p-4 mt-4">
+                <h3 className="font-bold mb-2">Calcium corrigé</h3>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div>
+                    <label className="label">Calcium mesuré (mg/L)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 95"
+                      value={
+                        excepValues.calciumCorrige?.calciumMesure?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          calciumCorrige: {
+                            ...prev.calciumCorrige,
+                            calciumMesure: {
+                              ...prev.calciumCorrige.calciumMesure,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : mg/L</small>
+                  </div>
+                  <div>
+                    <label className="label">Albumine (g/L)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 35"
+                      value={excepValues.calciumCorrige?.albumine?.valeur || ''}
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          calciumCorrige: {
+                            ...prev.calciumCorrige,
+                            albumine: {
+                              ...prev.calciumCorrige.albumine,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : g/L</small>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                    <label className="label font-semibold text-blue-700">
+                      Calcium corrigé
+                    </label>
+                    <div className="text-lg font-bold text-blue-800">
+                      {excepValues.calciumCorrige?.calciumCorrige?.valeur ||
+                        'Auto-calculé'}{' '}
+                      mmol/L
+                    </div>
+                    <small className="text-blue-600">
+                      Formule: (Ca × 0.025) - 0.025 × (40 - Albumine)
+                    </small>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 8. Rapport albuminurie/créatininurie */}
+            {selectedTestCategory === 'rapportAlbuminurie' && (
+              <div className="border p-4 mt-4">
+                <h3 className="font-bold mb-2">
+                  Rapport albuminurie/créatininurie
+                </h3>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div>
+                    <label className="label">Albumine urinaire (mg/L)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 30"
+                      value={
+                        excepValues.rapportAlbuminurie?.albumineUrinaire
+                          ?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          rapportAlbuminurie: {
+                            ...prev.rapportAlbuminurie,
+                            albumineUrinaire: {
+                              ...prev.rapportAlbuminurie.albumineUrinaire,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : mg/L</small>
+                  </div>
+                  <div>
+                    <label className="label">Créatinine urinaire (g/L)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 1.0"
+                      value={
+                        excepValues.rapportAlbuminurie?.creatinineUrinaire
+                          ?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          rapportAlbuminurie: {
+                            ...prev.rapportAlbuminurie,
+                            creatinineUrinaire: {
+                              ...prev.rapportAlbuminurie.creatinineUrinaire,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : g/L</small>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                    <label className="label font-semibold text-blue-700">
+                      Rapport calculé
+                    </label>
+                    <div className="text-lg font-bold text-blue-800">
+                      {excepValues.rapportAlbuminurie?.rapport?.valeur ||
+                        'Auto-calculé'}{' '}
+                      mg/g
+                    </div>
+                    <small className="text-blue-600">
+                      Formule: Albumine (mg/L) / Créatinine (g/L)
+                    </small>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 9. Rapport protéinurie/créatininurie */}
+            {selectedTestCategory === 'rapportProteines' && (
+              <div className="border p-4 mt-4">
+                <h3 className="font-bold mb-2">
+                  Rapport protéinurie/créatininurie
+                </h3>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div>
+                    <label className="label">Protéines urinaires (mg/dL)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 15"
+                      value={
+                        excepValues.rapportProteines?.proteinesUrinaires
+                          ?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          rapportProteines: {
+                            ...prev.rapportProteines,
+                            proteinesUrinaires: {
+                              ...prev.rapportProteines.proteinesUrinaires,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : mg/dL</small>
+                  </div>
+                  <div>
+                    <label className="label">Créatinine urinaire (mg/dL)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 100"
+                      value={
+                        excepValues.rapportProteines?.creatinineUrinaire
+                          ?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          rapportProteines: {
+                            ...prev.rapportProteines,
+                            creatinineUrinaire: {
+                              ...prev.rapportProteines.creatinineUrinaire,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : mg/dL</small>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                    <label className="label font-semibold text-blue-700">
+                      Rapport calculé
+                    </label>
+                    <div className="text-lg font-bold text-blue-800">
+                      {excepValues.rapportProteines?.rapport?.valeur ||
+                        'Auto-calculé'}{' '}
+                      mg/mg
+                    </div>
+                    <small className="text-blue-600">
+                      Formule: Protéines / Créatinine
+                    </small>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 10. Cholestérol LDL */}
+            {selectedTestCategory === 'cholesterolLdl' && (
+              <div className="border p-4 mt-4">
+                <h3 className="font-bold mb-2">Cholestérol LDL (Friedewald)</h3>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div>
+                    <label className="label">Cholestérol total (g/L)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 2.0"
+                      value={
+                        excepValues.cholesterolLdl?.cholesterolTotal?.valeur ||
+                        ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          cholesterolLdl: {
+                            ...prev.cholesterolLdl,
+                            cholesterolTotal: {
+                              ...prev.cholesterolLdl.cholesterolTotal,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : g/L</small>
+                  </div>
+                  <div>
+                    <label className="label">HDL (g/L)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 0.6"
+                      value={excepValues.cholesterolLdl?.hdl?.valeur || ''}
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          cholesterolLdl: {
+                            ...prev.cholesterolLdl,
+                            hdl: {
+                              ...prev.cholesterolLdl.hdl,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : g/L</small>
+                  </div>
+                  <div>
+                    <label className="label">Triglycérides (g/L)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 1.5"
+                      value={
+                        excepValues.cholesterolLdl?.triglycerides?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          cholesterolLdl: {
+                            ...prev.cholesterolLdl,
+                            triglycerides: {
+                              ...prev.cholesterolLdl.triglycerides,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : g/L</small>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                    <label className="label font-semibold text-blue-700">
+                      LDL calculé
+                    </label>
+                    <div className="text-lg font-bold text-blue-800">
+                      {excepValues.cholesterolLdl?.ldl?.valeur ||
+                        'Auto-calculé'}{' '}
+                      g/L
+                    </div>
+                    <small className="text-blue-600">
+                      Formule: CT - HDL - (TG/5)
+                    </small>
+                    <div className="text-xs text-red-600 mt-1">
+                      ⚠️ Valable si TG &lt; 3.5 g/L
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 11. Lipides totaux */}
+            {selectedTestCategory === 'lipidesTotaux' && (
+              <div className="border p-4 mt-4">
+                <h3 className="font-bold mb-2">Lipides totaux</h3>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div>
+                    <label className="label">Cholestérol total (g/L)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 2.0"
+                      value={
+                        excepValues.lipidesTotaux?.cholesterolTotal?.valeur ||
+                        ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          lipidesTotaux: {
+                            ...prev.lipidesTotaux,
+                            cholesterolTotal: {
+                              ...prev.lipidesTotaux.cholesterolTotal,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : g/L</small>
+                  </div>
+                  <div>
+                    <label className="label">Triglycérides (g/L)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 1.5"
+                      value={
+                        excepValues.lipidesTotaux?.triglycerides?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          lipidesTotaux: {
+                            ...prev.lipidesTotaux,
+                            triglycerides: {
+                              ...prev.lipidesTotaux.triglycerides,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : g/L</small>
+                  </div>
+                  <div>
+                    <label className="label">
+                      Phospholipides (g/L) - Optionnel
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 1.8"
+                      value={
+                        excepValues.lipidesTotaux?.phospholipides?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          lipidesTotaux: {
+                            ...prev.lipidesTotaux,
+                            phospholipides: {
+                              ...prev.lipidesTotaux.phospholipides,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : g/L</small>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                    <label className="label font-semibold text-blue-700">
+                      Lipides totaux calculés
+                    </label>
+                    <div className="text-lg font-bold text-blue-800">
+                      {excepValues.lipidesTotaux?.lipidesTotaux?.valeur ||
+                        'Auto-calculé'}{' '}
+                      g/L
+                    </div>
+                    <small className="text-blue-600">
+                      Formule: (Cholestérol × 2.5) + Triglycérides [+
+                      Phospholipides]
+                    </small>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 12. Microalbuminurie 24h */}
+            {selectedTestCategory === 'microalbuminurie24h' && (
+              <div className="border p-4 mt-4">
+                <h3 className="font-bold mb-2">Microalbuminurie 24h</h3>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div>
+                    <label className="label">Albumine urinaire (mg/L)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 30"
+                      value={
+                        excepValues.microalbuminurie24h?.albumineUrinaire
+                          ?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          microalbuminurie24h: {
+                            ...prev.microalbuminurie24h,
+                            albumineUrinaire: {
+                              ...prev.microalbuminurie24h.albumineUrinaire,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : mg/L</small>
+                  </div>
+                  <div>
+                    <label className="label">Volume urinaire 24h (L)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 1.5"
+                      min="0"
+                      max="10"
+                      value={
+                        excepValues.microalbuminurie24h?.volumeUrinaire24h
+                          ?.valeur || ''
+                      }
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value)
+                        if (value >= 0 && value <= 10) {
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            microalbuminurie24h: {
+                              ...prev.microalbuminurie24h,
+                              volumeUrinaire24h: {
+                                ...prev.microalbuminurie24h.volumeUrinaire24h,
+                                valeur: e.target.value,
+                              },
+                            },
+                          }))
+                        }
+                      }}
+                    />
+                    <small>Unité : L</small>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                    <label className="label font-semibold text-blue-700">
+                      Microalbuminurie calculée
+                    </label>
+                    <div className="text-lg font-bold text-blue-800">
+                      {excepValues.microalbuminurie24h?.microalbuminurie
+                        ?.valeur || 'Auto-calculé'}{' '}
+                      mg/24h
+                    </div>
+                    <small className="text-blue-600">
+                      Formule: Albumine × Volume urinaire
+                    </small>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 13. Protéinurie 24h */}
+            {selectedTestCategory === 'proteinurie24h' && (
+              <div className="border p-4 mt-4">
+                <h3 className="font-bold mb-2">Protéinurie 24h</h3>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div>
+                    <label className="label">Protéines urinaires (mg/L)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 150"
+                      value={
+                        excepValues.proteinurie24h?.proteinesUrinaires
+                          ?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          proteinurie24h: {
+                            ...prev.proteinurie24h,
+                            proteinesUrinaires: {
+                              ...prev.proteinurie24h.proteinesUrinaires,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : mg/L</small>
+                  </div>
+                  <div>
+                    <label className="label">Volume urinaire 24h (L)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 1.5"
+                      min="0"
+                      max="10"
+                      value={
+                        excepValues.proteinurie24h?.volumeUrinaire24h?.valeur ||
+                        ''
+                      }
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value)
+                        if (value >= 0 && value <= 10) {
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            proteinurie24h: {
+                              ...prev.proteinurie24h,
+                              volumeUrinaire24h: {
+                                ...prev.proteinurie24h.volumeUrinaire24h,
+                                valeur: e.target.value,
+                              },
+                            },
+                          }))
+                        }
+                      }}
+                    />
+                    <small>Unité : L</small>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                    <label className="label font-semibold text-blue-700">
+                      Protéinurie calculée
+                    </label>
+                    <div className="text-lg font-bold text-blue-800">
+                      {excepValues.proteinurie24h?.proteinurie?.valeur ||
+                        'Auto-calculé'}{' '}
+                      mg/24h
+                    </div>
+                    <small className="text-blue-600">
+                      Formule: Protéines × Volume urinaire
+                    </small>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 14. Bilirubine indirecte */}
+            {selectedTestCategory === 'bilirubineIndirecte' && (
+              <div className="border p-4 mt-4">
+                <h3 className="font-bold mb-2">Bilirubine indirecte</h3>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div>
+                    <label className="label">Bilirubine totale (mg/L)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 15"
+                      value={
+                        excepValues.bilirubineIndirecte?.bilirubineTotale
+                          ?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          bilirubineIndirecte: {
+                            ...prev.bilirubineIndirecte,
+                            bilirubineTotale: {
+                              ...prev.bilirubineIndirecte.bilirubineTotale,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : mg/L</small>
+                  </div>
+                  <div>
+                    <label className="label">Bilirubine directe (mg/L)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="input input-bordered w-[150px]"
+                      placeholder="ex: 5"
+                      value={
+                        excepValues.bilirubineIndirecte?.bilirubineDirecte
+                          ?.valeur || ''
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          bilirubineIndirecte: {
+                            ...prev.bilirubineIndirecte,
+                            bilirubineDirecte: {
+                              ...prev.bilirubineIndirecte.bilirubineDirecte,
+                              valeur: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    />
+                    <small>Unité : mg/L</small>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                    <label className="label font-semibold text-blue-700">
+                      Bilirubine indirecte calculée
+                    </label>
+                    <div className="text-lg font-bold text-blue-800">
+                      {excepValues.bilirubineIndirecte?.bilirubineIndirecte
+                        ?.valeur || 'Auto-calculé'}{' '}
+                      mg/L
+                    </div>
+                    <small className="text-blue-600">
+                      Formule: Totale - Directe
+                    </small>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ==================== FIN DES NOUVEAUX PARAMÈTRES ==================== */}
+
             {/* Add other blocks: macroscopie, microscopie, chimie, etc. */}
           </div>
         )}
@@ -2267,7 +3803,6 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                 <option value="Verdâtres">Verdâtres</option>
                 <option value="Brunâtres">Brunâtres</option>
                 <option value="Molles">Molles</option>
-                // Ajoutez d'autres options selon besoin
               </select>
               <div className="flex flex-wrap gap-2 mt-2">
                 {Array.isArray(macroscopique) &&
