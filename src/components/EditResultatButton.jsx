@@ -89,186 +89,549 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
     conclusion: '',
 
     // === AJOUTEZ ICI ===
-    exceptions: {
-      groupeSanguin: {
-        abo: '', // A, B, AB, O
-        rhesus: '', // Positif ou Négatif
-      },
-      qbc: {
-        positivite: '', // "Positif"/"Négatif"
-        nombreCroix: 0, // 0 à 4
-        densiteParasitaire: '',
-        especes: [], // tableau pouvant contenir jusqu’à 4 espèces
-      },
-      hgpo: {
-        t0: '',
-        t60: '',
-        t120: '',
-      },
-      ionogramme: {
-        na: '',
-        k: '',
-        cl: '',
-        ca: '',
-        mg: '',
-      },
-      // AJOUT: structure NFS
-      nfs: {
-        hematiesEtConstantes: {
-          gr: { valeur: '', unite: '10^6/uL', reference: '3.80-5.90' },
-          hgb: { valeur: '', unite: 'g/dL', reference: '11.5-16.0' },
-          hct: { valeur: '', unite: '%', reference: '34.0-48.0' },
-          vgm: { valeur: '', unite: 'fL', reference: '80.0-97.0' },
-          tcmh: { valeur: '', unite: 'pg', reference: '26.0-32.0' },
-          ccmh: { valeur: '', unite: 'g/dL', reference: '30.0-36.0' },
-          idr_cv: {
-            valeur: '',
-            unite: '%',
-            reference: '11.0-16.0',
-            // vous pouvez ajouter un champ 'ecartType' si besoin
-          },
-        },
-        leucocytesEtFormules: {
-          gb: {
-            valeur: '',
-            unite: '10^3/uL',
-            reference: '4.00-10.00',
-            flag: '',
-          },
-          neut: {
-            valeur: '',
-            unite: '10^3/uL',
-            pourcentage: '',
-            referenceValeur: '1.50-7.50',
-            referencePourcentage: '37.0-72.0',
-            flag: '',
-          },
-          lymph: {
-            valeur: '',
-            unite: '10^3/uL',
-            pourcentage: '',
-            referenceValeur: '1.50-4.00',
-            referencePourcentage: '20.0-50.0',
-            flag: '',
-          },
-          mono: {
-            valeur: '',
-            unite: '10^3/uL',
-            pourcentage: '',
-            referenceValeur: '0.10-1.00',
-            referencePourcentage: '0.0-14.0',
-            flag: '',
-          },
-          eo: {
-            valeur: '',
-            unite: '10^3/uL',
-            pourcentage: '',
-            referenceValeur: '0.01-0.50',
-            referencePourcentage: '0.0-6.0',
-            flag: '',
-          },
-          baso: {
-            valeur: '',
-            unite: '10^3/uL',
-            pourcentage: '',
-            referenceValeur: '0.00-0.10',
-            referencePourcentage: '0.0-1.0',
-            flag: '',
-          },
-          plt: { valeur: '', unite: '10^3/uL', reference: '150-450', flag: '' },
+    // exceptions: {
+    //   groupeSanguin: {
+    //     abo: '', // A, B, AB, O
+    //     rhesus: '', // Positif ou Négatif
+    //   },
+    //   qbc: {
+    //     positivite: '', // "Positif"/"Négatif"
+    //     nombreCroix: 0, // 0 à 4
+    //     densiteParasitaire: '',
+    //     especes: [], // tableau pouvant contenir jusqu’à 4 espèces
+    //   },
+    //   hgpo: {
+    //     t0: '',
+    //     t60: '',
+    //     t120: '',
+    //   },
+    //   ionogramme: {
+    //     na: '',
+    //     k: '',
+    //     cl: '',
+    //     ca: '',
+    //     mg: '',
+    //   },
+    //   // AJOUT: structure NFS
+    //   nfs: {
+    //     hematiesEtConstantes: {
+    //       gr: { valeur: '', unite: '10^6/uL', reference: '3.80-5.90' },
+    //       hgb: { valeur: '', unite: 'g/dL', reference: '11.5-16.0' },
+    //       hct: { valeur: '', unite: '%', reference: '34.0-48.0' },
+    //       vgm: { valeur: '', unite: 'fL', reference: '80.0-97.0' },
+    //       tcmh: { valeur: '', unite: 'pg', reference: '26.0-32.0' },
+    //       ccmh: { valeur: '', unite: 'g/dL', reference: '30.0-36.0' },
+    //       idr_cv: {
+    //         valeur: '',
+    //         unite: '%',
+    //         reference: '11.0-16.0',
+    //         // vous pouvez ajouter un champ 'ecartType' si besoin
+    //       },
+    //     },
+    //     leucocytesEtFormules: {
+    //       gb: {
+    //         valeur: '',
+    //         unite: '10^3/uL',
+    //         reference: '4.00-10.00',
+    //         flag: '',
+    //       },
+    //       neut: {
+    //         valeur: '',
+    //         unite: '10^3/uL',
+    //         pourcentage: '',
+    //         referenceValeur: '1.50-7.50',
+    //         referencePourcentage: '37.0-72.0',
+    //         flag: '',
+    //       },
+    //       lymph: {
+    //         valeur: '',
+    //         unite: '10^3/uL',
+    //         pourcentage: '',
+    //         referenceValeur: '1.50-4.00',
+    //         referencePourcentage: '20.0-50.0',
+    //         flag: '',
+    //       },
+    //       mono: {
+    //         valeur: '',
+    //         unite: '10^3/uL',
+    //         pourcentage: '',
+    //         referenceValeur: '0.10-1.00',
+    //         referencePourcentage: '0.0-14.0',
+    //         flag: '',
+    //       },
+    //       eo: {
+    //         valeur: '',
+    //         unite: '10^3/uL',
+    //         pourcentage: '',
+    //         referenceValeur: '0.01-0.50',
+    //         referencePourcentage: '0.0-6.0',
+    //         flag: '',
+    //       },
+    //       baso: {
+    //         valeur: '',
+    //         unite: '10^3/uL',
+    //         pourcentage: '',
+    //         referenceValeur: '0.00-0.10',
+    //         referencePourcentage: '0.0-1.0',
+    //         flag: '',
+    //       },
+    //       plt: { valeur: '', unite: '10^3/uL', reference: '150-450', flag: '' },
 
-          // Blastes / cellules immatures
-          proerythroblastes: {
-            valeur: '',
-            unite: '10^3/uL',
-            pourcentage: '',
-            referenceValeur: '0.00-0.01',
-            referencePourcentage: '0-0.2',
-            flag: '',
-          },
-          erythroblastes: {
-            valeur: '',
-            unite: '10^3/uL',
-            pourcentage: '',
-            referenceValeur: '0.00-0.01',
-            referencePourcentage: '0-0.2',
-            flag: '',
-          },
-          myeloblastes: {
-            valeur: '',
-            unite: '10^3/uL',
-            pourcentage: '',
-            referenceValeur: '0.00-0.01',
-            referencePourcentage: '0-0.2',
-            flag: '',
-          },
-          promyelocytes: {
-            valeur: '',
-            unite: '10^3/uL',
-            pourcentage: '',
-            referenceValeur: '0.00-0.01',
-            referencePourcentage: '0-0.2',
-            flag: '',
-          },
-          myelocytes: {
-            valeur: '',
-            unite: '10^3/uL',
-            pourcentage: '',
-            referenceValeur: '0.00-0.02',
-            referencePourcentage: '0-0.5',
-            flag: '',
-          },
-          metamyelocytes: {
-            valeur: '',
-            unite: '10^3/uL',
-            pourcentage: '',
-            referenceValeur: '0.00-0.02',
-            referencePourcentage: '0-0.5',
-            flag: '',
-          },
-          monoblastes: {
-            valeur: '',
-            unite: '10^3/uL',
-            pourcentage: '',
-            referenceValeur: '0.00-0.01',
-            referencePourcentage: '0-0.2',
-            flag: '',
-          },
-          lymphoblastes: {
-            valeur: '',
-            unite: '10^3/uL',
-            pourcentage: '',
-            referenceValeur: '0.00-0.01',
-            referencePourcentage: '0-0.2',
-            flag: '',
-          },
-        },
+    //       // Blastes / cellules immatures
+    //       proerythroblastes: {
+    //         valeur: '',
+    //         unite: '10^3/uL',
+    //         pourcentage: '',
+    //         referenceValeur: '0.00-0.01',
+    //         referencePourcentage: '0-0.2',
+    //         flag: '',
+    //       },
+    //       erythroblastes: {
+    //         valeur: '',
+    //         unite: '10^3/uL',
+    //         pourcentage: '',
+    //         referenceValeur: '0.00-0.01',
+    //         referencePourcentage: '0-0.2',
+    //         flag: '',
+    //       },
+    //       myeloblastes: {
+    //         valeur: '',
+    //         unite: '10^3/uL',
+    //         pourcentage: '',
+    //         referenceValeur: '0.00-0.01',
+    //         referencePourcentage: '0-0.2',
+    //         flag: '',
+    //       },
+    //       promyelocytes: {
+    //         valeur: '',
+    //         unite: '10^3/uL',
+    //         pourcentage: '',
+    //         referenceValeur: '0.00-0.01',
+    //         referencePourcentage: '0-0.2',
+    //         flag: '',
+    //       },
+    //       myelocytes: {
+    //         valeur: '',
+    //         unite: '10^3/uL',
+    //         pourcentage: '',
+    //         referenceValeur: '0.00-0.02',
+    //         referencePourcentage: '0-0.5',
+    //         flag: '',
+    //       },
+    //       metamyelocytes: {
+    //         valeur: '',
+    //         unite: '10^3/uL',
+    //         pourcentage: '',
+    //         referenceValeur: '0.00-0.02',
+    //         referencePourcentage: '0-0.5',
+    //         flag: '',
+    //       },
+    //       monoblastes: {
+    //         valeur: '',
+    //         unite: '10^3/uL',
+    //         pourcentage: '',
+    //         referenceValeur: '0.00-0.01',
+    //         referencePourcentage: '0-0.2',
+    //         flag: '',
+    //       },
+    //       lymphoblastes: {
+    //         valeur: '',
+    //         unite: '10^3/uL',
+    //         pourcentage: '',
+    //         referenceValeur: '0.00-0.01',
+    //         referencePourcentage: '0-0.2',
+    //         flag: '',
+    //       },
+    //     },
+    //   },
+    // },
+
+
+    exceptions: {
+  groupeSanguin: {
+    abo: '',
+    rhesus: '',
+  },
+  qbc: {
+    positivite: '',
+    nombreCroix: 0,
+    densiteParasitaire: '',
+    especes: [],
+  },
+  hgpo: {
+    t0: '',
+    t60: '',
+    t120: '',
+  },
+  ionogramme: {
+    na: '',
+    k: '',
+    cl: '',
+    ca: '',
+    mg: '',
+  },
+  nfs: {
+    hematiesEtConstantes: {
+      gr: { valeur: '', unite: '10^6/uL', reference: '3.80-5.90' },
+      hgb: { valeur: '', unite: 'g/dL', reference: '11.5-16.0' },
+      hct: { valeur: '', unite: '%', reference: '34.0-48.0' },
+      vgm: { valeur: '', unite: 'fL', reference: '80.0-97.0' },
+      tcmh: { valeur: '', unite: 'pg', reference: '26.0-32.0' },
+      ccmh: { valeur: '', unite: 'g/dL', reference: '30.0-36.0' },
+      idr_cv: { valeur: '', unite: '%', reference: '11.0-16.0' },
+    },
+    leucocytesEtFormules: {
+      gb: { valeur: '', unite: '10^3/uL', reference: '4.00-10.00', flag: '' },
+      neut: {
+        valeur: '',
+        unite: '10^3/uL',
+        pourcentage: '',
+        referenceValeur: '1.50-7.50',
+        referencePourcentage: '37.0-72.0',
+        flag: '',
+      },
+      lymph: {
+        valeur: '',
+        unite: '10^3/uL',
+        pourcentage: '',
+        referenceValeur: '1.50-4.00',
+        referencePourcentage: '20.0-50.0',
+        flag: '',
+      },
+      mono: {
+        valeur: '',
+        unite: '10^3/uL',
+        pourcentage: '',
+        referenceValeur: '0.10-1.00',
+        referencePourcentage: '0.0-14.0',
+        flag: '',
+      },
+      eo: {
+        valeur: '',
+        unite: '10^3/uL',
+        pourcentage: '',
+        referenceValeur: '0.01-0.50',
+        referencePourcentage: '0.0-6.0',
+        flag: '',
+      },
+      baso: {
+        valeur: '',
+        unite: '10^3/uL',
+        pourcentage: '',
+        referenceValeur: '0.00-0.10',
+        referencePourcentage: '0.0-1.0',
+        flag: '',
+      },
+      plt: { valeur: '', unite: '10^3/uL', reference: '150-450', flag: '' },
+      proerythroblastes: {
+        valeur: '',
+        unite: '10^3/uL',
+        pourcentage: '',
+        referenceValeur: '0.00-0.01',
+        referencePourcentage: '0-0.2',
+        flag: '',
+      },
+      erythroblastes: {
+        valeur: '',
+        unite: '10^3/uL',
+        pourcentage: '',
+        referenceValeur: '0.00-0.01',
+        referencePourcentage: '0-0.2',
+        flag: '',
+      },
+      myeloblastes: {
+        valeur: '',
+        unite: '10^3/uL',
+        pourcentage: '',
+        referenceValeur: '0.00-0.01',
+        referencePourcentage: '0-0.2',
+        flag: '',
+      },
+      promyelocytes: {
+        valeur: '',
+        unite: '10^3/uL',
+        pourcentage: '',
+        referenceValeur: '0.00-0.01',
+        referencePourcentage: '0-0.2',
+        flag: '',
+      },
+      myelocytes: {
+        valeur: '',
+        unite: '10^3/uL',
+        pourcentage: '',
+        referenceValeur: '0.00-0.02',
+        referencePourcentage: '0-0.5',
+        flag: '',
+      },
+      metamyelocytes: {
+        valeur: '',
+        unite: '10^3/uL',
+        pourcentage: '',
+        referenceValeur: '0.00-0.02',
+        referencePourcentage: '0-0.5',
+        flag: '',
+      },
+      monoblastes: {
+        valeur: '',
+        unite: '10^3/uL',
+        pourcentage: '',
+        referenceValeur: '0.00-0.01',
+        referencePourcentage: '0-0.2',
+        flag: '',
+      },
+      lymphoblastes: {
+        valeur: '',
+        unite: '10^3/uL',
+        pourcentage: '',
+        referenceValeur: '0.00-0.01',
+        referencePourcentage: '0-0.2',
+        flag: '',
       },
     },
+  },
+  
+  // === NOUVEAUX PARAMÈTRES CALCULÉS ===
+  psaRapport: {
+    psaLibre: { valeur: '', unite: 'ng/mL' },
+    psaTotal: { valeur: '', unite: 'ng/mL' },
+    rapport: { valeur: '', unite: '%' },
+  },
+  reticulocytes: {
+    pourcentage: { valeur: '', unite: '%' },
+    gbRouges: { valeur: '', unite: '/µL' },
+    valeurAbsolue: { valeur: '', unite: '/µL' },
+    pourcentageCalcule: { valeur: '', unite: '%' },
+  },
+  clairanceCreatinine: {
+    age: { valeur: '', unite: 'années' },
+    poids: { valeur: '', unite: 'kg' },
+    sexe: '',
+    creatinineMgL: { valeur: '', unite: 'mg/L' },
+    clairance: { valeur: '', unite: 'mL/min' },
+  },
+  dfg: {
+    creatinineMgL: { valeur: '', unite: 'mg/L' },
+    age: { valeur: '', unite: 'années' },
+    sexe: '',
+    dfgValue: { valeur: '', unite: 'mL/min/1.73m²' },
+  },
+  saturationTransferrine: {
+    ferSerique: { valeur: '', unite: 'µg/dL' },
+    transferrine: { valeur: '', unite: 'g/L' },
+    ctff: { valeur: '', unite: 'µmol/L' },
+    coefficient: { valeur: '', unite: '%' },
+  },
+  compteAddis: {
+    leucocytesParMinute: { valeur: '', unite: 'éléments/minute' },
+    leucocytesTotaux: { valeur: '', unite: 'éléments' },
+    hematiesParMinute: { valeur: '', unite: 'éléments/minute' },
+    hematiesTotales: { valeur: '', unite: 'éléments' },
+    dureeRecueil: { valeur: '', unite: 'minutes' },
+  },
+  calciumCorrige: {
+    calciumMesure: { valeur: '', unite: 'mg/L' },
+    albumine: { valeur: '', unite: 'g/L' },
+    calciumCorrige: { valeur: '', unite: 'mmol/L' },
+  },
+  rapportAlbuminurie: {
+    albumineUrinaire: { valeur: '', unite: 'mg/L' },
+    creatinineUrinaire: { valeur: '', unite: 'g/L' },
+    rapport: { valeur: '', unite: 'mg/g' },
+  },
+  rapportProteines: {
+    proteinesUrinaires: { valeur: '', unite: 'mg/dL' },
+    creatinineUrinaire: { valeur: '', unite: 'mg/dL' },
+    rapport: { valeur: '', unite: 'mg/mg' },
+  },
+  cholesterolLdl: {
+    cholesterolTotal: { valeur: '', unite: 'g/L' },
+    hdl: { valeur: '', unite: 'g/L' },
+    triglycerides: { valeur: '', unite: 'g/L' },
+    ldl: { valeur: '', unite: 'g/L' },
+  },
+  lipidesTotaux: {
+    cholesterolTotal: { valeur: '', unite: 'g/L' },
+    triglycerides: { valeur: '', unite: 'g/L' },
+    phospholipides: { valeur: '', unite: 'g/L' },
+    lipidesTotaux: { valeur: '', unite: 'g/L' },
+  },
+  microalbuminurie24h: {
+    albumineUrinaire: { valeur: '', unite: 'mg/L' },
+    volumeUrinaire24h: { valeur: '', unite: 'L' },
+    microalbuminurie: { valeur: '', unite: 'mg/24h' },
+  },
+  proteinurie24h: {
+    proteinesUrinaires: { valeur: '', unite: 'mg/L' },
+    volumeUrinaire24h: { valeur: '', unite: 'L' },
+    proteinurie: { valeur: '', unite: 'mg/24h' },
+  },
+  bilirubineIndirecte: {
+    bilirubineTotale: { valeur: '', unite: 'mg/L' },
+    bilirubineDirecte: { valeur: '', unite: 'mg/L' },
+    bilirubineIndirecte: { valeur: '', unite: 'mg/L' },
+  },
+},
   })
   const [isLoading, setIsLoading] = useState(false)
   const [selectedTestCategory, setSelectedTestCategory] = useState('')
   const [formErrors, setFormErrors] = useState({})
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
 
+  // function getTestCategory(testName = '') {
+  //   const nameLower = testName.toLowerCase()
+
+  //   if (nameLower.includes('groupe') && nameLower.includes('sanguin')) {
+  //     return 'groupeSanguin'
+  //   } else if (nameLower.includes('qbc')) {
+  //     return 'qbc'
+  //   } else if (nameLower.includes('hgpo')) {
+  //     return 'hgpo'
+  //   } else if (nameLower.includes('ionogram')) {
+  //     return 'ionogramme'
+  //   } else if (nameLower.includes('nfs') || nameLower.includes('numeration')) {
+  //     // <-- Ajout du test "NFS" (ou "Numération formule sanguine")
+  //     return 'nfs'
+  //   }
+
+  //   return 'normal'
+  // }
+
   function getTestCategory(testName = '') {
-    const nameLower = testName.toLowerCase()
+  const nameLower = testName.toLowerCase()
 
-    if (nameLower.includes('groupe') && nameLower.includes('sanguin')) {
-      return 'groupeSanguin'
-    } else if (nameLower.includes('qbc')) {
-      return 'qbc'
-    } else if (nameLower.includes('hgpo')) {
-      return 'hgpo'
-    } else if (nameLower.includes('ionogram')) {
-      return 'ionogramme'
-    } else if (nameLower.includes('nfs') || nameLower.includes('numeration')) {
-      // <-- Ajout du test "NFS" (ou "Numération formule sanguine")
-      return 'nfs'
-    }
-
-    return 'normal'
+  if (nameLower.includes('groupe') && nameLower.includes('sanguin')) {
+    return 'groupeSanguin'
+  } else if (nameLower.includes('qbc')) {
+    return 'qbc'
+  } else if (nameLower.includes('hgpo')) {
+    return 'hgpo'
+  } else if (nameLower.includes('ionogram')) {
+    return 'ionogramme'
+  } else if (nameLower.includes('nfs') || nameLower.includes('numération')) {
+    return 'nfs'
   }
+  // PSA Rapport
+  else if (
+    (nameLower.includes('psa') &&
+      (nameLower.includes('rapport') || nameLower.includes('libre'))) ||
+    (nameLower.includes('rapport') &&
+      nameLower.includes('psa') &&
+      (nameLower.includes('total') || nameLower.includes('libre')))
+  ) {
+    return 'psaRapport'
+  }
+  // Réticulocytes
+  else if (
+    nameLower.includes('réticulocyte') ||
+    nameLower.includes('reticulocyte') ||
+    nameLower.includes('reticulocytes')
+  ) {
+    return 'reticulocytes'
+  }
+  // Clairance créatinine
+  else if (
+    (nameLower.includes('clairance') && nameLower.includes('créatinine')) ||
+    (nameLower.includes('clairance') && nameLower.includes('creatinine')) ||
+    nameLower.includes('cockcroft')
+  ) {
+    return 'clairanceCreatinine'
+  }
+  // DFG
+  else if (
+    nameLower.includes('dfg') ||
+    nameLower.includes('filtration') ||
+    nameLower.includes('ckd-epi') ||
+    nameLower.includes('débit de filtration')
+  ) {
+    return 'dfg'
+  }
+  // Saturation transferrine
+  else if (
+    (nameLower.includes('transferrine') && nameLower.includes('saturation')) ||
+    (nameLower.includes('coefficient') && nameLower.includes('transferrine')) ||
+    nameLower.includes('ctff')
+  ) {
+    return 'saturationTransferrine'
+  }
+  // Compte d'Addis
+  else if (
+    nameLower.includes('addis') ||
+    (nameLower.includes('compte') && nameLower.includes('addis')) ||
+    nameLower.includes('hlm')
+  ) {
+    return 'compteAddis'
+  }
+  // Calcium corrigé
+  else if (
+    (nameLower.includes('calcium') && nameLower.includes('corrigé')) ||
+    (nameLower.includes('calcium') && nameLower.includes('corrige'))
+  ) {
+    return 'calciumCorrige'
+  }
+  // Rapport albuminurie/créatininurie
+  else if (
+    (nameLower.includes('albuminurie') && nameLower.includes('créatinine')) ||
+    (nameLower.includes('albuminurie') && nameLower.includes('creatinine')) ||
+    (nameLower.includes('rapport') && nameLower.includes('albuminurie')) ||
+    nameLower.includes('rac')
+  ) {
+    return 'rapportAlbuminurie'
+  }
+  // Rapport protéinurie/créatininurie
+  else if (
+    (nameLower.includes('protéinurie') && nameLower.includes('créatinine')) ||
+    (nameLower.includes('proteinurie') && nameLower.includes('creatinine')) ||
+    (nameLower.includes('rapport') && nameLower.includes('protéinurie')) ||
+    (nameLower.includes('rapport') && nameLower.includes('proteinurie')) ||
+    nameLower.includes('rpc')
+  ) {
+    return 'rapportProteines'
+  }
+  // Cholestérol LDL
+  else if (
+    nameLower.includes('ldl') ||
+    (nameLower.includes('cholestérol') && nameLower.includes('ldl')) ||
+    (nameLower.includes('cholesterol') && nameLower.includes('ldl')) ||
+    nameLower.includes('friedewald')
+  ) {
+    return 'cholesterolLdl'
+  }
+  // Lipides totaux
+  else if (
+    nameLower.includes('lipides totaux') ||
+    nameLower.includes('lipides total') ||
+    (nameLower.includes('lipides') && nameLower.includes('total'))
+  ) {
+    return 'lipidesTotaux'
+  }
+  // Microalbuminurie 24h
+  else if (
+    (nameLower.includes('microalbuminurie') && nameLower.includes('24')) ||
+    (nameLower.includes('micro') &&
+      nameLower.includes('albumine') &&
+      nameLower.includes('24'))
+  ) {
+    return 'microalbuminurie24h'
+  }
+  // Protéinurie 24h
+  else if (
+    (nameLower.includes('protéinurie') && nameLower.includes('24')) ||
+    (nameLower.includes('proteinurie') && nameLower.includes('24')) ||
+    (nameLower.includes('protéines') && nameLower.includes('24h')) ||
+    (nameLower.includes('proteins') && nameLower.includes('24'))
+  ) {
+    return 'proteinurie24h'
+  }
+  // Bilirubine indirecte
+  else if (
+    (nameLower.includes('bilirubine') && nameLower.includes('indirecte')) ||
+    (nameLower.includes('bilirubine') && nameLower.includes('indirect'))
+  ) {
+    return 'bilirubineIndirecte'
+  }
+
+  return 'normal'
+}
 
   useEffect(() => {
     if (showModal && resultatId) {
@@ -457,7 +820,53 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
               },
             },
           },
+
         }
+        // AJOUT: Récupération des nouveaux paramètres calculés
+if (data.data.exceptions) {
+  if (data.data.exceptions.psaRapport) {
+    fetchedExceptions.psaRapport = data.data.exceptions.psaRapport
+  }
+  if (data.data.exceptions.reticulocytes) {
+    fetchedExceptions.reticulocytes = data.data.exceptions.reticulocytes
+  }
+  if (data.data.exceptions.clairanceCreatinine) {
+    fetchedExceptions.clairanceCreatinine = data.data.exceptions.clairanceCreatinine
+  }
+  if (data.data.exceptions.dfg) {
+    fetchedExceptions.dfg = data.data.exceptions.dfg
+  }
+  if (data.data.exceptions.saturationTransferrine) {
+    fetchedExceptions.saturationTransferrine = data.data.exceptions.saturationTransferrine
+  }
+  if (data.data.exceptions.compteAddis) {
+    fetchedExceptions.compteAddis = data.data.exceptions.compteAddis
+  }
+  if (data.data.exceptions.calciumCorrige) {
+    fetchedExceptions.calciumCorrige = data.data.exceptions.calciumCorrige
+  }
+  if (data.data.exceptions.rapportAlbuminurie) {
+    fetchedExceptions.rapportAlbuminurie = data.data.exceptions.rapportAlbuminurie
+  }
+  if (data.data.exceptions.rapportProteines) {
+    fetchedExceptions.rapportProteines = data.data.exceptions.rapportProteines
+  }
+  if (data.data.exceptions.cholesterolLdl) {
+    fetchedExceptions.cholesterolLdl = data.data.exceptions.cholesterolLdl
+  }
+  if (data.data.exceptions.lipidesTotaux) {
+    fetchedExceptions.lipidesTotaux = data.data.exceptions.lipidesTotaux
+  }
+  if (data.data.exceptions.microalbuminurie24h) {
+    fetchedExceptions.microalbuminurie24h = data.data.exceptions.microalbuminurie24h
+  }
+  if (data.data.exceptions.proteinurie24h) {
+    fetchedExceptions.proteinurie24h = data.data.exceptions.proteinurie24h
+  }
+  if (data.data.exceptions.bilirubineIndirecte) {
+    fetchedExceptions.bilirubineIndirecte = data.data.exceptions.bilirubineIndirecte
+  }
+}
         // Ensuite, si le back renvoie nfs :
         if (data.data.exceptions && data.data.exceptions.nfs) {
           fetchedExceptions.nfs = data.data.exceptions.nfs
@@ -2378,6 +2787,1313 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
                       {/* Fin de la section NFS */}
                     </div>
                   )}
+
+                  {/* ==================== NOUVEAUX PARAMÈTRES CALCULÉS ==================== */}
+
+{/* 1. PSA Rapport */}
+{selectedTestCategory === 'psaRapport' && (
+  <div className="border p-4 mt-4">
+    <h3 className="font-bold mb-2">Rapport PSA libre/PSA total</h3>
+    <div className="flex flex-wrap gap-4 items-center">
+      <div>
+        <label className="label">PSA libre (ng/mL)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 2.5"
+          value={formData.exceptions.psaRapport?.psaLibre?.valeur || ''}
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                psaRapport: {
+                  ...prev.exceptions.psaRapport,
+                  psaLibre: {
+                    ...prev.exceptions.psaRapport.psaLibre,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : ng/mL</small>
+      </div>
+      <div>
+        <label className="label">PSA total (ng/mL)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 10.0"
+          value={formData.exceptions.psaRapport?.psaTotal?.valeur || ''}
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                psaRapport: {
+                  ...prev.exceptions.psaRapport,
+                  psaTotal: {
+                    ...prev.exceptions.psaRapport.psaTotal,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : ng/mL</small>
+      </div>
+      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+        <label className="label font-semibold text-blue-700">
+          Rapport calculé
+        </label>
+        <div className="text-lg font-bold text-blue-800">
+          {formData.exceptions.psaRapport?.rapport?.valeur ||
+            'Auto-calculé'}{' '}
+          %
+        </div>
+        <small className="text-blue-600">
+          Formule: (PSA libre / PSA total) × 100
+        </small>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* 2. Réticulocytes */}
+{selectedTestCategory === 'reticulocytes' && (
+  <div className="border p-4 mt-4">
+    <h3 className="font-bold mb-2">Taux de réticulocytes</h3>
+    <div className="flex flex-wrap gap-4 items-center">
+      <div>
+        <label className="label">Pourcentage (%)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 1.5"
+          value={
+            formData.exceptions.reticulocytes?.pourcentage?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                reticulocytes: {
+                  ...prev.exceptions.reticulocytes,
+                  pourcentage: {
+                    ...prev.exceptions.reticulocytes.pourcentage,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : %</small>
+      </div>
+      <div>
+        <label className="label">Globules rouges (/µL)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 4500000"
+          value={formData.exceptions.reticulocytes?.gbRouges?.valeur || ''}
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                reticulocytes: {
+                  ...prev.exceptions.reticulocytes,
+                  gbRouges: {
+                    ...prev.exceptions.reticulocytes.gbRouges,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : /µL</small>
+      </div>
+      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+        <div className="mb-2">
+          <label className="label font-semibold text-blue-700">
+            Valeur absolue
+          </label>
+          <div className="text-lg font-bold text-blue-800">
+            {formData.exceptions.reticulocytes?.valeurAbsolue?.valeur ||
+              'Auto-calculé'}{' '}
+            /µL
+          </div>
+        </div>
+        <div>
+          <label className="label font-semibold text-blue-700">
+            Pourcentage calculé
+          </label>
+          <div className="text-lg font-bold text-blue-800">
+            {formData.exceptions.reticulocytes?.pourcentageCalcule
+              ?.valeur || 'Auto-calculé'}{' '}
+            %
+          </div>
+        </div>
+        <small className="text-blue-600">
+          Formule: (% × GR) / 100
+        </small>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* 3. Clairance créatinine */}
+{selectedTestCategory === 'clairanceCreatinine' && (
+  <div className="border p-4 mt-4">
+    <h3 className="font-bold mb-2">
+      Clairance créatinine (Cockcroft-Gault)
+    </h3>
+    <div className="flex flex-wrap gap-4 items-center">
+      <div>
+        <label className="label">Âge (années)</label>
+        <input
+          type="number"
+          className="input input-bordered w-[120px]"
+          placeholder="ex: 65"
+          value={formData.exceptions.clairanceCreatinine?.age?.valeur || ''}
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                clairanceCreatinine: {
+                  ...prev.exceptions.clairanceCreatinine,
+                  age: {
+                    ...prev.exceptions.clairanceCreatinine.age,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : années</small>
+      </div>
+      <div>
+        <label className="label">Poids (kg)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[120px]"
+          placeholder="ex: 70"
+          value={
+            formData.exceptions.clairanceCreatinine?.poids?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                clairanceCreatinine: {
+                  ...prev.exceptions.clairanceCreatinine,
+                  poids: {
+                    ...prev.exceptions.clairanceCreatinine.poids,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : kg</small>
+      </div>
+      <div>
+        <label className="label">Sexe</label>
+        <select
+          className="select select-bordered w-[120px]"
+          value={formData.exceptions.clairanceCreatinine?.sexe || ''}
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                clairanceCreatinine: {
+                  ...prev.exceptions.clairanceCreatinine,
+                  sexe: e.target.value,
+                },
+              },
+            }))
+          }
+        >
+          <option value="">Choisir</option>
+          <option value="M">Masculin</option>
+          <option value="F">Féminin</option>
+        </select>
+        <small>K = 1.23 (M), 1.04 (F)</small>
+      </div>
+      <div>
+        <label className="label">Créatinine (mg/L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 10"
+          value={
+            formData.exceptions.clairanceCreatinine?.creatinineMgL
+              ?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                clairanceCreatinine: {
+                  ...prev.exceptions.clairanceCreatinine,
+                  creatinineMgL: {
+                    ...prev.exceptions.clairanceCreatinine.creatinineMgL,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : mg/L</small>
+      </div>
+      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+        <label className="label font-semibold text-blue-700">
+          Clairance calculée
+        </label>
+        <div className="text-lg font-bold text-blue-800">
+          {formData.exceptions.clairanceCreatinine?.clairance?.valeur ||
+            'Auto-calculé'}{' '}
+          mL/min
+        </div>
+        <small className="text-blue-600">
+          Formule: ((140-âge) × poids × K) / (créat × 8.84)
+        </small>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* 4. DFG */}
+{selectedTestCategory === 'dfg' && (
+  <div className="border p-4 mt-4">
+    <h3 className="font-bold mb-2">DFG (CKD-EPI)</h3>
+    <div className="flex flex-wrap gap-4 items-center">
+      <div>
+        <label className="label">Créatinine sérique (mg/L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 10"
+          value={formData.exceptions.dfg?.creatinineMgL?.valeur || ''}
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                dfg: {
+                  ...prev.exceptions.dfg,
+                  creatinineMgL: {
+                    ...prev.exceptions.dfg.creatinineMgL,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : mg/L</small>
+      </div>
+      <div>
+        <label className="label">Âge (années)</label>
+        <input
+          type="number"
+          className="input input-bordered w-[120px]"
+          placeholder="ex: 65"
+          value={formData.exceptions.dfg?.age?.valeur || ''}
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                dfg: {
+                  ...prev.exceptions.dfg,
+                  age: { ...prev.exceptions.dfg.age, valeur: e.target.value },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : années</small>
+      </div>
+      <div>
+        <label className="label">Sexe</label>
+        <select
+          className="select select-bordered w-[120px]"
+          value={formData.exceptions.dfg?.sexe || ''}
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                dfg: {
+                  ...prev.exceptions.dfg,
+                  sexe: e.target.value,
+                },
+              },
+            }))
+          }
+        >
+          <option value="">Choisir</option>
+          <option value="M">Masculin</option>
+          <option value="F">Féminin</option>
+        </select>
+        <small>κ = 1.159 (M), 1.018 (F)</small>
+      </div>
+      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+        <label className="label font-semibold text-blue-700">
+          DFG calculé
+        </label>
+        <div className="text-lg font-bold text-blue-800">
+          {formData.exceptions.dfg?.dfgValue?.valeur || 'Auto-calculé'}{' '}
+          mL/min/1.73m²
+        </div>
+        <small className="text-blue-600">
+          Formule CKD-EPI avec constantes corrigées
+        </small>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* 5. Saturation transferrine */}
+{selectedTestCategory === 'saturationTransferrine' && (
+  <div className="border p-4 mt-4">
+    <h3 className="font-bold mb-2">
+      Coefficient de saturation de la transferrine
+    </h3>
+    <div className="flex flex-wrap gap-4 items-center">
+      <div>
+        <label className="label">Fer sérique (µg/dL)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 100"
+          value={
+            formData.exceptions.saturationTransferrine?.ferSerique
+              ?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                saturationTransferrine: {
+                  ...prev.exceptions.saturationTransferrine,
+                  ferSerique: {
+                    ...prev.exceptions.saturationTransferrine.ferSerique,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : µg/dL</small>
+      </div>
+      <div>
+        <label className="label">Transferrine (g/L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 2.5"
+          value={
+            formData.exceptions.saturationTransferrine?.transferrine
+              ?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                saturationTransferrine: {
+                  ...prev.exceptions.saturationTransferrine,
+                  transferrine: {
+                    ...prev.exceptions.saturationTransferrine.transferrine,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : g/L</small>
+      </div>
+      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+        <div className="mb-2">
+          <label className="label font-semibold text-blue-700">
+            CTFF calculé
+          </label>
+          <div className="text-lg font-bold text-blue-800">
+            {formData.exceptions.saturationTransferrine?.ctff?.valeur ||
+              'Auto-calculé'}{' '}
+            µmol/L
+          </div>
+          <small className="text-blue-600">
+            Transferrine × 1.395
+          </small>
+        </div>
+        <div>
+          <label className="label font-semibold text-blue-700">
+            Coefficient calculé
+          </label>
+          <div className="text-lg font-bold text-blue-800">
+            {formData.exceptions.saturationTransferrine?.coefficient
+              ?.valeur || 'Auto-calculé'}{' '}
+            %
+          </div>
+          <small className="text-blue-600">
+            Formule: (Fer / CTFF) × 100
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* 6. Compte d'Addis */}
+{selectedTestCategory === 'compteAddis' && (
+  <div className="border p-4 mt-4">
+    <h3 className="font-bold mb-2">Compte d'Addis</h3>
+    <div className="flex flex-wrap gap-4 items-center">
+      <div>
+        <label className="label">Leucocytes totaux</label>
+        <input
+          type="number"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 120000"
+          value={
+            formData.exceptions.compteAddis?.leucocytesTotaux?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                compteAddis: {
+                  ...prev.exceptions.compteAddis,
+                  leucocytesTotaux: {
+                    ...prev.exceptions.compteAddis.leucocytesTotaux,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Nombre total d'éléments</small>
+      </div>
+      <div>
+        <label className="label">Hématies totales</label>
+        <input
+          type="number"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 80000"
+          value={
+            formData.exceptions.compteAddis?.hematiesTotales?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                compteAddis: {
+                  ...prev.exceptions.compteAddis,
+                  hematiesTotales: {
+                    ...prev.exceptions.compteAddis.hematiesTotales,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Nombre total d'éléments</small>
+      </div>
+      <div>
+        <label className="label">Durée recueil (minutes)</label>
+        <input
+          type="number"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 1440"
+          value={
+            formData.exceptions.compteAddis?.dureeRecueil?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                compteAddis: {
+                  ...prev.exceptions.compteAddis,
+                  dureeRecueil: {
+                    ...prev.exceptions.compteAddis.dureeRecueil,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Ex: 1440 min = 24h</small>
+      </div>
+      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+        <div className="mb-2">
+          <label className="label font-semibold text-blue-700">
+            Leucocytes/minute
+          </label>
+          <div className="text-lg font-bold text-blue-800">
+            {formData.exceptions.compteAddis?.leucocytesParMinute?.valeur ||
+              'Auto-calculé'}{' '}
+            éléments/min
+          </div>
+        </div>
+        <div>
+          <label className="label font-semibold text-blue-700">
+            Hématies/minute
+          </label>
+          <div className="text-lg font-bold text-blue-800">
+            {formData.exceptions.compteAddis?.hematiesParMinute?.valeur ||
+              'Auto-calculé'}{' '}
+            éléments/min
+          </div>
+        </div>
+        <small className="text-blue-600">
+          Formule: Total / Durée (min)
+        </small>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* 7. Calcium corrigé */}
+{selectedTestCategory === 'calciumCorrige' && (
+  <div className="border p-4 mt-4">
+    <h3 className="font-bold mb-2">Calcium corrigé</h3>
+    <div className="flex flex-wrap gap-4 items-center">
+      <div>
+        <label className="label">Calcium mesuré (mg/L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 95"
+          value={
+            formData.exceptions.calciumCorrige?.calciumMesure?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                calciumCorrige: {
+                  ...prev.exceptions.calciumCorrige,
+                  calciumMesure: {
+                    ...prev.exceptions.calciumCorrige.calciumMesure,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : mg/L</small>
+      </div>
+      <div>
+        <label className="label">Albumine (g/L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 35"
+          value={formData.exceptions.calciumCorrige?.albumine?.valeur || ''}
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                calciumCorrige: {
+                  ...prev.exceptions.calciumCorrige,
+                  albumine: {
+                    ...prev.exceptions.calciumCorrige.albumine,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : g/L</small>
+      </div>
+      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+        <label className="label font-semibold text-blue-700">
+          Calcium corrigé
+        </label>
+        <div className="text-lg font-bold text-blue-800">
+          {formData.exceptions.calciumCorrige?.calciumCorrige?.valeur ||
+            'Auto-calculé'}{' '}
+          mmol/L
+        </div>
+        <small className="text-blue-600">
+          Formule: (Ca × 0.025) - 0.025 × (40 - Albumine)
+        </small>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* 8. Rapport albuminurie/créatininurie */}
+{selectedTestCategory === 'rapportAlbuminurie' && (
+  <div className="border p-4 mt-4">
+    <h3 className="font-bold mb-2">
+      Rapport albuminurie/créatininurie
+    </h3>
+    <div className="flex flex-wrap gap-4 items-center">
+      <div>
+        <label className="label">Albumine urinaire (mg/L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 30"
+          value={
+            formData.exceptions.rapportAlbuminurie?.albumineUrinaire
+              ?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                rapportAlbuminurie: {
+                  ...prev.exceptions.rapportAlbuminurie,
+                  albumineUrinaire: {
+                    ...prev.exceptions.rapportAlbuminurie.albumineUrinaire,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : mg/L</small>
+      </div>
+      <div>
+        <label className="label">Créatinine urinaire (g/L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 1.0"
+          value={
+            formData.exceptions.rapportAlbuminurie?.creatinineUrinaire
+              ?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                rapportAlbuminurie: {
+                  ...prev.exceptions.rapportAlbuminurie,
+                  creatinineUrinaire: {
+                    ...prev.exceptions.rapportAlbuminurie.creatinineUrinaire,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : g/L</small>
+      </div>
+      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+        <label className="label font-semibold text-blue-700">
+          Rapport calculé
+        </label>
+        <div className="text-lg font-bold text-blue-800">
+          {formData.exceptions.rapportAlbuminurie?.rapport?.valeur ||
+            'Auto-calculé'}{' '}
+          mg/g
+        </div>
+        <small className="text-blue-600">
+          Formule: Albumine (mg/L) / Créatinine (g/L)
+        </small>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* 9. Rapport protéinurie/créatininurie */}
+{selectedTestCategory === 'rapportProteines' && (
+  <div className="border p-4 mt-4">
+    <h3 className="font-bold mb-2">
+      Rapport protéinurie/créatininurie
+    </h3>
+    <div className="flex flex-wrap gap-4 items-center">
+      <div>
+        <label className="label">Protéines urinaires (mg/L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 15"
+          value={
+            formData.exceptions.rapportProteines?.proteinesUrinaires
+              ?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                rapportProteines: {
+                  ...prev.exceptions.rapportProteines,
+                  proteinesUrinaires: {
+                    ...prev.exceptions.rapportProteines.proteinesUrinaires,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : mg/L</small>
+      </div>
+      <div>
+        <label className="label">Créatinine urinaire (g/L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 100"
+          value={
+            formData.exceptions.rapportProteines?.creatinineUrinaire
+              ?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                rapportProteines: {
+                  ...prev.exceptions.rapportProteines,
+                  creatinineUrinaire: {
+                    ...prev.exceptions.rapportProteines.creatinineUrinaire,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : g/L</small>
+      </div>
+      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+        <label className="label font-semibold text-blue-700">
+          Rapport calculé
+        </label>
+        <div className="text-lg font-bold text-blue-800">
+          {formData.exceptions.rapportProteines?.rapport?.valeur ||
+            'Auto-calculé'}{' '}
+          mg/mg
+        </div>
+        <small className="text-blue-600">
+          Formule: Protéines / Créatinine
+        </small>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* 10. Cholestérol LDL */}
+{selectedTestCategory === 'cholesterolLdl' && (
+  <div className="border p-4 mt-4">
+    <h3 className="font-bold mb-2">Cholestérol LDL (Friedewald)</h3>
+    <div className="flex flex-wrap gap-4 items-center">
+      <div>
+        <label className="label">Cholestérol total (g/L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 2.0"
+          value={
+            formData.exceptions.cholesterolLdl?.cholesterolTotal?.valeur ||
+            ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                cholesterolLdl: {
+                  ...prev.exceptions.cholesterolLdl,
+                  cholesterolTotal: {
+                    ...prev.exceptions.cholesterolLdl.cholesterolTotal,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : g/L</small>
+      </div>
+      <div>
+        <label className="label">HDL (g/L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 0.6"
+          value={formData.exceptions.cholesterolLdl?.hdl?.valeur || ''}
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                cholesterolLdl: {
+                  ...prev.exceptions.cholesterolLdl,
+                  hdl: {
+                    ...prev.exceptions.cholesterolLdl.hdl,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : g/L</small>
+      </div>
+      <div>
+        <label className="label">Triglycérides (g/L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 1.5"
+          value={
+            formData.exceptions.cholesterolLdl?.triglycerides?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                cholesterolLdl: {
+                  ...prev.exceptions.cholesterolLdl,
+                  triglycerides: {
+                    ...prev.exceptions.cholesterolLdl.triglycerides,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : g/L</small>
+      </div>
+      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+        <label className="label font-semibold text-blue-700">
+          LDL calculé
+        </label>
+        <div className="text-lg font-bold text-blue-800">
+          {formData.exceptions.cholesterolLdl?.ldl?.valeur ||
+            'Auto-calculé'}{' '}
+          g/L
+        </div>
+        <small className="text-blue-600">
+          Formule: CT - HDL - (TG/5)
+        </small>
+        <div className="text-xs text-red-600 mt-1">
+          ⚠️ Valable si TG &lt; 3.5 g/L
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* 11. Lipides totaux */}
+{selectedTestCategory === 'lipidesTotaux' && (
+  <div className="border p-4 mt-4">
+    <h3 className="font-bold mb-2">Lipides totaux</h3>
+    <div className="flex flex-wrap gap-4 items-center">
+      <div>
+        <label className="label">Cholestérol total (g/L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 2.0"
+          value={
+            formData.exceptions.lipidesTotaux?.cholesterolTotal?.valeur ||
+            ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                lipidesTotaux: {
+                  ...prev.exceptions.lipidesTotaux,
+                  cholesterolTotal: {
+                    ...prev.exceptions.lipidesTotaux.cholesterolTotal,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : g/L</small>
+      </div>
+      <div>
+        <label className="label">Triglycérides (g/L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 1.5"
+          value={
+            formData.exceptions.lipidesTotaux?.triglycerides?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                lipidesTotaux: {
+                  ...prev.exceptions.lipidesTotaux,
+                  triglycerides: {
+                    ...prev.exceptions.lipidesTotaux.triglycerides,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : g/L</small>
+      </div>
+      <div>
+        <label className="label">
+          Phospholipides (g/L) - Optionnel
+        </label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 1.8"
+          value={
+            formData.exceptions.lipidesTotaux?.phospholipides?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                lipidesTotaux: {
+                  ...prev.exceptions.lipidesTotaux,
+                  phospholipides: {
+                    ...prev.exceptions.lipidesTotaux.phospholipides,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : g/L</small>
+      </div>
+      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+        <label className="label font-semibold text-blue-700">
+          Lipides totaux calculés
+        </label>
+        <div className="text-lg font-bold text-blue-800">
+          {formData.exceptions.lipidesTotaux?.lipidesTotaux?.valeur ||
+            'Auto-calculé'}{' '}
+          g/L
+        </div>
+        <small className="text-blue-600">
+          Formule: (Cholestérol × 2.5) + Triglycérides [+
+          Phospholipides]
+        </small>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* 12. Microalbuminurie 24h */}
+{selectedTestCategory === 'microalbuminurie24h' && (
+  <div className="border p-4 mt-4">
+    <h3 className="font-bold mb-2">Microalbuminurie 24h</h3>
+    <div className="flex flex-wrap gap-4 items-center">
+      <div>
+        <label className="label">Albumine urinaire (mg/L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 30"
+          value={
+            formData.exceptions.microalbuminurie24h?.albumineUrinaire
+              ?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                microalbuminurie24h: {
+                  ...prev.exceptions.microalbuminurie24h,
+                  albumineUrinaire: {
+                    ...prev.exceptions.microalbuminurie24h.albumineUrinaire,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : mg/L</small>
+      </div>
+      <div>
+        <label className="label">Volume urinaire 24h (L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 1.5"
+          min="0"
+          max="10"
+          value={
+            formData.exceptions.microalbuminurie24h?.volumeUrinaire24h
+              ?.valeur || ''
+          }
+          onChange={(e) => {
+            const value = parseFloat(e.target.value)
+            if (value >= 0 && value <= 10) {
+              setFormData((prev) => ({
+                ...prev,
+                exceptions: {
+                  ...prev.exceptions,
+                  microalbuminurie24h: {
+                    ...prev.exceptions.microalbuminurie24h,
+                    volumeUrinaire24h: {
+                      ...prev.exceptions.microalbuminurie24h.volumeUrinaire24h,
+                      valeur: e.target.value,
+                    },
+                  },
+                },
+              }))
+            }
+          }}
+        />
+        <small>Unité : L</small>
+      </div>
+      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+        <label className="label font-semibold text-blue-700">
+          Microalbuminurie calculée
+        </label>
+        <div className="text-lg font-bold text-blue-800">
+          {formData.exceptions.microalbuminurie24h?.microalbuminurie
+            ?.valeur || 'Auto-calculé'}{' '}
+          mg/24h
+        </div>
+        <small className="text-blue-600">
+          Formule: Albumine × Volume urinaire
+        </small>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* 13. Protéinurie 24h */}
+{selectedTestCategory === 'proteinurie24h' && (
+  <div className="border p-4 mt-4">
+    <h3 className="font-bold mb-2">Protéinurie 24h</h3>
+    <div className="flex flex-wrap gap-4 items-center">
+      <div>
+        <label className="label">Protéines urinaires (mg/L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 150"
+          value={
+            formData.exceptions.proteinurie24h?.proteinesUrinaires
+              ?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                proteinurie24h: {
+                  ...prev.exceptions.proteinurie24h,
+                  proteinesUrinaires: {
+                    ...prev.exceptions.proteinurie24h.proteinesUrinaires,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : mg/L</small>
+      </div>
+      <div>
+        <label className="label">Volume urinaire 24h (L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 1.5"
+          min="0"
+          max="10"
+          value={
+            formData.exceptions.proteinurie24h?.volumeUrinaire24h?.valeur ||
+            ''
+          }
+          onChange={(e) => {
+            const value = parseFloat(e.target.value)
+            if (value >= 0 && value <= 10) {
+              setFormData((prev) => ({
+                ...prev,
+                exceptions: {
+                  ...prev.exceptions,
+                  proteinurie24h: {
+                    ...prev.exceptions.proteinurie24h,
+                    volumeUrinaire24h: {
+                      ...prev.exceptions.proteinurie24h.volumeUrinaire24h,
+                      valeur: e.target.value,
+                    },
+                  },
+                },
+              }))
+            }
+          }}
+        />
+        <small>Unité : L</small>
+      </div>
+      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+        <label className="label font-semibold text-blue-700">
+          Protéinurie calculée
+        </label>
+        <div className="text-lg font-bold text-blue-800">
+          {formData.exceptions.proteinurie24h?.proteinurie?.valeur ||
+            'Auto-calculé'}{' '}
+          mg/24h
+        </div>
+        <small className="text-blue-600">
+          Formule: Protéines × Volume urinaire
+        </small>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* 14. Bilirubine indirecte */}
+{selectedTestCategory === 'bilirubineIndirecte' && (
+  <div className="border p-4 mt-4">
+    <h3 className="font-bold mb-2">Bilirubine indirecte</h3>
+    <div className="flex flex-wrap gap-4 items-center">
+      <div>
+        <label className="label">Bilirubine totale (mg/L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 15"
+          value={
+            formData.exceptions.bilirubineIndirecte?.bilirubineTotale
+              ?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                bilirubineIndirecte: {
+                  ...prev.exceptions.bilirubineIndirecte,
+                  bilirubineTotale: {
+                    ...prev.exceptions.bilirubineIndirecte.bilirubineTotale,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : mg/L</small>
+      </div>
+      <div>
+        <label className="label">Bilirubine directe (mg/L)</label>
+        <input
+          type="number"
+          step="any"
+          className="input input-bordered w-[150px]"
+          placeholder="ex: 5"
+          value={
+            formData.exceptions.bilirubineIndirecte?.bilirubineDirecte
+              ?.valeur || ''
+          }
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              exceptions: {
+                ...prev.exceptions,
+                bilirubineIndirecte: {
+                  ...prev.exceptions.bilirubineIndirecte,
+                  bilirubineDirecte: {
+                    ...prev.exceptions.bilirubineIndirecte.bilirubineDirecte,
+                    valeur: e.target.value,
+                  },
+                },
+              },
+            }))
+          }
+        />
+        <small>Unité : mg/L</small>
+      </div>
+      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+        <label className="label font-semibold text-blue-700">
+          Bilirubine indirecte calculée
+        </label>
+        <div className="text-lg font-bold text-blue-800">
+          {formData.exceptions.bilirubineIndirecte?.bilirubineIndirecte
+            ?.valeur || 'Auto-calculé'}{' '}
+          mg/L
+        </div>
+        <small className="text-blue-600">
+          Formule: Totale - Directe
+        </small>
+      </div>
+    </div>
+  </div>
+)}
                 </>
               ) : (
                 <>

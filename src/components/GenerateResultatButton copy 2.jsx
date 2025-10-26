@@ -8,7 +8,6 @@ import logoRight from '../images/logo2.png'
 
 /**
  * Composant pour générer un PDF de résultat d'analyse médicale
- * VERSION CORRIGÉE - Pagination simple et efficace
  */
 function GenerateResultatButton({ invoice }) {
   const [user, setUser] = useState({
@@ -129,56 +128,72 @@ function GenerateResultatButton({ invoice }) {
       img.src = src
     })
 
-  /**
-   * CONSTANTES DE PAGINATION SIMPLES
-   */
-  const FOOTER_Y = 277
-  const MARGIN_BEFORE_FOOTER = 30
-  const MAX_CONTENT_Y = FOOTER_Y - MARGIN_BEFORE_FOOTER // 247mm
-  const MIN_SPACE = 15 // Espace minimum pour continuer sur la même page
+/**
+ * CONSTANTES DE PAGINATION CORRIGÉES
+ */
+const FOOTER_Y = 277
+const MARGIN_BEFORE_FOOTER = 30 // 3cm
+const MAX_CONTENT_Y = FOOTER_Y - MARGIN_BEFORE_FOOTER // 247mm
 
-  /**
-   * Ajoute un header discret sur les nouvelles pages
-   */
-  const addPageHeader = (doc, invoice, startY = 25) => {
-    doc.setFontSize(8)
+/**
+ * Vérifie qu'il y a assez d'espace pour un bloc complet
+ */
+const checkNewPageWithMinHeight = (doc, currentY, minHeight, invoice) => {
+  console.log(`[checkNewPageWithMinHeight] currentY: ${currentY}, minHeight: ${minHeight}, MAX_CONTENT_Y: ${MAX_CONTENT_Y}`)
+  
+  if (currentY + minHeight > MAX_CONTENT_Y) {
+    console.log(`⚠️ NOUVELLE PAGE CRÉÉE (MinHeight) - Y actuel: ${currentY}, hauteur requise: ${minHeight}, limite: ${MAX_CONTENT_Y}`)
+    doc.addPage()
+    addFooter(doc, getColorValue('gris'))
+    currentY = 25
+
+    doc.setFontSize(9)
     doc.setFont('Times', 'normal')
-    doc.setTextColor(100, 100, 100)
-    doc.text(`Nº Dossier: ${invoice?.identifiant}`, 25, startY)
+    doc.text(`Nº Dossier: ${invoice?.identifiant}`, 42, currentY)
     doc.text(
       `Nom: ${invoice.userId.prenom.toUpperCase()} ${invoice.userId.nom.toUpperCase()}`,
-      25,
-      startY + 4
+      42,
+      currentY + 5
     )
-    doc.setTextColor(0, 0, 0)
-    return startY + 12
+    currentY += 15
+    console.log(`✓ Nouvelle page initialisée à Y: ${currentY}`)
+  } else {
+    console.log(`✓ Espace suffisant, pas de nouvelle page`)
   }
+  
+  return currentY
+}
 
-  /**
-   * Vérifie si on doit créer une nouvelle page
-   * Règle simple : si moins de MIN_SPACE, nouvelle page
-   */
-  const checkNewPage = (doc, currentY, invoice) => {
-    if (currentY + MIN_SPACE > MAX_CONTENT_Y) {
-      doc.addPage()
-      addFooter(doc, getColorValue('gris'))
-      currentY = addPageHeader(doc, invoice)
-    }
-    return currentY
+/**
+ * Vérifie si on doit ajouter une nouvelle page (usage normal)
+ */
+const checkNewPage = (doc, currentY, invoice) => {
+  const minSpaceNeeded = 20 // 2cm minimum
+  
+  console.log(`[checkNewPage] currentY: ${currentY}, minSpace: ${minSpaceNeeded}, MAX_CONTENT_Y: ${MAX_CONTENT_Y}`)
+  
+  if (currentY + minSpaceNeeded > MAX_CONTENT_Y) {
+    console.log(`⚠️ NOUVELLE PAGE CRÉÉE (Normal) - Y actuel: ${currentY}, espace min: ${minSpaceNeeded}, limite: ${MAX_CONTENT_Y}`)
+    doc.addPage()
+    addFooter(doc, getColorValue('gris'))
+    currentY = 25
+
+    doc.setFontSize(9)
+    doc.setFont('Times', 'normal')
+    doc.text(`Nº Dossier: ${invoice?.identifiant}`, 42, currentY)
+    doc.text(
+      `Nom: ${invoice.userId.prenom.toUpperCase()} ${invoice.userId.nom.toUpperCase()}`,
+      42,
+      currentY + 5
+    )
+    currentY += 15
+    console.log(`✓ Nouvelle page initialisée à Y: ${currentY}`)
+  } else {
+    console.log(`✓ Espace suffisant (${MAX_CONTENT_Y - currentY}mm restants), pas de nouvelle page`)
   }
-
-  /**
-   * Vérifie avec un espace minimum spécifique
-   */
-  const checkSpace = (doc, currentY, minSpace, invoice) => {
-    if (currentY + minSpace > MAX_CONTENT_Y) {
-      doc.addPage()
-      addFooter(doc, getColorValue('gris'))
-      currentY = addPageHeader(doc, invoice)
-    }
-    return currentY
-  }
-
+  
+  return currentY
+}
   const printHematiesLine = (doc, posY, label, value, unit, ref) => {
     doc.text(label, 25, posY)
     doc.text(value, 85, posY)
@@ -345,147 +360,271 @@ function GenerateResultatButton({ invoice }) {
   }
 
   /**
-   * Fonction principale de rendu d'un test - VERSION SIMPLIFIÉE
+   * FONCTION PRINCIPALE CORRIGÉE : renderTest
    */
-  const renderTest = async (doc, test, currentY, invoice) => {
-    // Vérifier qu'on a de l'espace pour au moins le titre
-    currentY = checkNewPage(doc, currentY, invoice)
+/**
+ * FONCTION CORRIGÉE : renderTest avec calcul anticipé de la hauteur nécessaire
+ */
+/**
+ * FONCTION renderTest COMPLÈTE ET CORRIGÉE
+ * Avec estimations de hauteur précises basées sur les logs réels
+ */
+const renderTest = async (doc, test, currentY, invoice) => {
+  console.log(`    [renderTest] Début - Y: ${currentY}, Test: ${test.testId.nom}`)
+  
+  // CALCUL DYNAMIQUE basé sur le contenu réel
+  let estimatedHeight = 15 // Titre
 
-    // Rendu du titre
-    const maxLineWidth = 100
-    let nomTestLines = doc.splitTextToSize(`${test.testId.nom.toUpperCase()}`, maxLineWidth)
+  // Antériorités (affichées séparément)
+  if (test?.observations?.macroscopique.length === 0 && test?.dernierResultatAnterieur) {
+    estimatedHeight += 20
+  }
 
-    doc.setFontSize(9)
-    doc.setFont('Courier', 'normal')
-    doc.setFontSize(8)
-    doc.setFont('Times', 'bold')
+  // Vérifier si test a des antériorités DANS les exceptions
+  const hasAnteriority = test?.dernierResultatAnterieur ? true : false
 
-    doc.setFillColor(0, 0, 0)
-    doc.circle(18, currentY - 1, 1, 'F')
-
-    if (test?.observations && test?.observations?.macroscopique?.length > 0) {
-      doc.setFontSize(9)
-      doc.setFont('Times', 'bold')
-      doc.text(nomTestLines, 60, currentY)
-    } else {
-      doc.setFontSize(9)
-      doc.text(nomTestLines, 20, currentY)
-    }
-
-    currentY += 5 * nomTestLines.length
-    doc.setFont('Times', 'normal')
-    doc.setFontSize(8)
-
-    const formattedDate = formatDateAndTime(test?.datePrelevement)
-    const formattedDateAnterieur = formatDateAndTime(test?.dernierResultatAnterieur?.date)
-
-    doc.setFont('Times', 'bold')
-    doc.setFontSize(8)
-
-    let anterioriteHeight = 0
-
-    // Antériorités (colonne droite) - seulement si pas d'observations macroscopiques
-    if (test?.observations?.macroscopique?.length === 0 && test?.dernierResultatAnterieur) {
-      const valeurAnterieure = test.dernierResultatAnterieur.valeur ?? ''
-      const dateAnterieure = formattedDateAnterieur ?? ''
-      
-      doc.text('Antériorités', 160, currentY)
-      doc.text(valeurAnterieure, 160, currentY + 5)
-      doc.text(dateAnterieure, 160, currentY + 10)
-      
-      anterioriteHeight = 15
-    }
-
-    // Contenu principal du test (si pas d'observations macroscopiques)
-    if (test?.observations?.macroscopique?.length === 0) {
-      if (test?.typePrelevement) {
-        doc.setFontSize(8)
-        doc.setFont('Times', 'normal')
-        doc.text(
-          `Prélèvement : ${formattedDate}, ${test?.typePrelevement}`,
-          20,
-          currentY
-        )
-        currentY += 5
-      }
-
-      renderMachineInfo(doc, test, currentY)
-      currentY += 5
-
-      doc.setFont('Times', 'bold')
-      doc.setFontSize(10)
-      doc.text(`${test?.valeur}`, 90, currentY)
-
-      if (test?.qualitatif) {
-        currentY += 5
-        doc.text(`(${test?.qualitatif})`, 86, currentY)
-      }
-
-      currentY = Math.max(currentY + 5, anterioriteHeight > 0 ? currentY + anterioriteHeight - 10 : currentY)
-
-      // Exceptions
-      if (test?.exceptions) {
-        currentY = renderExceptions(doc, test, currentY, invoice)
-      }
-
-      // Remarque
-      if (test?.remarque) {
-        currentY = checkNewPage(doc, currentY, invoice)
-        doc.setFontSize(8)
-        doc.setFont('Times', 'italic')
-        const remarqueLines = doc.splitTextToSize(`Remarque: ${test.remarque}`, 170)
-        doc.text(remarqueLines, 20, currentY)
-        currentY += remarqueLines.length * 5
-      }
-
-      // Interprétation
-      if (test.statutInterpretation) {
-        currentY = renderInterpretation(doc, test, currentY, invoice)
-      }
-    }
-
-    // Observations (examens bactério, etc.)
-    if (
-      test?.observations ||
-      test?.culture ||
-      test?.gram ||
-      test?.conclusion ||
-      (test?.observations && test?.observations?.macroscopique?.length > 0)
-    ) {
-      currentY = renderObservations(doc, test, currentY, invoice)
-    }
-
-    currentY += 5
+  // Exceptions - CALCUL DYNAMIQUE
+  if (test?.exceptions) {
+    let baseHeight = 15 // Hauteur de base (titre du test + valeur)
     
-    return currentY
+    if (test.exceptions.nfs) {
+      baseHeight = 60 // NFS reste fixe
+    } else if (test.exceptions.dfg) {
+      baseHeight = 25 // Paramètres de base
+      if (test.testId?.interpretationA || test.testId?.interpretationB) {
+        baseHeight += 20 // Tableau d'interprétation
+      }
+      if (hasAnteriority) baseHeight += 25 // Antériorités DFG
+    } else if (test.exceptions.cholesterolLdl) {
+      baseHeight = 27 // Base : 4 lignes + note
+      if (hasAnteriority) baseHeight += 25 // +5 lignes pour antériorités
+    } else if (test.exceptions.microalbuminurie24h) {
+      baseHeight = 20 // 3 lignes
+      if (hasAnteriority) baseHeight += 20 // Antériorités
+    } else if (test.exceptions.proteinurie24h) {
+      baseHeight = 20 // 3 lignes
+      if (hasAnteriority) baseHeight += 20 // Antériorités
+    } else if (test.exceptions.psaRapport) {
+      baseHeight = 20 // 3 lignes
+      if (hasAnteriority) baseHeight += 20 // Antériorités
+    } else if (test.exceptions.rapportAlbuminurie) {
+      baseHeight = 25 // Base
+      if (test.testId?.interpretationA || test.testId?.interpretationB) {
+        baseHeight += 15 // Interprétation texte
+      }
+    } else if (test.exceptions.clairanceCreatinine) {
+      baseHeight = 30
+    } else if (test.exceptions.saturationTransferrine) {
+      baseHeight = 25
+    } else if (test.exceptions.reticulocytes) {
+      baseHeight = 25
+    } else if (test.exceptions.compteAddis) {
+      baseHeight = 20
+    } else if (test.exceptions.calciumCorrige) {
+      baseHeight = 20
+    } else if (test.exceptions.bilirubineIndirecte) {
+      baseHeight = 20
+    } else if (test.exceptions.lipidesTotaux) {
+      baseHeight = 25
+      if (hasAnteriority) baseHeight += 20
+    } else if (test.exceptions.rapportProteines) {
+      baseHeight = 20
+    } else if (test.exceptions.groupeSanguin) {
+      baseHeight = 15
+    } else if (test.exceptions.hgpo) {
+      baseHeight = 20
+    } else if (test.exceptions.ionogramme) {
+      baseHeight = 30
+    } else if (test.exceptions.qbc) {
+      baseHeight = 25
+    } else {
+      baseHeight = 20
+    }
+    
+    estimatedHeight += baseHeight
   }
 
-  const addTestResults = async (doc, invoice) => {
-    let currentY = 77
-    const sortedResults = sortResultsByCategory(invoice?.resultat)
+  // Remarque
+  if (test?.remarque) {
+    const remarqueLines = doc.splitTextToSize(test.remarque, 170)
+    estimatedHeight += remarqueLines.length * 5 + 5
+  }
 
-    for (const group of sortedResults) {
-      // Pour chaque catégorie, vérifier qu'on a au moins 20mm d'espace
-      currentY = checkSpace(doc, currentY, 20, invoice)
+  console.log(`    Hauteur estimée: ${estimatedHeight}mm (hasAnteriority: ${hasAnteriority})`)
 
-      doc.setFontSize(12)
-      doc.setFont('Times', 'bold')
-      doc.text(group.category.toUpperCase(), 90, currentY)
+  currentY = checkNewPageWithMinHeight(doc, currentY, estimatedHeight, invoice)
 
-      doc.line(20, currentY + 2, 190, currentY + 2)
-      currentY += 10
+  // Rendu du titre
+  const maxLineWidth = 100
+  let nomTestLines = doc.splitTextToSize(
+    `${test.testId.nom.toUpperCase()}`,
+    maxLineWidth
+  )
 
-      for (const test of group.results) {
-        if (!test || !test.testId) continue
-        currentY = await renderTest(doc, test, currentY, invoice)
-      }
+  doc.setFontSize(9)
+  doc.setFont('Courier', 'normal')
+  doc.setFontSize(8)
+  doc.setFont('Times', 'bold')
+
+  doc.setFillColor(0, 0, 0)
+  doc.circle(18, currentY - 1, 1, 'F')
+
+  if (test?.observations && test?.observations?.macroscopique.length > 0) {
+    doc.setFontSize(9)
+    doc.setFont('Times', 'bold')
+    doc.text(nomTestLines, 60, currentY)
+  } else {
+    doc.setFontSize(9)
+    doc.text(nomTestLines, 20, currentY)
+  }
+
+  currentY += 5 * nomTestLines.length
+  doc.setFont('Times', 'normal')
+  doc.setFontSize(8)
+
+  const formattedDate = formatDateAndTime(test?.datePrelevement)
+  const formattedDateAnterieur = formatDateAndTime(
+    test?.dernierResultatAnterieur?.date
+  )
+
+  doc.setFont('Times', 'bold')
+  doc.setFontSize(8)
+
+  let anterioriteHeight = 0
+
+  // Antériorités (colonne droite)
+  if (
+    test?.observations?.macroscopique.length === 0 &&
+    test?.dernierResultatAnterieur
+  ) {
+    const valeurAnterieure = test.dernierResultatAnterieur.valeur ?? ''
+    const dateAnterieure = formattedDateAnterieur ?? ''
+    
+    doc.text('Antériorités', 160, currentY)
+    doc.text(valeurAnterieure, 160, currentY + 5)
+    doc.text(dateAnterieure, 160, currentY + 10)
+    
+    anterioriteHeight = 15
+  }
+
+  if (test?.observations?.macroscopique.length === 0) {
+    if (test?.typePrelevement) {
+      doc.setFontSize(8)
+      doc.setFont('Times', 'normal')
+      doc.text(
+        `Prélèvement : ${formattedDate}, ${test?.typePrelevement}`,
+        20,
+        currentY
+      )
+      currentY += 5
     }
 
-    return currentY
+    renderMachineInfo(doc, test, currentY)
+    currentY += 5
+
+    doc.setFont('Times', 'bold')
+    doc.setFontSize(10)
+    doc.text(`${test?.valeur}`, 90, currentY)
+
+    if (test?.qualitatif) {
+      currentY += 5
+      doc.text(`(${test?.qualitatif})`, 86, currentY)
+    }
+
+    currentY = Math.max(currentY + 5, currentY > anterioriteHeight ? currentY : anterioriteHeight)
+
+    if (test?.exceptions) {
+      const beforeExceptions = currentY
+      currentY = renderExceptions(doc, test, currentY, invoice)
+      console.log(`    Exceptions rendues: +${currentY - beforeExceptions}mm`)
+    }
+
+    if (test?.remarque) {
+      currentY = checkNewPage(doc, currentY, invoice)
+      doc.setFontSize(8)
+      doc.setFont('Times', 'italic')
+      const remarqueLines = doc.splitTextToSize(`Remarque: ${test.remarque}`, 170)
+      doc.text(remarqueLines, 20, currentY)
+      currentY += remarqueLines.length * 5
+    }
+
+    if (test.statutInterpretation) {
+      currentY = renderInterpretation(doc, test, currentY, invoice)
+    }
   }
+
+  if (
+    test?.observations ||
+    test?.culture ||
+    test?.gram ||
+    test?.conclusion ||
+    (test?.observations && test?.observations?.macroscopique.length > 0)
+  ) {
+    currentY = renderObservations(doc, test, currentY, invoice)
+  }
+
+  currentY += 5
+  
+  console.log(`    [renderTest] Fin - Y final: ${currentY}`)
+  return currentY
+}
+
+const addTestResults = async (doc, invoice) => {
+  let currentY = 77
+  const sortedResults = sortResultsByCategory(invoice?.resultat)
+
+  console.log(`\n========== DÉBUT GÉNÉRATION RÉSULTATS ==========`)
+  console.log(`Position de départ: ${currentY}`)
+  
+  for (const group of sortedResults) {
+    const minSpaceForCategory = 25
+    
+    console.log(`\n--- Catégorie: ${group.category} ---`)
+    console.log(`Position avant vérification: ${currentY}`)
+    
+    if (currentY + minSpaceForCategory > MAX_CONTENT_Y) {
+      console.log(`⚠️ NOUVELLE PAGE CRÉÉE (Catégorie) - Y actuel: ${currentY}, espace requis: ${minSpaceForCategory}, limite: ${MAX_CONTENT_Y}`)
+      doc.addPage()
+      addFooter(doc, getColorValue('gris'))
+      currentY = 25
+      
+      doc.setFontSize(9)
+      doc.setFont('Times', 'normal')
+      doc.text(`Nº Dossier: ${invoice?.identifiant}`, 42, currentY)
+      doc.text(
+        `Nom: ${invoice.userId.prenom.toUpperCase()} ${invoice.userId.nom.toUpperCase()}`,
+        42,
+        currentY + 5
+      )
+      currentY += 15
+      console.log(`✓ Nouvelle page pour catégorie initialisée à Y: ${currentY}`)
+    } else {
+      console.log(`✓ Catégorie peut tenir sur la page actuelle`)
+    }
+
+    doc.setFontSize(12)
+    doc.setFont('Times', 'bold')
+    doc.text(group.category.toUpperCase(), 90, currentY)
+
+    doc.line(20, currentY + 2, 190, currentY + 2)
+    currentY += 10
+    console.log(`Position après titre de catégorie: ${currentY}`)
+
+    for (const test of group.results) {
+      if (!test || !test.testId) continue
+      console.log(`  → Test: ${test.testId.nom}`)
+      const oldY = currentY
+      currentY = await renderTest(doc, test, currentY, invoice)
+      console.log(`  Position après test: ${currentY} (delta: +${currentY - oldY}mm)`)
+    }
+  }
+
+  console.log(`\n========== FIN GÉNÉRATION RÉSULTATS ==========\n`)
+  return currentY
+}
 
   /**
-   * FONCTIONS D'EXCEPTIONS
+   * TOUTES LES FONCTIONS D'EXCEPTIONS CORRIGÉES
    */
   const renderExceptions = (doc, test, excepY, invoice) => {
     if (test.exceptions.qbc && test.exceptions.qbc.positivite) {
@@ -525,6 +664,7 @@ function GenerateResultatButton({ invoice }) {
       }
     }
 
+    // Tous les paramètres calculés
     if (test.exceptions.psaRapport && test.exceptions.psaRapport.rapport?.valeur) {
       excepY = renderPsaRapportException(doc, test, excepY, invoice)
     }
@@ -586,8 +726,9 @@ function GenerateResultatButton({ invoice }) {
     return excepY
   }
 
+  // QBC Exception
   const renderQbcException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
+    excepY = checkNewPageWithMinHeight(doc, excepY, 25, invoice)
     doc.setFont('Times', 'normal')
 
     if (test.exceptions.qbc.positivite) {
@@ -614,8 +755,9 @@ function GenerateResultatButton({ invoice }) {
     return excepY
   }
 
+  // Blood Group Exception
   const renderBloodGroupException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
+    excepY = checkNewPageWithMinHeight(doc, excepY, 15, invoice)
     doc.setFont('Times', 'normal')
 
     if (test.exceptions.groupeSanguin.abo) {
@@ -631,8 +773,9 @@ function GenerateResultatButton({ invoice }) {
     return excepY
   }
 
+  // HGPO Exception
   const renderHgpoException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
+    excepY = checkNewPageWithMinHeight(doc, excepY, 20, invoice)
     doc.setFont('Times', 'normal')
 
     if (test.exceptions.hgpo.t0) {
@@ -653,8 +796,9 @@ function GenerateResultatButton({ invoice }) {
     return excepY
   }
 
+  // Ionogramme Exception
   const renderIonogrammeException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
+    excepY = checkNewPageWithMinHeight(doc, excepY, 30, invoice)
     doc.setFont('Times', 'normal')
 
     if (test.exceptions.ionogramme.na) {
@@ -691,6 +835,7 @@ function GenerateResultatButton({ invoice }) {
     return excepY
   }
 
+  // NFS Exception (continue dans le prochain message...)
   const renderNfsException = (doc, test, excepY, invoice) => {
     const { hematiesEtConstantes, leucocytesEtFormules } = test.exceptions.nfs
     const showHematies = hasHematiesValues(hematiesEtConstantes)
@@ -698,8 +843,7 @@ function GenerateResultatButton({ invoice }) {
 
     if (!showHematies && !showLeucocytes) return excepY
 
-    // Vérifier qu'on a assez d'espace pour le début de la NFS
-    excepY = checkSpace(doc, excepY, 25, invoice)
+    excepY = checkNewPageWithMinHeight(doc, excepY, 40, invoice)
     
     doc.setFont('Times', 'bold')
     doc.setFontSize(10)
@@ -717,31 +861,24 @@ function GenerateResultatButton({ invoice }) {
       doc.setFont('Times', 'normal')
 
       if (hematiesEtConstantes.gr?.valeur) {
-        excepY = checkNewPage(doc, excepY, invoice)
         excepY = printHematiesLine(doc, excepY, 'Hématies', String(hematiesEtConstantes.gr.valeur), hematiesEtConstantes.gr.unite || '', hematiesEtConstantes.gr.reference || '')
       }
       if (hematiesEtConstantes.hgb?.valeur) {
-        excepY = checkNewPage(doc, excepY, invoice)
         excepY = printHematiesLine(doc, excepY, 'Hémoglobine', String(hematiesEtConstantes.hgb.valeur), hematiesEtConstantes.hgb.unite || '', hematiesEtConstantes.hgb.reference || '')
       }
       if (hematiesEtConstantes.hct?.valeur) {
-        excepY = checkNewPage(doc, excepY, invoice)
         excepY = printHematiesLine(doc, excepY, 'Hématocrite', String(hematiesEtConstantes.hct.valeur), hematiesEtConstantes.hct.unite || '', hematiesEtConstantes.hct.reference || '')
       }
       if (hematiesEtConstantes.vgm?.valeur) {
-        excepY = checkNewPage(doc, excepY, invoice)
         excepY = printHematiesLine(doc, excepY, 'VGM', String(hematiesEtConstantes.vgm.valeur), hematiesEtConstantes.vgm.unite || '', hematiesEtConstantes.vgm.reference || '')
       }
       if (hematiesEtConstantes.tcmh?.valeur) {
-        excepY = checkNewPage(doc, excepY, invoice)
         excepY = printHematiesLine(doc, excepY, 'TCMH', String(hematiesEtConstantes.tcmh.valeur), hematiesEtConstantes.tcmh.unite || '', hematiesEtConstantes.tcmh.reference || '')
       }
       if (hematiesEtConstantes.ccmh?.valeur) {
-        excepY = checkNewPage(doc, excepY, invoice)
         excepY = printHematiesLine(doc, excepY, 'CCMH', String(hematiesEtConstantes.ccmh.valeur), hematiesEtConstantes.ccmh.unite || '', hematiesEtConstantes.ccmh.reference || '')
       }
       if (hematiesEtConstantes.idr_cv?.valeur) {
-        excepY = checkNewPage(doc, excepY, invoice)
         excepY = printHematiesLine(doc, excepY, 'IDR-CV', String(hematiesEtConstantes.idr_cv.valeur), hematiesEtConstantes.idr_cv.unite || '', hematiesEtConstantes.idr_cv.reference || '')
       }
 
@@ -758,42 +895,35 @@ function GenerateResultatButton({ invoice }) {
       const { gb, neut, lymph, mono, eo, baso, plt, proerythroblastes, erythroblastes, myeloblastes, promyelocytes, myelocytes, metamyelocytes, monoblastes, lymphoblastes } = leucocytesEtFormules
 
       if (gb?.valeur) {
-        excepY = checkNewPage(doc, excepY, invoice)
         excepY = printLeucocytesLine(doc, excepY, 'Leucocytes', null, String(gb.valeur), gb.unite || '', gb.reference || '')
       }
       if (neut?.valeur || neut?.pourcentage) {
-        excepY = checkNewPage(doc, excepY, invoice)
         let p = neut?.pourcentage ? String(neut.pourcentage) : null
         let v = neut?.valeur ? String(neut.valeur) : ''
         excepY = printLeucocytesLine(doc, excepY, 'Neutrophiles', p, v, neut.unite || '', neut.referencePourcentage || '')
       }
       if (lymph?.valeur || lymph?.pourcentage) {
-        excepY = checkNewPage(doc, excepY, invoice)
         let p = lymph?.pourcentage ? String(lymph.pourcentage) : null
         let v = lymph?.valeur ? String(lymph.valeur) : ''
         excepY = printLeucocytesLine(doc, excepY, 'Lymphocytes', p, v, lymph.unite || '', lymph.referencePourcentage || '')
       }
       if (mono?.valeur || mono?.pourcentage) {
-        excepY = checkNewPage(doc, excepY, invoice)
         let p = mono?.pourcentage ? String(mono.pourcentage) : null
         let v = mono?.valeur ? String(mono.valeur) : ''
         excepY = printLeucocytesLine(doc, excepY, 'Monocytes', p, v, mono.unite || '', mono.referencePourcentage || '')
       }
       if (eo?.valeur || eo?.pourcentage) {
-        excepY = checkNewPage(doc, excepY, invoice)
         let p = eo?.pourcentage ? String(eo.pourcentage) : null
         let v = eo?.valeur ? String(eo.valeur) : ''
         excepY = printLeucocytesLine(doc, excepY, 'Eosinophiles', p, v, eo.unite || '', eo.referencePourcentage || '')
       }
       if (baso?.valeur || baso?.pourcentage) {
-        excepY = checkNewPage(doc, excepY, invoice)
         let p = baso?.pourcentage ? String(baso.pourcentage) : null
         let v = baso?.valeur ? String(baso.valeur) : ''
         excepY = printLeucocytesLine(doc, excepY, 'Basophiles', p, v, baso.unite || '', baso.referencePourcentage || '')
       }
 
       excepY += 8
-      excepY = checkNewPage(doc, excepY, invoice)
       doc.setFont('Times', 'bold')
       doc.text('PLAQUETTES', 25, excepY)
       excepY += 5
@@ -804,7 +934,6 @@ function GenerateResultatButton({ invoice }) {
       }
 
       excepY += 7
-      excepY = checkNewPage(doc, excepY, invoice)
       doc.setFont('Times', 'bold')
       doc.text('AUTRES', 25, excepY)
       excepY += 7
@@ -837,8 +966,9 @@ function GenerateResultatButton({ invoice }) {
     return excepY
   }
 
+  // PSA Rapport
   const renderPsaRapportException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
+    excepY = checkNewPageWithMinHeight(doc, excepY, 20, invoice)
     doc.setFont('Times', 'normal')
     doc.setFontSize(9)
 
@@ -862,24 +992,24 @@ function GenerateResultatButton({ invoice }) {
     return excepY
   }
 
+  // Réticulocytes
   const renderReticulocytesException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
+    excepY = checkNewPageWithMinHeight(doc, excepY, 25, invoice)
     doc.setFont('Times', 'normal')
     doc.setFontSize(9)
 
-    if (test.exceptions.reticulocytes.reticulocytes?.valeur) {
-      doc.text(`Réticulocytes (%) : ${test.exceptions.reticulocytes.reticulocytes.valeur} ${test.exceptions.reticulocytes.reticulocytes.unite}`, 25, excepY)
-      excepY += 5
-    }
-
-    if (test.exceptions.reticulocytes.hematiesParMicrolitre?.valeur) {
-      doc.text(`GR : ${test.exceptions.reticulocytes.hematiesParMicrolitre.valeur} ${test.exceptions.reticulocytes.hematiesParMicrolitre.unite}`, 25, excepY)
-      excepY += 5
-    }
+    
 
     if (test.exceptions.reticulocytes.valeurAbsolue?.valeur) {
       doc.setFont('Times', 'bold')
-      doc.text(`Valeur absolue : ${test.exceptions.reticulocytes.valeurAbsolue.valeur} ${test.exceptions.reticulocytes.valeurAbsolue.unite}`, 25, excepY)
+      doc.text(`Nombre: ${test.exceptions.reticulocytes.valeurAbsolue.valeur} ${test.exceptions.reticulocytes.valeurAbsolue.unite}`, 25, excepY)
+      doc.setFont('Times', 'normal')
+      excepY += 5
+    }
+
+    if (test.exceptions.reticulocytes.pourcentageCalcule?.valeur) {
+      doc.setFont('Times', 'bold')
+      doc.text(`Taux: ${test.exceptions.reticulocytes.pourcentageCalcule.valeur} ${test.exceptions.reticulocytes.pourcentageCalcule.unite}`, 25, excepY)
       doc.setFont('Times', 'normal')
       excepY += 10
     }
@@ -887,29 +1017,15 @@ function GenerateResultatButton({ invoice }) {
     return excepY
   }
 
+  // Clairance Créatinine
   const renderClairanceCreatinineException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
+    excepY = checkNewPageWithMinHeight(doc, excepY, 30, invoice)
     doc.setFont('Times', 'normal')
     doc.setFontSize(9)
-
-    if (test.exceptions.clairanceCreatinine.creatininemie?.valeur) {
-      doc.text(`Créatininémie : ${test.exceptions.clairanceCreatinine.creatininemie.valeur} ${test.exceptions.clairanceCreatinine.creatininemie.unite}`, 25, excepY)
-      excepY += 5
-    }
-
-    if (test.exceptions.clairanceCreatinine.creatininurie?.valeur) {
-      doc.text(`Créatininurie : ${test.exceptions.clairanceCreatinine.creatininurie.valeur} ${test.exceptions.clairanceCreatinine.creatininurie.unite}`, 25, excepY)
-      excepY += 5
-    }
-
-    if (test.exceptions.clairanceCreatinine.volume?.valeur) {
-      doc.text(`Volume : ${test.exceptions.clairanceCreatinine.volume.valeur} ${test.exceptions.clairanceCreatinine.volume.unite}`, 25, excepY)
-      excepY += 5
-    }
 
     if (test.exceptions.clairanceCreatinine.clairance?.valeur) {
       doc.setFont('Times', 'bold')
-      doc.text(`Clairance calculée : ${test.exceptions.clairanceCreatinine.clairance.valeur} ${test.exceptions.clairanceCreatinine.clairance.unite}`, 25, excepY)
+      doc.text(`Clairance: ${test.exceptions.clairanceCreatinine.clairance.valeur} ${test.exceptions.clairanceCreatinine.clairance.unite}`, 25, excepY)
       doc.setFont('Times', 'normal')
       excepY += 10
     }
@@ -917,67 +1033,42 @@ function GenerateResultatButton({ invoice }) {
     return excepY
   }
 
+  // DFG
   const renderDfgException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
+    excepY = checkNewPageWithMinHeight(doc, excepY, 25, invoice)
     doc.setFont('Times', 'normal')
     doc.setFontSize(9)
 
-    if (test.exceptions.dfg.creatininemie?.valeur) {
-      doc.text(`Créatininémie : ${test.exceptions.dfg.creatininemie.valeur} ${test.exceptions.dfg.creatininemie.unite}`, 25, excepY)
-      excepY += 5
-    }
-
     if (test.exceptions.dfg.dfgValue?.valeur) {
       doc.setFont('Times', 'bold')
-      doc.text(`DFG (CKD-EPI) : ${test.exceptions.dfg.dfgValue.valeur} ${test.exceptions.dfg.dfgValue.unite}`, 25, excepY)
+      doc.text(`DFG : ${test.exceptions.dfg.dfgValue.valeur} ${test.exceptions.dfg.dfgValue.unite}`, 25, excepY)
       doc.setFont('Times', 'normal')
-      excepY += 7
-
-      // Interprétation sous forme de tableau si elle existe
-      if (test.testId?.interpretationA || test.testId?.interpretationB) {
-        const interpretation = test.statutMachine ? test.testId.interpretationA : test.testId.interpretationB
-        
-        if (interpretation && interpretation.type === 'table') {
-          excepY = checkSpace(doc, excepY, 40, invoice)
-          doc.setFont('Times', 'bold')
-          doc.text('Interprétation:', 25, excepY)
-          excepY += 5
-          
-          doc.setFontSize(8)
-          interpretation.content.columns.forEach((col, colIndex) => {
-            doc.text(col, 25 + colIndex * 60, excepY)
-          })
-          excepY += 5
-
-          doc.setFont('Times', 'normal')
-          interpretation.content.rows.forEach((row) => {
-            excepY = checkNewPage(doc, excepY, invoice)
-            row.forEach((cell, cellIndex) => {
-              doc.text(cell, 25 + cellIndex * 60, excepY)
-            })
-            excepY += 5
-          })
-          doc.setFontSize(9)
-          excepY += 5
-        }
-      }
+      excepY += 10
     }
 
     return excepY
   }
 
+  // Saturation Transferrine
   const renderSaturationTransferrineException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
+    excepY = checkNewPageWithMinHeight(doc, excepY, 25, invoice)
     doc.setFont('Times', 'normal')
     doc.setFontSize(9)
 
-    if (test.exceptions.saturationTransferrine.fer?.valeur) {
-      doc.text(`Fer sérique : ${test.exceptions.saturationTransferrine.fer.valeur} ${test.exceptions.saturationTransferrine.fer.unite}`, 25, excepY)
+    if (test.exceptions.saturationTransferrine.ferSerique?.valeur) {
+      doc.text(`Fer sérique : ${test.exceptions.saturationTransferrine.ferSerique.valeur} ${test.exceptions.saturationTransferrine.ferSerique.unite}`, 25, excepY)
       excepY += 5
     }
 
-    if (test.exceptions.saturationTransferrine.ctf?.valeur) {
-      doc.text(`Capacité totale de fixation : ${test.exceptions.saturationTransferrine.ctf.valeur} ${test.exceptions.saturationTransferrine.ctf.unite}`, 25, excepY)
+    if (test.exceptions.saturationTransferrine.transferrine?.valeur) {
+      doc.text(`Transferrine : ${test.exceptions.saturationTransferrine.transferrine.valeur} ${test.exceptions.saturationTransferrine.transferrine.unite}`, 25, excepY)
+      excepY += 5
+    }
+
+    if (test.exceptions.saturationTransferrine.ctff?.valeur) {
+      doc.setFont('Times', 'bold')
+      doc.text(`CTFF: ${test.exceptions.saturationTransferrine.ctff.valeur} ${test.exceptions.saturationTransferrine.ctff.unite}`, 25, excepY)
+      doc.setFont('Times', 'normal')
       excepY += 5
     }
 
@@ -991,26 +1082,35 @@ function GenerateResultatButton({ invoice }) {
     return excepY
   }
 
+  // Compte d'Addis
   const renderCompteAddisException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
+    excepY = checkNewPageWithMinHeight(doc, excepY, 30, invoice)
     doc.setFont('Times', 'normal')
     doc.setFontSize(9)
 
-    if (test.exceptions.compteAddis.volume?.valeur) {
-      doc.text(`Volume : ${test.exceptions.compteAddis.volume.valeur} ${test.exceptions.compteAddis.volume.unite}`, 25, excepY)
+    
+
+
+    if (test.exceptions.compteAddis.dureeRecueil?.valeur) {
+      doc.text(`Durée de recueil : ${test.exceptions.compteAddis.dureeRecueil.valeur} ${test.exceptions.compteAddis.dureeRecueil.unite}`, 25, excepY)
       excepY += 5
     }
 
     if (test.exceptions.compteAddis.leucocytesParMinute?.valeur) {
       doc.setFont('Times', 'bold')
-      doc.text(`Leucocytes/min : ${test.exceptions.compteAddis.leucocytesParMinute.valeur} ${test.exceptions.compteAddis.leucocytesParMinute.unite}`, 25, excepY)
+      doc.text(`Leucocytes: ${test.exceptions.compteAddis.leucocytesParMinute.valeur} ${test.exceptions.compteAddis.leucocytesParMinute.unite}`, 25, excepY)
       doc.setFont('Times', 'normal')
+      excepY += 5
+    }
+    
+    if (test.exceptions.compteAddis.hematiesTotales?.valeur) {
+      doc.text(`Hématies: ${test.exceptions.compteAddis.hematiesTotales.valeur} ${test.exceptions.compteAddis.hematiesTotales.unite}`, 25, excepY)
       excepY += 5
     }
 
     if (test.exceptions.compteAddis.hematiesParMinute?.valeur) {
       doc.setFont('Times', 'bold')
-      doc.text(`Hématies/min : ${test.exceptions.compteAddis.hematiesParMinute.valeur} ${test.exceptions.compteAddis.hematiesParMinute.unite}`, 25, excepY)
+      doc.text(`Hématies/minute : ${test.exceptions.compteAddis.hematiesParMinute.valeur} ${test.exceptions.compteAddis.hematiesParMinute.unite}`, 25, excepY)
       doc.setFont('Times', 'normal')
       excepY += 10
     }
@@ -1018,10 +1118,12 @@ function GenerateResultatButton({ invoice }) {
     return excepY
   }
 
+  // Calcium Corrigé
   const renderCalciumCorrigeException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
+    excepY = checkNewPageWithMinHeight(doc, excepY, 20, invoice)
     doc.setFont('Times', 'normal')
     doc.setFontSize(9)
+
 
     if (test.exceptions.calciumCorrige.calciumCorrige?.valeur) {
       doc.setFont('Times', 'bold')
@@ -1033,8 +1135,9 @@ function GenerateResultatButton({ invoice }) {
     return excepY
   }
 
+  // Rapport Albuminurie
   const renderRapportAlbuminurieException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
+    excepY = checkNewPageWithMinHeight(doc, excepY, 25, invoice)
     doc.setFont('Times', 'normal')
     doc.setFontSize(9)
 
@@ -1076,8 +1179,9 @@ function GenerateResultatButton({ invoice }) {
     return excepY
   }
 
+  // Rapport Protéines
   const renderRapportProteinesException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
+    excepY = checkNewPageWithMinHeight(doc, excepY, 20, invoice)
     doc.setFont('Times', 'normal')
     doc.setFontSize(9)
 
@@ -1101,28 +1205,31 @@ function GenerateResultatButton({ invoice }) {
     return excepY
   }
 
-  const renderCholesterolLdlException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
+  // Cholestérol LDL
+ const renderCholesterolLdlException = (doc, test, excepY, invoice) => {
+  excepY = checkNewPageWithMinHeight(doc, excepY, 30, invoice)
+  doc.setFont('Times', 'normal')
+  doc.setFontSize(9)
+
+
+  if (test.exceptions.cholesterolLdl.ldl?.valeur) {
+    doc.setFont('Times', 'bold')
+    doc.text(`LDL Dosé: ${test.exceptions.cholesterolLdl.ldl.valeur} ${test.exceptions.cholesterolLdl.ldl.unite}`, 25, excepY)
     doc.setFont('Times', 'normal')
+    excepY += 5
+    
+    doc.setFontSize(7)
+    doc.text('* Valable si triglycérides < 3.5 g/L', 25, excepY)
     doc.setFontSize(9)
-
-    if (test.exceptions.cholesterolLdl.ldl?.valeur) {
-      doc.setFont('Times', 'bold')
-      doc.text(`LDL Dosé: ${test.exceptions.cholesterolLdl.ldl.valeur} ${test.exceptions.cholesterolLdl.ldl.unite}`, 25, excepY)
-      doc.setFont('Times', 'normal')
-      excepY += 5
-      
-      doc.setFontSize(7)
-      doc.text('* Valable si triglycérides < 3.5 g/L', 25, excepY)
-      doc.setFontSize(9)
-      excepY += 7
-    }
-
-    return excepY
+    excepY += 7 // RÉDUIT de 10 à 7
   }
 
+  return excepY
+}
+
+  // Lipides Totaux
   const renderLipidesTotauxException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
+    excepY = checkNewPageWithMinHeight(doc, excepY, 25, invoice)
     doc.setFont('Times', 'normal')
     doc.setFontSize(9)
 
@@ -1151,8 +1258,9 @@ function GenerateResultatButton({ invoice }) {
     return excepY
   }
 
+  // Microalbuminurie 24h
   const renderMicroalbuminurie24hException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
+    excepY = checkNewPageWithMinHeight(doc, excepY, 20, invoice)
     doc.setFont('Times', 'normal')
     doc.setFontSize(9)
 
@@ -1176,8 +1284,9 @@ function GenerateResultatButton({ invoice }) {
     return excepY
   }
 
+  // Protéinurie 24h
   const renderProteinurie24hException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
+    excepY = checkNewPageWithMinHeight(doc, excepY, 20, invoice)
     doc.setFont('Times', 'normal')
     doc.setFontSize(9)
 
@@ -1201,8 +1310,9 @@ function GenerateResultatButton({ invoice }) {
     return excepY
   }
 
+  // Bilirubine Indirecte
   const renderBilirubineIndirecteException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
+    excepY = checkNewPageWithMinHeight(doc, excepY, 20, invoice)
     doc.setFont('Times', 'normal')
     doc.setFontSize(9)
 
@@ -1219,26 +1329,36 @@ function GenerateResultatButton({ invoice }) {
   const renderInterpretation = (doc, test, currentY, invoice) => {
     const interpretation = test.statutMachine ? test.testId.interpretationA : test.testId.interpretationB
 
-    if (!interpretation) return currentY
-
     let interpretationHeight = 0
     let interpretationLines = []
 
     if (interpretation.type === 'text') {
       interpretationLines = doc.splitTextToSize(interpretation.content, 100)
-      interpretationHeight = 5 * interpretationLines.length + 10
+      interpretationHeight = 5 * interpretationLines.length
     } else if (interpretation.type === 'table') {
       const { rows } = interpretation.content
-      interpretationHeight = 5 + rows.length * 5 + 10
+      interpretationHeight = 5 + rows.length * 5
     }
 
-    // Vérifier qu'on a assez d'espace
-    currentY = checkSpace(doc, currentY, interpretationHeight, invoice)
+    const footerY = 265
+    const marginBottom = 5
 
-    doc.setFontSize(10)
-    doc.setFont('Times', 'bold')
-    doc.text('Interprétation:', 20, currentY)
-    currentY += 5
+    if (currentY + interpretationHeight + marginBottom > footerY) {
+      doc.addPage()
+      currentY = 20
+      doc.text(`Nº Dossier: ${invoice?.identifiant}`, 42, currentY)
+      doc.text(`Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`, 42, currentY + 5)
+      doc.setFontSize(10)
+      doc.setFont('Times', 'bold')
+      doc.text('Interprétation:', 20, currentY + 15)
+      currentY += 20
+      addFooter(doc, getColorValue('gris'))
+    } else {
+      doc.setFontSize(10)
+      doc.setFont('Times', 'bold')
+      doc.text('Interprétation:', 20, currentY)
+      currentY += 5
+    }
 
     if (interpretation.type === 'text') {
       doc.setFontSize(9)
@@ -1255,7 +1375,6 @@ function GenerateResultatButton({ invoice }) {
 
       doc.setFont('Times', 'normal')
       interpretation.content.rows.forEach((row) => {
-        currentY = checkNewPage(doc, currentY, invoice)
         row.forEach((cell, cellIndex) => {
           doc.text(cell, 20 + cellIndex * 40, currentY)
         })
@@ -1270,7 +1389,7 @@ function GenerateResultatButton({ invoice }) {
     const positionX = 100
     const formattedDate = formatDateAndTime(test?.datePrelevement)
 
-    if (test?.observations?.macroscopique?.length > 0) {
+    if (test?.observations?.macroscopique.length > 0) {
       currentY = checkNewPage(doc, currentY, invoice)
       doc.setFontSize(9)
       doc.setFont('Times', 'bold')
@@ -1278,11 +1397,11 @@ function GenerateResultatButton({ invoice }) {
       currentY += 6
     }
 
-    if (test?.observations?.macroscopique?.length > 0) {
+    if (test?.observations?.macroscopique.length > 0) {
       currentY = renderMacroscopicExam(doc, test, currentY, positionX, invoice)
     }
 
-    if (test?.observations?.microscopique && test?.observations?.macroscopique?.length > 0) {
+    if (test?.observations?.microscopique && test?.observations?.macroscopique.length > 0) {
       currentY = renderMicroscopicExam(doc, test, currentY, positionX, invoice)
     }
 
@@ -1310,7 +1429,7 @@ function GenerateResultatButton({ invoice }) {
       currentY = renderConclusion(doc, test, currentY, invoice)
     }
 
-    if (test?.observations?.macroscopique?.length > 0 && test?.remarque) {
+    if (test?.observations?.macroscopique.length > 0 && test?.remarque) {
       currentY = checkNewPage(doc, currentY, invoice)
       doc.setFontSize(8)
       doc.setFont('Times', 'italic')
@@ -1622,7 +1741,11 @@ function GenerateResultatButton({ invoice }) {
 
       doc.addPage()
       addFooter(doc, getColorValue('gris'))
-      currentY = addPageHeader(doc, invoice)
+      currentY = 15
+
+      doc.text(`Nº Dossier: ${invoice?.identifiant}`, 42, currentY)
+      doc.text(`Nom: ${invoice.userId.prenom} ${invoice.userId.nom}`, 42, currentY + 5)
+      currentY += 10
 
       doc.setFontSize(10)
       doc.setFont('Times', 'bold')
@@ -1642,7 +1765,6 @@ function GenerateResultatButton({ invoice }) {
       currentY += lineHeight
 
       Object.entries(germe.antibiogramme).forEach(([antibiotique, sensibilite]) => {
-        currentY = checkNewPage(doc, currentY, invoice)
         doc.rect(40, currentY, columnWidthAntibiotique, lineHeight)
         doc.rect(110, currentY, columnWidthSensibilite, lineHeight)
         doc.text(antibiotique, 42, currentY + 5)
@@ -1690,31 +1812,61 @@ function GenerateResultatButton({ invoice }) {
     }
   }
 
+  // const generatePDF = async () => {
+  //   try {
+  //     const doc = new jsPDF()
+  //     const userColor = getColorValue('gris')
+
+  //     const [imgLeft] = await Promise.all([
+  //       loadImage(logoLeft),
+  //       loadImage(logoRight),
+  //     ])
+
+  //     await setupDocumentHeader(doc, imgLeft, userColor)
+  //     await addPatientInformation(doc, invoice)
+  //     await addTestResults(doc, invoice)
+  //     await addValidationInfo(doc, invoice)
+
+  //     addPageNumbers(doc)
+
+  //     const blob = doc.output('blob')
+  //     const url = URL.createObjectURL(blob)
+  //     window.open(`/pdf-viewer?pdfBlobUrl=${encodeURIComponent(url)}`, '_blank')
+  //   } catch (error) {
+  //     console.error('Erreur lors de la génération du PDF:', error)
+  //     alert('Une erreur est survenue lors de la génération du PDF.')
+  //   }
+  // }
+
   const generatePDF = async () => {
-    try {
-      const doc = new jsPDF()
-      const userColor = getColorValue('gris')
+  try {
+    console.log('\n🚀 ========== GÉNÉRATION PDF DÉMARRÉE ==========')
+    
+    const doc = new jsPDF()
+    const userColor = getColorValue('gris')
 
-      const [imgLeft] = await Promise.all([
-        loadImage(logoLeft),
-        loadImage(logoRight),
-      ])
+    const [imgLeft] = await Promise.all([
+      loadImage(logoLeft),
+      loadImage(logoRight),
+    ])
 
-      await setupDocumentHeader(doc, imgLeft, userColor)
-      await addPatientInformation(doc, invoice)
-      await addTestResults(doc, invoice)
-      await addValidationInfo(doc, invoice)
+    await setupDocumentHeader(doc, imgLeft, userColor)
+    await addPatientInformation(doc, invoice)
+    await addTestResults(doc, invoice)
+    await addValidationInfo(doc, invoice)
 
-      addPageNumbers(doc)
+    addPageNumbers(doc)
 
-      const blob = doc.output('blob')
-      const url = URL.createObjectURL(blob)
-      window.open(`/pdf-viewer?pdfBlobUrl=${encodeURIComponent(url)}`, '_blank')
-    } catch (error) {
-      console.error('Erreur lors de la génération du PDF:', error)
-      alert('Une erreur est survenue lors de la génération du PDF.')
-    }
+    console.log('✅ ========== GÉNÉRATION PDF TERMINÉE ==========\n')
+    
+    const blob = doc.output('blob')
+    const url = URL.createObjectURL(blob)
+    window.open(`/pdf-viewer?pdfBlobUrl=${encodeURIComponent(url)}`, '_blank')
+  } catch (error) {
+    console.error('❌ Erreur lors de la génération du PDF:', error)
+    alert('Une erreur est survenue lors de la génération du PDF.')
   }
+}
 
   return (
     <button className="btn btn-primary" onClick={generatePDF}>

@@ -3272,7 +3272,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                 </h3>
                 <div className="flex flex-wrap gap-4 items-center">
                   <div>
-                    <label className="label">Protéines urinaires (mg/dL)</label>
+                    <label className="label">Protéines urinaires (mg/L)</label>
                     <input
                       type="number"
                       step="any"
@@ -3295,10 +3295,10 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         }))
                       }
                     />
-                    <small>Unité : mg/dL</small>
+                    <small>Unité : mg/L</small>
                   </div>
                   <div>
-                    <label className="label">Créatinine urinaire (mg/dL)</label>
+                    <label className="label">Créatinine urinaire (g/L)</label>
                     <input
                       type="number"
                       step="any"
@@ -3321,7 +3321,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         }))
                       }
                     />
-                    <small>Unité : mg/dL</small>
+                    <small>Unité : g/L</small>
                   </div>
                   <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
                     <label className="label font-semibold text-blue-700">
@@ -3774,7 +3774,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
 
             {/* ==================== FIN DES NOUVEAUX PARAMÈTRES ==================== */}
 
-            {/* Add other blocks: macroscopie, microscopie, chimie, etc. */}
+            
           </div>
         )}
 
