@@ -1208,8 +1208,11 @@ const renderRapportAlbuminurieException = (doc, test, excepY, invoice) => {
 
     if (test.exceptions.rapportProteines.rapport?.valeur) {
       doc.setFont('Times', 'bold')
-      doc.text(`Rapport : ${test.exceptions.rapportProteines.rapport.valeur} ${test.exceptions.rapportProteines.rapport.unite}`, 25, excepY)
+      doc.text(`Rapport : ${test.exceptions.rapportProteines.rapport.valeur} `, 25, excepY)
       doc.setFont('Times', 'normal')
+      // ✅ Valeur de référence sur la même ligne à droite
+      doc.setFont('Times', 'normal')
+      doc.text('Réf: N : < 150 mg/g', 130, excepY)
       excepY += 10
     }
 
