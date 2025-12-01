@@ -182,22 +182,39 @@ function GenerateResultatButton({ invoice }) {
     return currentY
   }
 
-  const printHematiesLine = (doc, posY, label, value, unit, ref) => {
-    doc.text(label, 25, posY)
-    doc.text(value, 85, posY)
-    if (unit) doc.text(unit, 100, posY)
-    if (ref) doc.text(ref, 120, posY)
-    return posY + 5
-  }
+  // const printHematiesLine = (doc, posY, label, value, unit, ref) => {
+  //   doc.text(label, 25, posY)
+  //   doc.text(value, 85, posY)
+  //   if (unit) doc.text(unit, 100, posY)
+  //   if (ref) doc.text(ref, 120, posY)
+  //   return posY + 5
+  // }
 
-  const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, reference) => {
-    doc.text(label, 25, posY)
-    if (pctValue) doc.text(`${pctValue}%`, 70, posY)
-    doc.text(mainValue, 85, posY)
-    if (unit) doc.text(unit, 100, posY)
-    if (reference) doc.text(reference, 120, posY)
-    return posY + 5
-  }
+  // const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, reference) => {
+  //   doc.text(label, 25, posY)
+  //   if (pctValue) doc.text(`${pctValue}%`, 70, posY)
+  //   doc.text(mainValue, 85, posY)
+  //   if (unit) doc.text(unit, 100, posY)
+  //   if (reference) doc.text(reference, 120, posY)
+  //   return posY + 5
+  // }
+
+  const printHematiesLine = (doc, posY, label, value, unit, ref) => {
+  doc.text(label, 25, posY)
+  doc.text(String(value || ''), 85, posY) // ✅ Convertir en string
+  if (unit) doc.text(String(unit), 100, posY) // ✅ Convertir en string
+  if (ref) doc.text(String(ref), 120, posY) // ✅ Convertir en string
+  return posY + 5
+}
+
+const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, reference) => {
+  doc.text(label, 25, posY)
+  if (pctValue) doc.text(`${pctValue}%`, 70, posY) // ✅ Déjà en string via template
+  doc.text(String(mainValue || ''), 85, posY) // ✅ Convertir en string
+  if (unit) doc.text(String(unit), 100, posY) // ✅ Convertir en string
+  if (reference) doc.text(String(reference), 120, posY) // ✅ Convertir en string
+  return posY + 5
+}
 
   const hasHematiesValues = (hematies) => {
     if (!hematies) return false
