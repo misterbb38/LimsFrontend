@@ -98,14 +98,23 @@ function CreateAnalyseForm({ onAnalyseChange }) {
     fetchPartenaires() // Chargez les partenaires au montage du composant
   }, [])
 
+  // const handleTestSelection = (testId) => {
+  //   if (!selectedTests.find((test) => test._id === testId)) {
+  //     const selectedTest = availableTests.find((test) => test._id === testId)
+  //     if (selectedTest) {
+  //       setSelectedTests([...selectedTests, selectedTest])
+  //     }
+  //   }
+  // }
   const handleTestSelection = (testId) => {
-    if (!selectedTests.find((test) => test._id === testId)) {
-      const selectedTest = availableTests.find((test) => test._id === testId)
-      if (selectedTest) {
-        setSelectedTests([...selectedTests, selectedTest])
-      }
+  if (!selectedTests.find((test) => test._id === testId)) {
+    const selectedTest = availableTests.find((test) => test._id === testId)
+    if (selectedTest) {
+      setSelectedTests([...selectedTests, selectedTest])
+      setSearchTerm('') // ✅ Efface le filtre après sélection
     }
   }
+}
 
   const handleTestRemoval = (testId) => {
     setSelectedTests(selectedTests.filter((test) => test._id !== testId))
