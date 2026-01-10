@@ -10,8 +10,11 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
   const [ordonnancePdf, setOrdonnancePdf] = useState(null)
   const [statusPayement, setStatusPayement] = useState('')
   const [typeAnalyse, setTypeAnalyse] = useState('')
-  const [pc1, setPc1] = useState(false)
-  const [pc2, setPc2] = useState(false)
+  // const [pc1, setPc1] = useState(false)
+  // const [pc2, setPc2] = useState(false)
+
+  const [pc1Quantity, setPc1Quantity] = useState(0)
+const [pc2Quantity, setPc2Quantity] = useState(0)
   const [deplacement, setDeplacement] = useState(0)
   const [dateDeRecuperation, setDateDeRecuperation] = useState('')
   const [avance, setAvance] = useState(0) // Nouvel état pour l'avance
@@ -112,8 +115,11 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
         setHasReduction(data.data.reduction > 0 ? 'oui' : 'non')
         setReductionType(data.data.typeReduction || 'pourcentage')
         setReductionValue(data.data.reduction || 0)
-        setPc1(data.data.pc1 === 2000) // true si pc1 est 2000, sinon false
-        setPc2(data.data.pc2 === 4000)
+        // setPc1(data.data.pc1 === 2000) // true si pc1 est 2000, sinon false
+        // setPc2(data.data.pc2 === 4000)
+
+        setPc1Quantity(data.data.pc1 > 0 ? Math.round(data.data.pc1 / 2000) : 0)
+setPc2Quantity(data.data.pc2 > 0 ? Math.round(data.data.pc2 / 4000) : 0)
         setStatusPayement(data.data.statusPayement || 'Impayée') // Utilisez la valeur par défaut si aucune donnée n'est disponible
         setTypeAnalyse(data.data.typeAnalyse)
         setAvance(data.data.avance || 0) // Récupération de l'avance
@@ -197,8 +203,10 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
       formData.append('ordonnancePdf', ordonnancePdf)
     }
     formData.append('userOwn', userconnect)
-    formData.append('pc1', pc1 ? 2000 : 0) // Envoyer 2000 si coché, sinon 0
-    formData.append('pc2', pc2 ? 4000 : 0) // Envoyer 4000 si coché, sinon 0
+    // formData.append('pc1', pc1 ? 2000 : 0) // Envoyer 2000 si coché, sinon 0
+    // formData.append('pc2', pc2 ? 4000 : 0) // Envoyer 4000 si coché, sinon 0
+    formData.append('pc1', pc1Quantity * 2000) // Calculer le montant total PC1
+formData.append('pc2', pc2Quantity * 4000) // Calculer le montant total PC2
     formData.append('deplacement', deplacement) // Envoyer la valeur de déplacemen
     formData.append('dateDeRecuperation', dateDeRecuperation)
 
@@ -407,7 +415,7 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
                   </>
                 )}
               </div>
-              <div>
+              {/* <div>
                 <label className="cursor-pointer label">
                   <span className="label-text">PC1 (2000 Cfa)</span>
                   <input
@@ -428,7 +436,41 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
                     className="checkbox checkbox-primary ml-4"
                   />
                 </label>
-              </div>
+              </div> */}
+
+              <div>
+  <label className="label">
+    <span className="label-text">Nombre de PC1 (2000 CFA chacun)</span>
+  </label>
+  <input
+    type="number"
+    min="0"
+    value={pc1Quantity}
+    onChange={(e) => setPc1Quantity(parseInt(e.target.value) || 0)}
+    className="input input-bordered input-primary w-full max-w-xs"
+    placeholder="Ex: 2 pour sang + urine"
+  />
+  <span className="text-sm text-gray-600 mt-1">
+    Total PC1: {pc1Quantity * 2000} CFA
+  </span>
+</div>
+
+<div>
+  <label className="label">
+    <span className="label-text">Nombre de PC2 (4000 CFA chacun)</span>
+  </label>
+  <input
+    type="number"
+    min="0"
+    value={pc2Quantity}
+    onChange={(e) => setPc2Quantity(parseInt(e.target.value) || 0)}
+    className="input input-bordered input-primary w-full max-w-xs"
+    placeholder="Nombre de prélèvements PC2"
+  />
+  <span className="text-sm text-gray-600 mt-1">
+    Total PC2: {pc2Quantity * 4000} CFA
+  </span>
+</div>
               <div>
                 <label className="label">
                   <span className="label-text">Déplacement</span>

@@ -176,7 +176,7 @@ function GeneratePDFButton({ invoice }) {
 
       doc.setFillColor(userColor) // Définit la couleur de remplissage
       doc.setLineWidth(0.5) // Définit l'épaisseur de la ligne à 1
-      doc.rect(20, 40, 170, 0.5, 'F') // Position X, Position Y, Largeur, Hauteur, Type de remplissage
+      doc.rect(20, 30, 170, 0.5, 'F') // Position X, Position Y, Largeur, Hauteur, Type de remplissage
       doc.setTextColor(0, 0, 0) // Réinitialise la couleur du texte à noir
 
       // Informations du client
@@ -394,29 +394,61 @@ function GeneratePDFButton({ invoice }) {
 
       currentY += 5 // Ajuster l'espacement après la ligne
 
-      let currentYv = currentY
+      // let currentYv = currentY
 
-      if (invoice.pc1 > 0) {
-        doc.text(`PC1: ${invoice.pc1} `, 35, currentYv)
-        // Ajustez selon l'espacement désiré entre les lignes
-      }
+      // if (invoice.pc1 > 0) {
+      //   doc.text(`PC1: ${invoice.pc1} `, 35, currentYv)
+      //   // Ajustez selon l'espacement désiré entre les lignes
+      // }
 
-      if (invoice.pc2 > 0) {
-        doc.text(`PC2: ${invoice.pc2}`, 50, currentYv)
-      }
-      // Ajouter un espace avant le Total B si nécessaire
-      if (
-        invoice.partenaireId?.typePartenaire === 'ipm' ||
-        invoice.partenaireId?.typePartenaire === 'assurance' ||
-        invoice.partenaireId?.typePartenaire === 'sococim'
-      ) {
-        doc.text(`Total B: ${totalCoefB.toFixed(0)}`, 97, currentY) // Ajustez la position Y selon vos besoins
-      }
+      // if (invoice.pc2 > 0) {
+      //   doc.text(`PC2: ${invoice.pc2}`, 50, currentYv)
+      // }
+      // // Ajouter un espace avant le Total B si nécessaire
+      // if (
+      //   invoice.partenaireId?.typePartenaire === 'ipm' ||
+      //   invoice.partenaireId?.typePartenaire === 'assurance' ||
+      //   invoice.partenaireId?.typePartenaire === 'sococim'
+      // ) {
+      //   doc.text(`Total B: ${totalCoefB.toFixed(0)}`, 97, currentY) // Ajustez la position Y selon vos besoins
+      // }
 
-      if (invoice.deplacement > 0) {
-        doc.text(`Déplacement: ${invoice.deplacement} `, 140, currentYv)
-        currentYv += 5 // Ajustez selon l'espacement désiré entre les lignes
-      }
+      // if (invoice.deplacement > 0) {
+      //   doc.text(`Déplacement: ${invoice.deplacement} `, 140, currentYv)
+      //   currentYv += 5 // Ajustez selon l'espacement désiré entre les lignes
+      // }
+
+      // Calculer le nombre de PC1 et PC2
+const pc1Count = invoice.pc1 > 0 ? Math.round(invoice.pc1 / 2000) : 0
+const pc2Count = invoice.pc2 > 0 ? Math.round(invoice.pc2 / 4000) : 0
+
+// Afficher chaque PC1 sur une ligne séparée
+for (let i = 0; i < pc1Count; i++) {
+  doc.text(`PC1: 2000 CFA`, 35, currentY)
+  currentY += 5
+}
+
+// Afficher chaque PC2 sur une ligne séparée
+for (let i = 0; i < pc2Count; i++) {
+  doc.text(`PC2: 4000 CFA`, 35, currentY)
+  currentY += 5
+}
+
+// Afficher le déplacement
+if (invoice.deplacement > 0) {
+  doc.text(`Déplacement: ${invoice.deplacement} CFA`, 35, currentY)
+  currentY += 5
+}
+
+// Ajouter un espace avant le Total B si nécessaire
+if (
+  invoice.partenaireId?.typePartenaire === 'ipm' ||
+  invoice.partenaireId?.typePartenaire === 'assurance' ||
+  invoice.partenaireId?.typePartenaire === 'sococim'
+) {
+  doc.text(`Total B: ${totalCoefB.toFixed(0)}`, 97, currentY)
+  currentY += 5
+}
 
       currentY += 2 // Ajuster l'espacement avant de tracer la ligne de fin
 

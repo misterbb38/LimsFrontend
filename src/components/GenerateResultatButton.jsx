@@ -1034,7 +1034,7 @@ const renderReticulocytesException = (doc, test, excepY, invoice) => {
 
     if (test.exceptions.dfg.dfgValue?.valeur) {
       doc.setFont('Times', 'bold')
-      doc.text(`DFG (CKD-EPI) : ${test.exceptions.dfg.dfgValue.valeur} ${test.exceptions.dfg.dfgValue.unite}`, 25, excepY)
+      doc.text(`${test.exceptions.dfg.dfgValue.valeur}`, 25, excepY)
       doc.setFont('Times', 'normal')
       excepY += 7
     }
@@ -1170,7 +1170,7 @@ const renderCalciumCorrigeException = (doc, test, excepY, invoice) => {
 
     if (test.exceptions.calciumCorrige.calciumCorrige?.valeur) {
       doc.setFont('Times', 'bold')
-      doc.text(`Calcium corrigé : ${test.exceptions.calciumCorrige.calciumCorrige.valeur} ${test.exceptions.calciumCorrige.calciumCorrige.unite}`, 25, excepY)
+      doc.text(`Calcium corrigé : ${test.exceptions.calciumCorrige.calciumCorrige.valeur} `, 25, excepY)
       doc.setFont('Times', 'normal')
       excepY += 10
     }
@@ -1593,26 +1593,226 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     return currentY
   }
 
-  const renderMacroscopicExam = (doc, test, currentY, positionX, invoice) => {
-    currentY = checkNewPage(doc, currentY, invoice)
-    doc.setFontSize(10)
-    doc.setFont('Times', 'bold')
-    doc.text(`EXAMEN MACROSCOPIQUE`, 20, currentY)
-    currentY += 8
-    doc.setFontSize(10)
-    doc.setFont('Times', 'normal')
+  // const renderMacroscopicExam = (doc, test, currentY, positionX, invoice) => {
+  //   currentY = checkNewPage(doc, currentY, invoice)
+  //   doc.setFontSize(10)
+  //   doc.setFont('Times', 'bold')
+  //   doc.text(`EXAMEN MACROSCOPIQUE`, 20, currentY)
+  //   currentY += 8
+  //   doc.setFontSize(10)
+  //   doc.setFont('Times', 'normal')
 
-    test?.observations?.macroscopique?.forEach((obs) => {
-      currentY = checkNewPage(doc, currentY, invoice)
-      doc.text(`${obs.label}:`, 20, currentY)
-      doc.text(`${obs.valeur}`, positionX, currentY)
-      currentY += 5
-    })
+  //   test?.observations?.macroscopique?.forEach((obs) => {
+  //     currentY = checkNewPage(doc, currentY, invoice)
+  //     doc.text(`${obs.label}:`, 20, currentY)
+  //     doc.text(`${obs.valeur}`, positionX, currentY)
+  //     currentY += 5
+  //   })
 
-    currentY += 3
+  //   currentY += 3
 
-    return currentY
+  //   return currentY
+  // }
+  // ✅ NOUVEAU CODE CORRIGÉ:
+// const renderMacroscopicExam = (doc, test, currentY, positionX, invoice) => {
+//     currentY = checkNewPage(doc, currentY, invoice)
+//     doc.setFontSize(10)
+//     doc.setFont('Times', 'bold')
+//     doc.text(`EXAMEN MACROSCOPIQUE`, 20, currentY)
+//     currentY += 8
+//     doc.setFontSize(10)
+//     doc.setFont('Times', 'normal')
+
+//     // ✅ CORRECTION: Gérer les deux formats (string ou objet)
+//     test?.observations?.macroscopique?.forEach((obs) => {
+//       currentY = checkNewPage(doc, currentY, invoice)
+      
+//       // Si obs est un string simple
+//       if (typeof obs === 'string' && obs.trim()) {
+//         doc.text(`Aspect:`, 20, currentY)
+//         doc.text(obs, positionX, currentY)
+//         currentY += 5
+//       }
+//       // Si obs est un objet avec label et valeur
+//       else if (obs && typeof obs === 'object' && obs.label && obs.valeur) {
+//         doc.text(`${obs.label}:`, 20, currentY)
+//         doc.text(String(obs.valeur), positionX, currentY)
+//         currentY += 5
+//       }
+//     })
+
+//     currentY += 3
+//     return currentY
+//   }
+
+  // const renderMicroscopicExam = (doc, test, currentY, positionX, invoice) => {
+  //   currentY = checkNewPage(doc, currentY, invoice)
+  //   doc.setFontSize(10)
+  //   doc.setFont('Times', 'bold')
+  //   doc.text(`EXAMEN MICROSCOPIQUE APRES COLORATION`, 20, currentY)
+  //   currentY += 8
+  //   doc.setFontSize(10)
+  //   doc.setFont('Times', 'normal')
+
+  //   if (test?.observations?.microscopique?.leucocyte) {
+  //     doc.text(`Leucocytes:`, 20, currentY)
+  //     doc.text(`${test.observations.microscopique.leucocyte}`, positionX, currentY)
+  //     currentY += 5
+  //   }
+
+  //   if (test?.observations?.microscopique?.hematie) {
+  //     doc.text(`Hématies:`, 20, currentY)
+  //     doc.text(`${test.observations.microscopique.hematie}`, positionX, currentY)
+  //     currentY += 5
+  //   }
+
+  //   if (test?.observations?.microscopique?.parasite) {
+  //     doc.text(`Parasites:`, 20, currentY)
+  //     doc.text(`${test.observations.microscopique.parasite}`, positionX, currentY)
+  //     currentY += 5
+  //   }
+
+  //   if (test?.observations?.microscopique?.filamentMucus) {
+  //     doc.text(`Filaments mucus:`, 20, currentY)
+  //     doc.text(`${test.observations.microscopique.filamentMucus}`, positionX, currentY)
+  //     currentY += 5
+  //   }
+
+  //   if (test?.observations?.microscopique?.celluleEpitheliales) {
+  //     doc.text(`Cellules épithéliales:`, 20, currentY)
+  //     doc.text(`${test.observations.microscopique.celluleEpitheliales}`, positionX, currentY)
+  //     currentY += 5
+  //   }
+
+  //   if (test?.observations?.microscopique?.cristaux) {
+  //     doc.text(`Cristaux:`, 20, currentY)
+  //     doc.text(`${test.observations.microscopique.cristaux}`, positionX, currentY)
+  //     currentY += 5
+  //   }
+
+  //   if (test?.observations?.microscopique?.cylindres) {
+  //     doc.text(`Cylindres:`, 20, currentY)
+  //     doc.text(`${test.observations.microscopique.cylindres}`, positionX, currentY)
+  //     currentY += 5
+  //   }
+
+  //   if (test?.observations?.microscopique?.levures) {
+  //     doc.text(`Levures:`, 20, currentY)
+  //     doc.text(`${test.observations.microscopique.levures}`, positionX, currentY)
+  //     currentY += 5
+  //   }
+
+  //   if (test?.observations?.microscopique?.spermatozoides) {
+  //     doc.text(`Spermatozoïdes:`, 20, currentY)
+  //     doc.text(`${test.observations.microscopique.spermatozoides}`, positionX, currentY)
+  //     currentY += 5
+  //   }
+
+  //   if (test?.observations?.microscopique?.bacterie) {
+  //     doc.text(`Bactéries:`, 20, currentY)
+  //     doc.text(`${test.observations.microscopique.bacterie}`, positionX, currentY)
+  //     currentY += 5
+  //   }
+
+  //   if (test?.observations?.microscopique?.germe) {
+  //     doc.text(`Germes:`, 20, currentY)
+  //     doc.text(`${test.observations.microscopique.germe}`, positionX, currentY)
+  //     currentY += 5
+  //   }
+
+  //   currentY += 3
+
+  //   return currentY
+  // }
+  // ✅ NOUVEAU CODE CORRIGÉ:
+// const renderMacroscopicExam = (doc, test, currentY, positionX, invoice) => {
+//   currentY = checkNewPage(doc, currentY, invoice)
+//   doc.setFontSize(10)
+//   doc.setFont('Times', 'bold')
+//   doc.text(`EXAMEN MACROSCOPIQUE`, 20, currentY)
+//   currentY += 8
+//   doc.setFontSize(10)
+//   doc.setFont('Times', 'normal')
+
+//   // ✅ Joindre les éléments du tableau avec des virgules
+//   if (test?.observations?.macroscopique && Array.isArray(test.observations.macroscopique)) {
+//     // Filtrer les valeurs vides et joindre avec des virgules
+//     const macroscopiqueText = test.observations.macroscopique
+//       .filter(obs => {
+//         if (typeof obs === 'string') return obs.trim()
+//         if (obs && typeof obs === 'object') return obs.valeur && obs.valeur.trim()
+//         return false
+//       })
+//       .map(obs => {
+//         if (typeof obs === 'string') return obs
+//         return obs.valeur
+//       })
+//       .join(', ')
+
+//     if (macroscopiqueText) {
+//       // Découper le texte si trop long
+//       const maxWidth = 170
+//       const lines = doc.splitTextToSize(macroscopiqueText, maxWidth)
+//       doc.text(lines, 20, currentY)
+//       currentY += lines.length * 5
+//     }
+//   }
+
+//   currentY += 3
+//   return currentY
+// }
+const renderMacroscopicExam = (doc, test, currentY, positionX, invoice) => {
+  currentY = checkNewPage(doc, currentY, invoice)
+  doc.setFontSize(10)
+  doc.setFont('Times', 'bold')
+  doc.text(`EXAMEN MACROSCOPIQUE`, 20, currentY)
+  currentY += 8
+  doc.setFontSize(10)
+  doc.setFont('Times', 'normal')
+
+  // ✅ Joindre les éléments du tableau avec des virgules et "et" pour le dernier
+  if (test?.observations?.macroscopique && Array.isArray(test.observations.macroscopique)) {
+    // Filtrer les valeurs vides
+    const valeurs = test.observations.macroscopique
+      .filter(obs => {
+        if (typeof obs === 'string') return obs.trim()
+        if (obs && typeof obs === 'object') return obs.valeur && obs.valeur.trim()
+        return false
+      })
+      .map(obs => {
+        if (typeof obs === 'string') return obs
+        return obs.valeur
+      })
+
+    let macroscopiqueText = ''
+    
+    if (valeurs.length === 1) {
+      // Un seul élément
+      macroscopiqueText = valeurs[0]
+    } else if (valeurs.length === 2) {
+      // Deux éléments: "X et Y"
+      macroscopiqueText = valeurs.join(' et ')
+    } else if (valeurs.length > 2) {
+      // Plus de deux éléments: "X, Y et Z"
+      const dernierElement = valeurs[valeurs.length - 1]
+      const autresElements = valeurs.slice(0, -1)
+      macroscopiqueText = autresElements.join(', ') + ' et ' + dernierElement
+    }
+
+    if (macroscopiqueText) {
+      // Découper le texte si trop long
+      const maxWidth = 170
+      const lines = doc.splitTextToSize(macroscopiqueText, maxWidth)
+      doc.text(lines, 20, currentY)
+      currentY += lines.length * 5
+    }
   }
+
+  currentY += 3
+  return currentY
+}
+
+
 
   const renderMicroscopicExam = (doc, test, currentY, positionX, invoice) => {
     currentY = checkNewPage(doc, currentY, invoice)
@@ -1623,144 +1823,332 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     doc.setFontSize(10)
     doc.setFont('Times', 'normal')
 
-    if (test?.observations?.microscopique?.leucocyte) {
+    const micro = test?.observations?.microscopique
+
+    // ✅ CORRECTION: Utiliser les bons noms de champs (avec 's')
+    if (micro?.leucocytes && micro.leucocytes.trim()) {
       doc.text(`Leucocytes:`, 20, currentY)
-      doc.text(`${test.observations.microscopique.leucocyte}`, positionX, currentY)
+      doc.text(String(micro.leucocytes), positionX, currentY)
       currentY += 5
     }
 
-    if (test?.observations?.microscopique?.hematie) {
+    if (micro?.hematies && micro.hematies.trim()) {
       doc.text(`Hématies:`, 20, currentY)
-      doc.text(`${test.observations.microscopique.hematie}`, positionX, currentY)
+      doc.text(String(micro.hematies), positionX, currentY)
       currentY += 5
     }
 
-    if (test?.observations?.microscopique?.parasite) {
+    // ✅ Nouveaux champs présents dans votre BD
+    if (micro?.monocytes && micro.monocytes.trim()) {
+      doc.text(`Monocytes:`, 20, currentY)
+      doc.text(String(micro.monocytes), positionX, currentY)
+      currentY += 5
+    }
+
+    if (micro?.polynucleairesNeutrophilesAlterees && micro.polynucleairesNeutrophilesAlterees.trim()) {
+      doc.text(`Polynucléaires neutrophiles altérés:`, 20, currentY)
+      doc.text(String(micro.polynucleairesNeutrophilesAlterees), positionX, currentY)
+      currentY += 5
+    }
+
+    if (micro?.polynucleairesNeutrophilesNonAlterees && micro.polynucleairesNeutrophilesNonAlterees.trim()) {
+      doc.text(`Polynucléaires neutrophiles non altérés:`, 20, currentY)
+      doc.text(String(micro.polynucleairesNeutrophilesNonAlterees), positionX, currentY)
+      currentY += 5
+    }
+
+    if (micro?.eosinophiles && micro.eosinophiles.trim()) {
+      doc.text(`Éosinophiles:`, 20, currentY)
+      doc.text(String(micro.eosinophiles), positionX, currentY)
+      currentY += 5
+    }
+
+    if (micro?.basophiles && micro.basophiles.trim()) {
+      doc.text(`Basophiles:`, 20, currentY)
+      doc.text(String(micro.basophiles), positionX, currentY)
+      currentY += 5
+    }
+
+    if (micro?.parasites && micro.parasites !== 'Absence') {
       doc.text(`Parasites:`, 20, currentY)
-      doc.text(`${test.observations.microscopique.parasite}`, positionX, currentY)
+      doc.text(String(micro.parasites), positionX, currentY)
       currentY += 5
     }
 
-    if (test?.observations?.microscopique?.filamentMucus) {
+    if (micro?.filamentMucus && micro.filamentMucus.trim()) {
       doc.text(`Filaments mucus:`, 20, currentY)
-      doc.text(`${test.observations.microscopique.filamentMucus}`, positionX, currentY)
+      doc.text(String(micro.filamentMucus), positionX, currentY)
       currentY += 5
     }
 
-    if (test?.observations?.microscopique?.celluleEpitheliales) {
+    if (micro?.cellulesEpitheliales && micro.cellulesEpitheliales.trim()) {
       doc.text(`Cellules épithéliales:`, 20, currentY)
-      doc.text(`${test.observations.microscopique.celluleEpitheliales}`, positionX, currentY)
+      doc.text(String(micro.cellulesEpitheliales), positionX, currentY)
       currentY += 5
     }
 
-    if (test?.observations?.microscopique?.cristaux) {
+    if (micro?.cristaux && micro.cristaux !== 'Absence') {
       doc.text(`Cristaux:`, 20, currentY)
-      doc.text(`${test.observations.microscopique.cristaux}`, positionX, currentY)
+      doc.text(String(micro.cristaux), positionX, currentY)
       currentY += 5
     }
 
-    if (test?.observations?.microscopique?.cylindres) {
+    if (micro?.cylindres && micro.cylindres !== 'Absence') {
       doc.text(`Cylindres:`, 20, currentY)
-      doc.text(`${test.observations.microscopique.cylindres}`, positionX, currentY)
+      doc.text(String(micro.cylindres), positionX, currentY)
       currentY += 5
     }
 
-    if (test?.observations?.microscopique?.levures) {
+    if (micro?.levures && micro.levures.trim()) {
       doc.text(`Levures:`, 20, currentY)
-      doc.text(`${test.observations.microscopique.levures}`, positionX, currentY)
+      doc.text(String(micro.levures), positionX, currentY)
       currentY += 5
     }
 
-    if (test?.observations?.microscopique?.spermatozoides) {
+    if (micro?.spermatozoides && micro.spermatozoides.trim()) {
       doc.text(`Spermatozoïdes:`, 20, currentY)
-      doc.text(`${test.observations.microscopique.spermatozoides}`, positionX, currentY)
+      doc.text(String(micro.spermatozoides), positionX, currentY)
       currentY += 5
     }
 
-    if (test?.observations?.microscopique?.bacterie) {
+    if (micro?.bacterie && micro.bacterie.trim()) {
       doc.text(`Bactéries:`, 20, currentY)
-      doc.text(`${test.observations.microscopique.bacterie}`, positionX, currentY)
+      doc.text(String(micro.bacterie), positionX, currentY)
       currentY += 5
     }
 
-    if (test?.observations?.microscopique?.germe) {
+    if (micro?.germe && micro.germe.trim()) {
       doc.text(`Germes:`, 20, currentY)
-      doc.text(`${test.observations.microscopique.germe}`, positionX, currentY)
+      doc.text(String(micro.germe), positionX, currentY)
+      currentY += 5
+    }
+
+    // ✅ Champs spécifiques à votre structure
+    if (micro?.elementsLevuriforme && micro.elementsLevuriforme !== 'Absence') {
+      doc.text(`Éléments levuriformes:`, 20, currentY)
+      doc.text(String(micro.elementsLevuriforme), positionX, currentY)
+      currentY += 5
+    }
+
+    if (micro?.filamentsMyceliens && micro.filamentsMyceliens !== 'Absence') {
+      doc.text(`Filaments mycéliens:`, 20, currentY)
+      doc.text(String(micro.filamentsMyceliens), positionX, currentY)
+      currentY += 5
+    }
+
+    if (micro?.trichomonasVaginalis && micro.trichomonasVaginalis !== 'Absence') {
+      doc.text(`Trichomonas vaginalis:`, 20, currentY)
+      doc.text(String(micro.trichomonasVaginalis), positionX, currentY)
+      currentY += 5
+    }
+
+    if (micro?.oeufsDeBilharzies && micro.oeufsDeBilharzies !== 'Absence') {
+      doc.text(`Œufs de bilharzies:`, 20, currentY)
+      doc.text(String(micro.oeufsDeBilharzies), positionX, currentY)
+      currentY += 5
+    }
+
+    if (micro?.clueCells && micro.clueCells !== 'Absence') {
+      doc.text(`Clue cells:`, 20, currentY)
+      doc.text(String(micro.clueCells), positionX, currentY)
+      currentY += 5
+    }
+
+    if (micro?.gardnerellaVaginalis && micro.gardnerellaVaginalis !== 'Absence') {
+      doc.text(`Gardnerella vaginalis:`, 20, currentY)
+      doc.text(String(micro.gardnerellaVaginalis), positionX, currentY)
+      currentY += 5
+    }
+
+    if (micro?.bacillesDeDoderlein && micro.bacillesDeDoderlein !== 'Absence') {
+      doc.text(`Bacilles de Döderlein:`, 20, currentY)
+      doc.text(String(micro.bacillesDeDoderlein), positionX, currentY)
+      currentY += 5
+    }
+
+    if (micro?.typeDeFlore && micro.typeDeFlore.trim()) {
+      doc.text(`Type de flore:`, 20, currentY)
+      doc.text(String(micro.typeDeFlore), positionX, currentY)
+      currentY += 5
+    }
+
+    if (micro?.rechercheDeStreptocoqueB && micro.rechercheDeStreptocoqueB.trim()) {
+      doc.text(`Recherche de Streptocoque B:`, 20, currentY)
+      doc.text(String(micro.rechercheDeStreptocoqueB), positionX, currentY)
       currentY += 5
     }
 
     currentY += 3
-
     return currentY
   }
 
-  const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
-    currentY = checkNewPage(doc, currentY, invoice)
-    doc.setFontSize(10)
-    doc.setFont('Times', 'bold')
-    // doc.text(`EXAMEN CHIMIQUE`, 20, currentY)
-    currentY += 8
-    doc.setFontSize(10)
-    doc.setFont('Times', 'normal')
+  // const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
+  //   currentY = checkNewPage(doc, currentY, invoice)
+  //   doc.setFontSize(10)
+  //   doc.setFont('Times', 'bold')
+  //   // doc.text(`EXAMEN CHIMIQUE`, 20, currentY)
+  //   currentY += 8
+  //   doc.setFontSize(10)
+  //   doc.setFont('Times', 'normal')
 
-    if (test?.observations?.chimie?.albumine) {
-      doc.text(`Albumine:`, 20, currentY)
-      doc.text(`${test.observations.chimie.albumine}`, positionX, currentY)
-      currentY += 5
-    }
+  //   if (test?.observations?.chimie?.albumine) {
+  //     doc.text(`Albumine:`, 20, currentY)
+  //     doc.text(`${test.observations.chimie.albumine}`, positionX, currentY)
+  //     currentY += 5
+  //   }
 
-    if (test?.observations?.chimie?.sucre) {
-      doc.text(`Sucre:`, 20, currentY)
-      doc.text(`${test.observations.chimie.sucre}`, positionX, currentY)
-      currentY += 5
-    }
+  //   if (test?.observations?.chimie?.sucre) {
+  //     doc.text(`Sucre:`, 20, currentY)
+  //     doc.text(`${test.observations.chimie.sucre}`, positionX, currentY)
+  //     currentY += 5
+  //   }
 
-    if (test?.observations?.chimie?.corpscetoniques) {
-      doc.text(`Corps cétoniques:`, 20, currentY)
-      doc.text(`${test.observations.chimie.corpscetoniques}`, positionX, currentY)
-      currentY += 5
-    }
+  //   if (test?.observations?.chimie?.corpscetoniques) {
+  //     doc.text(`Corps cétoniques:`, 20, currentY)
+  //     doc.text(`${test.observations.chimie.corpscetoniques}`, positionX, currentY)
+  //     currentY += 5
+  //   }
 
-    if (test?.observations?.chimie?.pigmentsbiliaire) {
-      doc.text(`Pigments biliaire:`, 20, currentY)
-      doc.text(`${test.observations.chimie.pigmentsbiliaire}`, positionX, currentY)
-      currentY += 5
-    }
+  //   if (test?.observations?.chimie?.pigmentsbiliaire) {
+  //     doc.text(`Pigments biliaire:`, 20, currentY)
+  //     doc.text(`${test.observations.chimie.pigmentsbiliaire}`, positionX, currentY)
+  //     currentY += 5
+  //   }
 
-    if (test?.observations?.chimie?.urobilinogene) {
-      doc.text(`Urobilinogène:`, 20, currentY)
-      doc.text(`${test.observations.chimie.urobilinogene}`, positionX, currentY)
-      currentY += 5
-    }
+  //   if (test?.observations?.chimie?.urobilinogene) {
+  //     doc.text(`Urobilinogène:`, 20, currentY)
+  //     doc.text(`${test.observations.chimie.urobilinogene}`, positionX, currentY)
+  //     currentY += 5
+  //   }
 
-    if (test?.observations?.chimie?.sang) {
-      doc.text(`Sang:`, 20, currentY)
-      doc.text(`${test.observations.chimie.sang}`, positionX, currentY)
-      currentY += 5
-    }
+  //   if (test?.observations?.chimie?.sang) {
+  //     doc.text(`Sang:`, 20, currentY)
+  //     doc.text(`${test.observations.chimie.sang}`, positionX, currentY)
+  //     currentY += 5
+  //   }
 
-    if (test?.observations?.chimie?.leucocytes) {
-      doc.text(`Leucocytes:`, 20, currentY)
-      doc.text(`${test.observations.chimie.leucocytes}`, positionX, currentY)
-      currentY += 5
-    }
+  //   if (test?.observations?.chimie?.leucocytes) {
+  //     doc.text(`Leucocytes:`, 20, currentY)
+  //     doc.text(`${test.observations.chimie.leucocytes}`, positionX, currentY)
+  //     currentY += 5
+  //   }
 
-    if (test?.observations?.chimie?.nitrites) {
-      doc.text(`Nitrites:`, 20, currentY)
-      doc.text(`${test.observations.chimie.nitrites}`, positionX, currentY)
-      currentY += 5
-    }
+  //   if (test?.observations?.chimie?.nitrites) {
+  //     doc.text(`Nitrites:`, 20, currentY)
+  //     doc.text(`${test.observations.chimie.nitrites}`, positionX, currentY)
+  //     currentY += 5
+  //   }
 
-    if (test?.observations?.chimie?.ph) {
-      doc.text(`pH:`, 20, currentY)
-      doc.text(`${test.observations.chimie.ph}`, positionX, currentY)
-      currentY += 5
-    }
+  //   if (test?.observations?.chimie?.ph) {
+  //     doc.text(`pH:`, 20, currentY)
+  //     doc.text(`${test.observations.chimie.ph}`, positionX, currentY)
+  //     currentY += 5
+  //   }
 
-    currentY += 3
+  //   currentY += 3
 
-    return currentY
+  //   return currentY
+  // }
+const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
+  currentY = checkNewPage(doc, currentY, invoice)
+  doc.setFontSize(10)
+  doc.setFont('Times', 'bold')
+  doc.text(`EXAMEN CHIMIQUE`, 20, currentY)
+  currentY += 8
+  doc.setFontSize(10)
+  doc.setFont('Times', 'normal')
+
+  const chimie = test?.observations?.chimie
+
+  // Champs standards
+  if (chimie?.albumine && chimie.albumine.trim()) {
+    doc.text(`Albumine:`, 20, currentY)
+    doc.text(String(chimie.albumine), positionX, currentY)
+    currentY += 5
   }
+
+  if (chimie?.sucre && chimie.sucre.trim()) {
+    doc.text(`Sucre:`, 20, currentY)
+    doc.text(String(chimie.sucre), positionX, currentY)
+    currentY += 5
+  }
+
+  if (chimie?.corpscetoniques && chimie.corpscetoniques.trim()) {
+    doc.text(`Corps cétoniques:`, 20, currentY)
+    doc.text(String(chimie.corpscetoniques), positionX, currentY)
+    currentY += 5
+  }
+
+  if (chimie?.pigmentsbiliaire && chimie.pigmentsbiliaire.trim()) {
+    doc.text(`Pigments biliaire:`, 20, currentY)
+    doc.text(String(chimie.pigmentsbiliaire), positionX, currentY)
+    currentY += 5
+  }
+
+  if (chimie?.urobilinogene && chimie.urobilinogene.trim()) {
+    doc.text(`Urobilinogène:`, 20, currentY)
+    doc.text(String(chimie.urobilinogene), positionX, currentY)
+    currentY += 5
+  }
+
+  if (chimie?.sang && chimie.sang.trim()) {
+    doc.text(`Sang:`, 20, currentY)
+    doc.text(String(chimie.sang), positionX, currentY)
+    currentY += 5
+  }
+
+  if (chimie?.leucocytes && chimie.leucocytes.trim()) {
+    doc.text(`Leucocytes:`, 20, currentY)
+    doc.text(String(chimie.leucocytes), positionX, currentY)
+    currentY += 5
+  }
+
+  if (chimie?.nitrites && chimie.nitrites.trim()) {
+    doc.text(`Nitrites:`, 20, currentY)
+    doc.text(String(chimie.nitrites), positionX, currentY)
+    currentY += 5
+  }
+
+  if (chimie?.ph && chimie.ph.trim()) {
+    doc.text(`pH:`, 20, currentY)
+    doc.text(String(chimie.ph), positionX, currentY)
+    currentY += 5
+  }
+
+  // ✅ NOUVEAUX champs de votre base de données
+  if (chimie?.proteinesTotales && chimie.proteinesTotales.trim()) {
+    doc.text(`Protéines totales:`, 20, currentY)
+    doc.text(String(chimie.proteinesTotales), positionX, currentY)
+    currentY += 5
+  }
+
+  if (chimie?.proteinesArochies && chimie.proteinesArochies.trim()) {
+    doc.text(`Protéines arochies:`, 20, currentY)
+    doc.text(String(chimie.proteinesArochies), positionX, currentY)
+    currentY += 5
+  }
+
+  if (chimie?.glycorachie && chimie.glycorachie.trim()) {
+    doc.text(`Glycorachie:`, 20, currentY)
+    doc.text(String(chimie.glycorachie), positionX, currentY)
+    currentY += 5
+  }
+
+  if (chimie?.acideUrique && chimie.acideUrique.trim()) {
+    doc.text(`Acide urique:`, 20, currentY)
+    doc.text(String(chimie.acideUrique), positionX, currentY)
+    currentY += 5
+  }
+
+  if (chimie?.LDH && chimie.LDH.trim()) {
+    doc.text(`LDH:`, 20, currentY)
+    doc.text(String(chimie.LDH), positionX, currentY)
+    currentY += 5
+  }
+
+  currentY += 3
+  return currentY
+}
 
   const renderGramExam = (doc, test, currentY, positionX, invoice) => {
     currentY = checkNewPage(doc, currentY, invoice)

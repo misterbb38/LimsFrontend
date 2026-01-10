@@ -17,8 +17,11 @@ function CreateAnalyseForm({ onAnalyseChange }) {
   const [statusPayement, setStatusPayement] = useState('')
   const [typeAnalyse, setTypeAnalyse] = useState('Interne')
   const [pourcentageCouverture, setPourcentageCouverture] = useState('')
-  const [pc1, setPc1] = useState(false)
-  const [pc2, setPc2] = useState(false)
+  // const [pc1, setPc1] = useState(false)
+  // const [pc2, setPc2] = useState(false)
+
+  const [pc1Quantity, setPc1Quantity] = useState(0)
+const [pc2Quantity, setPc2Quantity] = useState(0)
   const [deplacement, setDeplacement] = useState(0)
   const [dateDeRecuperation, setDateDeRecuperation] = useState('')
   const [avance, setAvance] = useState() // Nouvel état pour l'avance
@@ -188,19 +191,34 @@ function CreateAnalyseForm({ onAnalyseChange }) {
       : partenaires
 
   // Ajout d'une fonction pour réinitialiser le formulaire
+  // const resetForm = () => {
+  //   setSelectedTests([])
+  //   setOrdonnancePdf(null)
+  //   setSelectedUserId('')
+  //   setHasInsurance('')
+  //   setSelectedPartenaireId('')
+  //   setPourcentageCouverture('')
+  //   setHasReduction(false)
+  //   setReductionType('pourcentage')
+  //   setReductionValue('')
+  //   setSearchTerm('') // Si vous utilisez le filtrage des tests
+  //   setSearchTermPatient('') // Si vous utilisez le filtrage des patients
+  // }
   const resetForm = () => {
-    setSelectedTests([])
-    setOrdonnancePdf(null)
-    setSelectedUserId('')
-    setHasInsurance('')
-    setSelectedPartenaireId('')
-    setPourcentageCouverture('')
-    setHasReduction(false)
-    setReductionType('pourcentage')
-    setReductionValue('')
-    setSearchTerm('') // Si vous utilisez le filtrage des tests
-    setSearchTermPatient('') // Si vous utilisez le filtrage des patients
-  }
+  setSelectedTests([])
+  setOrdonnancePdf(null)
+  setSelectedUserId('')
+  setHasInsurance('')
+  setSelectedPartenaireId('')
+  setPourcentageCouverture('')
+  setHasReduction(false)
+  setReductionType('pourcentage')
+  setReductionValue('')
+  setSearchTerm('')
+  setSearchTermPatient('')
+  setPc1Quantity(0)
+  setPc2Quantity(0)
+}
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -219,8 +237,11 @@ function CreateAnalyseForm({ onAnalyseChange }) {
       formData.append('ordonnancePdf', ordonnancePdf)
     }
     formData.append('userOwn', userconnect)
-    if (pc1) formData.append('pc1', 2000)
-    if (pc2) formData.append('pc2', 4000)
+    // if (pc1) formData.append('pc1', 2000)
+    // if (pc2) formData.append('pc2', 4000)
+
+    if (pc1Quantity > 0) formData.append('pc1', pc1Quantity * 2000)
+if (pc2Quantity > 0) formData.append('pc2', pc2Quantity * 4000)
     formData.append('statusPayement', statusPayement || 'Impayée')
     formData.append('typeAnalyse', typeAnalyse || 'Interne')
 
@@ -481,7 +502,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
               </>
             )}
           </div>
-          <div>
+          {/* <div>
             <label className="cursor-pointer label">
               <span className="label-text">PC1 (2000 Cfa)</span>
               <input
@@ -491,8 +512,8 @@ function CreateAnalyseForm({ onAnalyseChange }) {
                 className="checkbox checkbox-primary ml-4"
               />
             </label>
-          </div>
-          <div>
+          </div> */}
+          {/* <div>
             <label className="cursor-pointer label">
               <span className="label-text">PC2 (4000 Cfa)</span>
               <input
@@ -502,7 +523,40 @@ function CreateAnalyseForm({ onAnalyseChange }) {
                 className="checkbox checkbox-primary ml-4"
               />
             </label>
-          </div>
+          </div> */}
+          <div>
+  <label className="label">
+    <span className="label-text">Nombre de PC1 (2000 CFA chacun)</span>
+  </label>
+  <input
+    type="number"
+    min="0"
+    value={pc1Quantity}
+    onChange={(e) => setPc1Quantity(parseInt(e.target.value) || 0)}
+    className="input input-bordered input-primary w-full max-w-xs"
+    placeholder="Ex: 2 pour sang + urine"
+  />
+  <span className="text-sm text-gray-600 mt-1">
+    Total PC1: {pc1Quantity * 2000} CFA
+  </span>
+</div>
+
+<div>
+  <label className="label">
+    <span className="label-text">Nombre de PC2 (4000 CFA chacun)</span>
+  </label>
+  <input
+    type="number"
+    min="0"
+    value={pc2Quantity}
+    onChange={(e) => setPc2Quantity(parseInt(e.target.value) || 0)}
+    className="input input-bordered input-primary w-full max-w-xs"
+    placeholder="Nombre de prélèvements PC2"
+  />
+  <span className="text-sm text-gray-600 mt-1">
+    Total PC2: {pc2Quantity * 4000} CFA
+  </span>
+</div>
 
           <div>
             <label className="label">
