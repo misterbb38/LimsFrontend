@@ -225,10 +225,21 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
 
   const hasLeucocytesValues = (leuco) => {
     if (!leuco) return false
-    return leuco.gb?.valeur || leuco.neut?.valeur || leuco.neut?.pourcentage ||
-           leuco.lymph?.valeur || leuco.lymph?.pourcentage || leuco.mono?.valeur ||
-           leuco.mono?.pourcentage || leuco.eo?.valeur || leuco.eo?.pourcentage ||
-           leuco.baso?.valeur || leuco.baso?.pourcentage || leuco.plt?.valeur
+    // Types standards
+    const hasStandard =
+      leuco.gb?.valeur || leuco.neut?.valeur || leuco.neut?.pourcentage ||
+      leuco.lymph?.valeur || leuco.lymph?.pourcentage || leuco.mono?.valeur ||
+      leuco.mono?.pourcentage || leuco.eo?.valeur || leuco.eo?.pourcentage ||
+      leuco.baso?.valeur || leuco.baso?.pourcentage || leuco.plt?.valeur
+    // Blastes / cellules immatures
+    const blastKeys = [
+      'proerythroblastes', 'erythroblastes', 'myeloblastes', 'promyelocytes',
+      'myelocytes', 'metamyelocytes', 'monoblastes', 'lymphoblastes',
+    ]
+    const hasBlasts = blastKeys.some(
+      (k) => leuco[k]?.valeur || leuco[k]?.pourcentage
+    )
+    return hasStandard || hasBlasts
   }
 
   const addFooter = (doc, userColor) => {
@@ -448,12 +459,12 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
         currentY = renderExceptions(doc, test, currentY, invoice)
       }
 
-      // Remarque
+      // Commentaires
       if (test?.remarque) {
         currentY = checkNewPage(doc, currentY, invoice)
         doc.setFontSize(8)
         doc.setFont('Times', 'italic')
-        const remarqueLines = doc.splitTextToSize(`Remarque: ${test.remarque}`, 170)
+        const remarqueLines = doc.splitTextToSize(`Commentaires: ${test.remarque}`, 170)
         doc.text(remarqueLines, 20, currentY)
         currentY += remarqueLines.length * 5
       }
@@ -751,68 +762,112 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
       doc.setFontSize(9)
       doc.setFont('Times', 'normal')
 
-      const { gb, neut, lymph, mono, eo, baso, plt } = leucocytesEtFormules
+      const {
+        gb, neut, lymph, mono, eo, baso, plt,
+        proerythroblastes, erythroblastes, myeloblastes, promyelocytes,
+        myelocytes, metamyelocytes, monoblastes, lymphoblastes,
+      } = leucocytesEtFormules
 
       if (gb?.valeur) {
-        excepY = printLeucocytesLine(doc, excepY, 'Leucocytes (GB)', null, gb.valeur, gb.unite, gb.reference)
+        excepY = printLeucocytesLine(
+          doc, excepY, 'Leucocytes (GB)', null,
+          gb.valeur, gb.unite, gb.reference
+        )
       }
       if (neut?.valeur || neut?.pourcentage) {
         excepY = printLeucocytesLine(
-          doc,
-          excepY,
-          'Neutrophiles',
-          neut.pourcentage,
-          neut.valeur,
-          neut.unite,
-          neut.reference
+          doc, excepY, 'Neutrophiles',
+          neut.pourcentage, neut.valeur, neut.unite, neut.referenceValeur
         )
       }
       if (lymph?.valeur || lymph?.pourcentage) {
         excepY = printLeucocytesLine(
-          doc,
-          excepY,
-          'Lymphocytes',
-          lymph.pourcentage,
-          lymph.valeur,
-          lymph.unite,
-          lymph.reference
+          doc, excepY, 'Lymphocytes',
+          lymph.pourcentage, lymph.valeur, lymph.unite, lymph.referenceValeur
         )
       }
       if (mono?.valeur || mono?.pourcentage) {
         excepY = printLeucocytesLine(
-          doc,
-          excepY,
-          'Monocytes',
-          mono.pourcentage,
-          mono.valeur,
-          mono.unite,
-          mono.reference
+          doc, excepY, 'Monocytes',
+          mono.pourcentage, mono.valeur, mono.unite, mono.referenceValeur
         )
       }
       if (eo?.valeur || eo?.pourcentage) {
         excepY = printLeucocytesLine(
-          doc,
-          excepY,
-          'Éosinophiles',
-          eo.pourcentage,
-          eo.valeur,
-          eo.unite,
-          eo.reference
+          doc, excepY, 'Éosinophiles',
+          eo.pourcentage, eo.valeur, eo.unite, eo.referenceValeur
         )
       }
       if (baso?.valeur || baso?.pourcentage) {
         excepY = printLeucocytesLine(
-          doc,
-          excepY,
-          'Basophiles',
-          baso.pourcentage,
-          baso.valeur,
-          baso.unite,
-          baso.reference
+          doc, excepY, 'Basophiles',
+          baso.pourcentage, baso.valeur, baso.unite, baso.referenceValeur
         )
       }
       if (plt?.valeur) {
-        excepY = printLeucocytesLine(doc, excepY, 'Plaquettes (PLT)', null, plt.valeur, plt.unite, plt.reference)
+        excepY = printLeucocytesLine(
+          doc, excepY, 'Plaquettes (PLT)', null,
+          plt.valeur, plt.unite, plt.reference
+        )
+      }
+
+      // ============= Blastes / cellules immatures =============
+      // Rendus uniquement si au moins une valeur ou un pourcentage est saisi.
+      if (proerythroblastes?.valeur || proerythroblastes?.pourcentage) {
+        excepY = printLeucocytesLine(
+          doc, excepY, 'Proérythroblastes',
+          proerythroblastes.pourcentage, proerythroblastes.valeur,
+          proerythroblastes.unite, proerythroblastes.referenceValeur
+        )
+      }
+      if (erythroblastes?.valeur || erythroblastes?.pourcentage) {
+        excepY = printLeucocytesLine(
+          doc, excepY, 'Érythroblastes',
+          erythroblastes.pourcentage, erythroblastes.valeur,
+          erythroblastes.unite, erythroblastes.referenceValeur
+        )
+      }
+      if (myeloblastes?.valeur || myeloblastes?.pourcentage) {
+        excepY = printLeucocytesLine(
+          doc, excepY, 'Myéloblastes',
+          myeloblastes.pourcentage, myeloblastes.valeur,
+          myeloblastes.unite, myeloblastes.referenceValeur
+        )
+      }
+      if (promyelocytes?.valeur || promyelocytes?.pourcentage) {
+        excepY = printLeucocytesLine(
+          doc, excepY, 'Promyélocytes',
+          promyelocytes.pourcentage, promyelocytes.valeur,
+          promyelocytes.unite, promyelocytes.referenceValeur
+        )
+      }
+      if (myelocytes?.valeur || myelocytes?.pourcentage) {
+        excepY = printLeucocytesLine(
+          doc, excepY, 'Myélocytes',
+          myelocytes.pourcentage, myelocytes.valeur,
+          myelocytes.unite, myelocytes.referenceValeur
+        )
+      }
+      if (metamyelocytes?.valeur || metamyelocytes?.pourcentage) {
+        excepY = printLeucocytesLine(
+          doc, excepY, 'Métamyélocytes',
+          metamyelocytes.pourcentage, metamyelocytes.valeur,
+          metamyelocytes.unite, metamyelocytes.referenceValeur
+        )
+      }
+      if (monoblastes?.valeur || monoblastes?.pourcentage) {
+        excepY = printLeucocytesLine(
+          doc, excepY, 'Monoblastes',
+          monoblastes.pourcentage, monoblastes.valeur,
+          monoblastes.unite, monoblastes.referenceValeur
+        )
+      }
+      if (lymphoblastes?.valeur || lymphoblastes?.pourcentage) {
+        excepY = printLeucocytesLine(
+          doc, excepY, 'Lymphoblastes',
+          lymphoblastes.pourcentage, lymphoblastes.valeur,
+          lymphoblastes.unite, lymphoblastes.referenceValeur
+        )
       }
 
       excepY += 5
@@ -1582,7 +1637,7 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
       currentY = checkNewPage(doc, currentY, invoice)
       doc.setFontSize(8)
       doc.setFont('Times', 'italic')
-      doc.text(`Remarque: ${test.remarque}`, 20, currentY)
+      doc.text(`Commentaires: ${test.remarque}`, 20, currentY)
       currentY += 5
     }
 

@@ -3,6 +3,32 @@ import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
+// Convertit récursivement les virgules en points dans toutes les chaînes
+// numériques de l'objet (ex: "12,5" -> "12.5"). Garantit que le backend
+// reçoit des nombres interprétables par parseFloat() pour les calculs
+// automatiques (NFS, clairance, DFG, LDL Friedewald, etc.).
+const normalizeDecimals = (input) => {
+  if (input == null) return input
+  if (typeof input === 'string') {
+    // On convertit uniquement si la chaîne ressemble à un nombre avec virgule
+    if (/^-?\d+,\d+$/.test(input.trim())) {
+      return input.trim().replace(',', '.')
+    }
+    return input
+  }
+  if (Array.isArray(input)) {
+    return input.map(normalizeDecimals)
+  }
+  if (typeof input === 'object') {
+    const out = {}
+    for (const k in input) {
+      out[k] = normalizeDecimals(input[k])
+    }
+    return out
+  }
+  return input
+}
+
 function AddResultatForm({ analyseId, patientId, onResultatChange }) {
   const [testId, setTestId] = useState('')
   const [valeur, setValeur] = useState('')
@@ -744,7 +770,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     })
 
     try {
-      const body = {
+      const rawBody = {
         analyseId,
         testId,
         patientId,
@@ -773,6 +799,12 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
         // ** Ajout important : exceptions (champs QBC, etc.) **
         exceptions: excepValues, // On envoie l'objet complet
       }
+
+      // Normaliser TOUTES les virgules décimales en points avant envoi :
+      // indispensable pour que les calculs automatiques (parseFloat) côté
+      // backend produisent les bonnes valeurs.
+      const body = normalizeDecimals(rawBody)
+
       const response = await fetch(`${apiUrl}/api/resultats/`, {
         method: 'POST',
         headers: {
@@ -1783,8 +1815,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         GR (Globules Rouges)
                       </label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered w-[150px]"
                         placeholder="ex: 4.5"
                         value={
@@ -1823,8 +1855,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         HGB (Hémoglobine)
                       </label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered w-[150px]"
                         placeholder="ex: 13.2"
                         value={
@@ -1863,8 +1895,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         HCT (Hématocrite)
                       </label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered w-[150px]"
                         placeholder="ex: 40"
                         value={
@@ -1905,8 +1937,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         Écart Type (RDW)
                       </label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered w-[150px]"
                         placeholder="ex: 12"
                         value={
@@ -1936,8 +1968,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                     <div className="flex flex-col mb-2">
                       <label className="label font-semibold">IDR-CV (%)</label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered w-[150px]"
                         placeholder="ex: 13.0"
                         value={
@@ -1982,8 +2014,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         GB (Leucocytes Totaux)
                       </label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered"
                         placeholder="ex: 7.2"
                         value={
@@ -2022,8 +2054,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         Neutrophiles (%)
                       </label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered"
                         placeholder="ex: 55"
                         value={
@@ -2059,8 +2091,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         Lymphocytes (%)
                       </label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered"
                         placeholder="ex: 35"
                         value={
@@ -2098,8 +2130,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         Monocytes (%)
                       </label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered"
                         placeholder="ex: 6"
                         value={
@@ -2135,8 +2167,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         Éosinophiles (%)
                       </label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered"
                         placeholder="ex: 2"
                         value={
@@ -2172,8 +2204,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         Basophiles (%)
                       </label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered"
                         placeholder="ex: 1"
                         value={
@@ -2211,8 +2243,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         Plaquettes (PLT)
                       </label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered"
                         placeholder="ex: 250"
                         value={
@@ -2260,8 +2292,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         Proérythroblastes (%)
                       </label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered"
                         placeholder="ex: 0.1"
                         value={
@@ -2298,8 +2330,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         Erythroblastes (%)
                       </label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered"
                         placeholder="ex: 0.05"
                         value={
@@ -2336,8 +2368,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         Myéloblastes (%)
                       </label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered"
                         placeholder="ex: 0.2"
                         value={
@@ -2375,8 +2407,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         Promyélocytes (%)
                       </label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered"
                         placeholder="ex: 0.2"
                         value={
@@ -2413,8 +2445,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         Myélocytes (%)
                       </label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered"
                         placeholder="ex: 0.5"
                         value={
@@ -2450,8 +2482,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         Métamyélocytes (%)
                       </label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered"
                         placeholder="ex: 0.2"
                         value={
@@ -2490,8 +2522,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         Monoblastes (%)
                       </label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered"
                         placeholder="ex: 0.1"
                         value={
@@ -2527,8 +2559,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         Lymphoblastes (%)
                       </label>
                       <input
-                        type="number"
-                        step="any"
+                        type="text"
+                        inputMode="decimal"
                         className="input input-bordered"
                         placeholder="ex: 0.1"
                         value={
@@ -2577,8 +2609,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">PSA libre (ng/mL)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 2.5"
                       value={excepValues.psaRapport?.psaLibre?.valeur || ''}
@@ -2600,8 +2632,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">PSA total (ng/mL)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 10.0"
                       value={excepValues.psaRapport?.psaTotal?.valeur || ''}
@@ -2645,8 +2677,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Pourcentage (%)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 1.5"
                       value={
@@ -2670,8 +2702,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Globules rouges (/µL)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 4500000"
                       value={excepValues.reticulocytes?.gbRouges?.valeur || ''}
@@ -2729,7 +2761,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Âge (années)</label>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[120px]"
                       placeholder="ex: 65"
                       value={excepValues.clairanceCreatinine?.age?.valeur || ''}
@@ -2751,8 +2784,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Poids (kg)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[120px]"
                       placeholder="ex: 70"
                       value={
@@ -2797,8 +2830,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Créatinine (mg/L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 10"
                       value={
@@ -2845,8 +2878,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Créatinine sérique (mg/L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 10"
                       value={excepValues.dfg?.creatinineMgL?.valeur || ''}
@@ -2868,7 +2901,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Âge (années)</label>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[120px]"
                       placeholder="ex: 65"
                       value={excepValues.dfg?.age?.valeur || ''}
@@ -2931,8 +2965,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Fer sérique (µg/dL)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 100"
                       value={
@@ -2957,8 +2991,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Transferrine (g/L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 2.5"
                       value={
@@ -3020,7 +3054,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Leucocytes totaux</label>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 120000"
                       value={
@@ -3044,7 +3079,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Hématies totales</label>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 80000"
                       value={
@@ -3068,7 +3104,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Durée recueil (minutes)</label>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 1440"
                       value={
@@ -3126,8 +3163,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Calcium mesuré (mg/L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 95"
                       value={
@@ -3151,8 +3188,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Albumine (g/L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 35"
                       value={excepValues.calciumCorrige?.albumine?.valeur || ''}
@@ -3198,8 +3235,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Albumine urinaire (mg/L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 30"
                       value={
@@ -3224,8 +3261,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Créatinine urinaire (g/L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 1.0"
                       value={
@@ -3274,8 +3311,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Protéines urinaires (mg/L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 15"
                       value={
@@ -3300,8 +3337,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Créatinine urinaire (g/L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 100"
                       value={
@@ -3348,8 +3385,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Cholestérol total (g/L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 2.0"
                       value={
@@ -3374,8 +3411,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">HDL (g/L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 0.6"
                       value={excepValues.cholesterolLdl?.hdl?.valeur || ''}
@@ -3397,8 +3434,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Triglycérides (g/L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 1.5"
                       value={
@@ -3447,8 +3484,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Cholestérol total (g/L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 2.0"
                       value={
@@ -3473,8 +3510,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Triglycérides (g/L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 1.5"
                       value={
@@ -3500,8 +3537,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                       Phospholipides (g/L) - Optionnel
                     </label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 1.8"
                       value={
@@ -3548,8 +3585,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Albumine urinaire (mg/L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 30"
                       value={
@@ -3574,8 +3611,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Volume urinaire 24h (L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 1.5"
                       min="0"
@@ -3627,8 +3664,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Protéines urinaires (mg/L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 150"
                       value={
@@ -3653,8 +3690,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Volume urinaire 24h (L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 1.5"
                       min="0"
@@ -3706,8 +3743,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Bilirubine totale (mg/L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 15"
                       value={
@@ -3732,8 +3769,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <div>
                     <label className="label">Bilirubine directe (mg/L)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       className="input input-bordered w-[150px]"
                       placeholder="ex: 5"
                       value={

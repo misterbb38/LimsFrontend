@@ -1,11 +1,62 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEdit } from '@fortawesome/free-solid-svg-icons'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
+// Convertit récursivement les virgules en points dans toutes les chaînes
+// numériques de l'objet (ex: "12,5" -> "12.5"). Garantit que le backend
+// reçoit des nombres interprétables par parseFloat() pour les calculs
+// automatiques (NFS, clairance, DFG, LDL Friedewald, etc.).
+const normalizeDecimals = (input) => {
+  if (input == null) return input
+  if (typeof input === 'string') {
+    if (/^-?\d+,\d+$/.test(input.trim())) {
+      return input.trim().replace(',', '.')
+    }
+    return input
+  }
+  if (Array.isArray(input)) {
+    return input.map(normalizeDecimals)
+  }
+  if (typeof input === 'object') {
+    const out = {}
+    for (const k in input) {
+      out[k] = normalizeDecimals(input[k])
+    }
+    return out
+  }
+  return input
+}
+
 function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
   const [showModal, setShowModal] = useState(false)
+  const dialogRef = useRef(null)
+
+  // Utilisation d'un <dialog> natif via showModal() : cela l'inscrit dans
+  // le top-layer du navigateur (empile correctement au-dessus du <dialog>
+  // parent de ViewAnalyseButton), gère Échap, le focus et le scroll de
+  // la page automatiquement — sans toucher à body.style.overflow ni aux
+  // écouteurs clavier manuels qui pouvaient faire sauter le scroll du
+  // dialog parent.
+  useEffect(() => {
+    const dialog = dialogRef.current
+    if (!dialog) return
+    if (showModal && !dialog.open) {
+      dialog.showModal()
+      // Reset du scroll interne de la modal-box en haut
+      requestAnimationFrame(() => {
+        const box = dialog.querySelector('.modal-box')
+        if (box) box.scrollTop = 0
+      })
+    }
+  }, [showModal])
+
+  const closeEditModal = () => {
+    const dialog = dialogRef.current
+    if (dialog && dialog.open) dialog.close()
+    setShowModal(false)
+  }
   const [currentView, setCurrentView] = useState('simple')
   const [tests, setTests] = useState([])
   const [machineA, setMachineA] = useState('')
@@ -1462,13 +1513,18 @@ if (data.data.exceptions) {
       })
     )
 
-    const dataToSend = {
+    const rawDataToSend = {
       ...formData,
       culture: {
         ...formData.culture,
         germeIdentifie: transformedAntibiogrammes,
       },
     }
+
+    // Normaliser TOUTES les virgules décimales en points avant envoi :
+    // indispensable pour que les calculs automatiques (parseFloat) côté
+    // backend produisent les bonnes valeurs.
+    const dataToSend = normalizeDecimals(rawDataToSend)
 
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'))
@@ -1513,9 +1569,31 @@ if (data.data.exceptions) {
         <FontAwesomeIcon icon={faEdit} />
       </button>
       {showModal && (
-        <div className="modal modal-open">
-          <div className="modal-box w-11/12 max-w-5xl">
-            <h3 className="font-bold text-lg">Modifier le Résultat</h3>
+        <div
+          className="modal modal-open"
+          style={{ zIndex: 9999 }}
+          onMouseDown={(e) => {
+            // Fermer uniquement si on clique sur l'overlay lui-même,
+            // pas sur le contenu du modal
+            if (e.target === e.currentTarget) setShowModal(false)
+          }}
+        >
+          <div
+            ref={modalBoxRef}
+            className="modal-box w-11/12 max-w-5xl max-h-[90vh] overflow-y-auto"
+          >
+            {/* Header sticky : titre + bouton fermer toujours visibles */}
+            <div className="sticky top-0 z-10 bg-base-100 flex justify-between items-center pb-3 mb-3 border-b border-base-300">
+              <h3 className="font-bold text-lg">Modifier le Résultat</h3>
+              <button
+                type="button"
+                aria-label="Fermer"
+                className="btn btn-sm btn-circle btn-ghost"
+                onClick={() => setShowModal(false)}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
             <form onSubmit={handleSubmit}>
               <div className="form-control">
                 <div>
@@ -2141,7 +2219,8 @@ if (data.data.exceptions) {
                             GR (Glob. rouges)
                           </label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.hematiesEtConstantes.gr
@@ -2176,7 +2255,8 @@ if (data.data.exceptions) {
                             HGB (Hémoglobine)
                           </label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.hematiesEtConstantes.hgb
@@ -2211,7 +2291,8 @@ if (data.data.exceptions) {
                             HCT (Hématocrite)
                           </label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.hematiesEtConstantes.hct
@@ -2249,7 +2330,8 @@ if (data.data.exceptions) {
                         <div className="w-[30%] flex flex-col">
                           <label className="label font-semibold">IDR-CV</label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.hematiesEtConstantes
@@ -2284,7 +2366,8 @@ if (data.data.exceptions) {
                             Écart Type
                           </label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.hematiesEtConstantes
@@ -2317,7 +2400,8 @@ if (data.data.exceptions) {
                             GB (Leucocytes Totaux)
                           </label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.leucocytesEtFormules.gb
@@ -2352,7 +2436,8 @@ if (data.data.exceptions) {
                             Neutrophiles (%)
                           </label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.leucocytesEtFormules.neut
@@ -2382,7 +2467,8 @@ if (data.data.exceptions) {
                             Lymphocytes (%)
                           </label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.leucocytesEtFormules.lymph
@@ -2415,7 +2501,8 @@ if (data.data.exceptions) {
                             Monocytes (%)
                           </label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.leucocytesEtFormules.mono
@@ -2445,7 +2532,8 @@ if (data.data.exceptions) {
                             Éosinophiles (%)
                           </label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.leucocytesEtFormules.eo
@@ -2475,7 +2563,8 @@ if (data.data.exceptions) {
                             Basophiles (%)
                           </label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.leucocytesEtFormules.baso
@@ -2508,7 +2597,8 @@ if (data.data.exceptions) {
                             PLT (Plaquettes)
                           </label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.leucocytesEtFormules.plt
@@ -2543,7 +2633,8 @@ if (data.data.exceptions) {
                             Proérythroblastes (%)
                           </label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.leucocytesEtFormules
@@ -2573,7 +2664,8 @@ if (data.data.exceptions) {
                             Érythroblastes (%)
                           </label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.leucocytesEtFormules
@@ -2606,7 +2698,8 @@ if (data.data.exceptions) {
                             Myéloblastes (%)
                           </label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.leucocytesEtFormules
@@ -2636,7 +2729,8 @@ if (data.data.exceptions) {
                             Promyélocytes (%)
                           </label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.leucocytesEtFormules
@@ -2666,7 +2760,8 @@ if (data.data.exceptions) {
                             Myélocytes (%)
                           </label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.leucocytesEtFormules
@@ -2699,7 +2794,8 @@ if (data.data.exceptions) {
                             Métamyélocytes (%)
                           </label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.leucocytesEtFormules
@@ -2729,7 +2825,8 @@ if (data.data.exceptions) {
                             Monoblastes (%)
                           </label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.leucocytesEtFormules
@@ -2759,7 +2856,8 @@ if (data.data.exceptions) {
                             Lymphoblastes (%)
                           </label>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             className="input input-bordered"
                             value={
                               formData.exceptions.nfs.leucocytesEtFormules
@@ -2798,8 +2896,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">PSA libre (ng/mL)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 2.5"
           value={formData.exceptions.psaRapport?.psaLibre?.valeur || ''}
@@ -2824,8 +2922,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">PSA total (ng/mL)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 10.0"
           value={formData.exceptions.psaRapport?.psaTotal?.valeur || ''}
@@ -2872,8 +2970,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Pourcentage (%)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 1.5"
           value={
@@ -2900,8 +2998,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Globules rouges (/µL)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 4500000"
           value={formData.exceptions.reticulocytes?.gbRouges?.valeur || ''}
@@ -2962,7 +3060,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Âge (années)</label>
         <input
-          type="number"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[120px]"
           placeholder="ex: 65"
           value={formData.exceptions.clairanceCreatinine?.age?.valeur || ''}
@@ -2987,8 +3086,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Poids (kg)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[120px]"
           placeholder="ex: 70"
           value={
@@ -3039,8 +3138,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Créatinine (mg/L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 10"
           value={
@@ -3090,8 +3189,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Créatinine sérique (mg/L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 10"
           value={formData.exceptions.dfg?.creatinineMgL?.valeur || ''}
@@ -3116,7 +3215,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Âge (années)</label>
         <input
-          type="number"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[120px]"
           placeholder="ex: 65"
           value={formData.exceptions.dfg?.age?.valeur || ''}
@@ -3185,8 +3285,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Fer sérique (µg/dL)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 100"
           value={
@@ -3214,8 +3314,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Transferrine (g/L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 2.5"
           value={
@@ -3280,7 +3380,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Leucocytes totaux</label>
         <input
-          type="number"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 120000"
           value={
@@ -3307,7 +3408,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Hématies totales</label>
         <input
-          type="number"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 80000"
           value={
@@ -3334,7 +3436,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Durée recueil (minutes)</label>
         <input
-          type="number"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 1440"
           value={
@@ -3395,8 +3498,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Calcium mesuré (mg/L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 95"
           value={
@@ -3423,8 +3526,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Albumine (g/L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 35"
           value={formData.exceptions.calciumCorrige?.albumine?.valeur || ''}
@@ -3473,8 +3576,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Albumine urinaire (mg/L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 30"
           value={
@@ -3502,8 +3605,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Créatinine urinaire (g/L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 1.0"
           value={
@@ -3555,8 +3658,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Protéines urinaires (mg/L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 15"
           value={
@@ -3584,8 +3687,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Créatinine urinaire (g/L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 100"
           value={
@@ -3635,8 +3738,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Cholestérol total (g/L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 2.0"
           value={
@@ -3664,8 +3767,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">HDL (g/L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 0.6"
           value={formData.exceptions.cholesterolLdl?.hdl?.valeur || ''}
@@ -3690,8 +3793,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Triglycérides (g/L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 1.5"
           value={
@@ -3743,8 +3846,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Cholestérol total (g/L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 2.0"
           value={
@@ -3772,8 +3875,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Triglycérides (g/L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 1.5"
           value={
@@ -3802,8 +3905,8 @@ if (data.data.exceptions) {
           Phospholipides (g/L) - Optionnel
         </label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 1.8"
           value={
@@ -3853,8 +3956,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Albumine urinaire (mg/L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 30"
           value={
@@ -3882,8 +3985,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Volume urinaire 24h (L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 1.5"
           min="0"
@@ -3938,8 +4041,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Protéines urinaires (mg/L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 150"
           value={
@@ -3967,8 +4070,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Volume urinaire 24h (L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 1.5"
           min="0"
@@ -4023,8 +4126,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Bilirubine totale (mg/L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 15"
           value={
@@ -4052,8 +4155,8 @@ if (data.data.exceptions) {
       <div>
         <label className="label">Bilirubine directe (mg/L)</label>
         <input
-          type="number"
-          step="any"
+          type="text"
+          inputMode="decimal"
           className="input input-bordered w-[150px]"
           placeholder="ex: 5"
           value={
@@ -5122,7 +5225,7 @@ if (data.data.exceptions) {
                 />
               </div>
 
-              <div className="modal-action">
+              <div className="modal-action sticky bottom-0 bg-base-100 pt-3 mt-3 border-t border-base-300">
                 <button
                   className="btn btn-primary"
                   type="submit"
@@ -5134,7 +5237,11 @@ if (data.data.exceptions) {
                     'Enregistrer'
                   )}
                 </button>
-                <button className="btn" onClick={() => setShowModal(false)}>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => setShowModal(false)}
+                >
                   Annuler
                 </button>
               </div>

@@ -181,9 +181,10 @@ function GeneratePDFButton({ invoice }) {
 
       // Informations du client
       let currentY = 40 // Mise à jour pour utiliser currentY pour la position initiale
-      doc.setFontSize(10) // Changez la taille à la valeur souhaitée
+      doc.setFontSize(12) // Titre FACTURE légèrement plus grand
       doc.setFont('helvetica', 'bold') // Définissez la police en Helvetica et le style en gras
-      doc.text(`FACTURE`, 85, currentY + 7)
+      // Le mot FACTURE est placé un peu plus haut et centré sur la page
+      doc.text('FACTURE', 105, currentY - 2, null, null, 'center')
       doc.setFontSize(8)
       // doc.text(`Informations du patient`, 130, currentY)
       doc.text(`Nº Dossier: ${invoice?.identifiant}`, 135, currentY + 7)
@@ -385,123 +386,90 @@ function GeneratePDFButton({ invoice }) {
 
       // Total
       doc.setFontSize(8)
-      // Ajuster `currentY` pour l'espace après la ligne
       currentY += 5
-      // Tracer une ligne avant l'affichage du montant total HT ou de la réduction
-      doc.setDrawColor(0) // Définir la couleur de la ligne, ici noire
-      doc.setLineWidth(0.1) // Définir l'épaisseur de la ligne
-      doc.line(20, currentY, 190, currentY) // Tracer la ligne
 
-      currentY += 5 // Ajuster l'espacement après la ligne
+      // === Déterminer à l'avance ce qu'il y a à afficher dans chaque bloc ===
+      const pc1Count = invoice.pc1 > 0 ? Math.round(invoice.pc1 / 2000) : 0
+      const pc2Count = invoice.pc2 > 0 ? Math.round(invoice.pc2 / 4000) : 0
+      const hasDeplacement = invoice.deplacement > 0
+      const isPartenaireB = (
+        invoice.partenaireId?.typePartenaire === 'ipm' ||
+        invoice.partenaireId?.typePartenaire === 'assurance' ||
+        invoice.partenaireId?.typePartenaire === 'sococim'
+      )
+      const showTotalB = isPartenaireB
+      const showMontantHT = !isPartenaireB
+      const hasReduction = invoice.reduction > 0
 
-      // let currentYv = currentY
+      const hasAjustements =
+        pc1Count > 0 || pc2Count > 0 || hasDeplacement || showTotalB
+      const hasTotaux = showMontantHT || hasReduction
 
-      // if (invoice.pc1 > 0) {
-      //   doc.text(`PC1: ${invoice.pc1} `, 35, currentYv)
-      //   // Ajustez selon l'espacement désiré entre les lignes
-      // }
+      // === BLOC AJUSTEMENTS (PC1, PC2, Déplacement, Total B) ===
+      // Les lignes d'encadrement ne sont tracées QUE si le bloc a du contenu
+      if (hasAjustements) {
+        doc.setDrawColor(0)
+        doc.setLineWidth(0.1)
+        doc.line(20, currentY, 190, currentY) // ligne du haut
 
-      // if (invoice.pc2 > 0) {
-      //   doc.text(`PC2: ${invoice.pc2}`, 50, currentYv)
-      // }
-      // // Ajouter un espace avant le Total B si nécessaire
-      // if (
-      //   invoice.partenaireId?.typePartenaire === 'ipm' ||
-      //   invoice.partenaireId?.typePartenaire === 'assurance' ||
-      //   invoice.partenaireId?.typePartenaire === 'sococim'
-      // ) {
-      //   doc.text(`Total B: ${totalCoefB.toFixed(0)}`, 97, currentY) // Ajustez la position Y selon vos besoins
-      // }
+        currentY += 5
 
-      // if (invoice.deplacement > 0) {
-      //   doc.text(`Déplacement: ${invoice.deplacement} `, 140, currentYv)
-      //   currentYv += 5 // Ajustez selon l'espacement désiré entre les lignes
-      // }
+        for (let i = 0; i < pc1Count; i++) {
+          doc.text(`PC1: 2000 CFA`, 35, currentY)
+          currentY += 5
+        }
 
-      // Calculer le nombre de PC1 et PC2
-const pc1Count = invoice.pc1 > 0 ? Math.round(invoice.pc1 / 2000) : 0
-const pc2Count = invoice.pc2 > 0 ? Math.round(invoice.pc2 / 4000) : 0
+        for (let i = 0; i < pc2Count; i++) {
+          doc.text(`PC2: 4000 CFA`, 35, currentY)
+          currentY += 5
+        }
 
-// Afficher chaque PC1 sur une ligne séparée
-for (let i = 0; i < pc1Count; i++) {
-  doc.text(`PC1: 2000 CFA`, 35, currentY)
-  currentY += 5
-}
+        if (hasDeplacement) {
+          doc.text(`Déplacement: ${invoice.deplacement} CFA`, 35, currentY)
+          currentY += 5
+        }
 
-// Afficher chaque PC2 sur une ligne séparée
-for (let i = 0; i < pc2Count; i++) {
-  doc.text(`PC2: 4000 CFA`, 35, currentY)
-  currentY += 5
-}
+        if (showTotalB) {
+          doc.text(`Total B: ${totalCoefB.toFixed(0)}`, 97, currentY)
+          currentY += 5
+        }
 
-// Afficher le déplacement
-if (invoice.deplacement > 0) {
-  doc.text(`Déplacement: ${invoice.deplacement} CFA`, 35, currentY)
-  currentY += 5
-}
-
-// Ajouter un espace avant le Total B si nécessaire
-if (
-  invoice.partenaireId?.typePartenaire === 'ipm' ||
-  invoice.partenaireId?.typePartenaire === 'assurance' ||
-  invoice.partenaireId?.typePartenaire === 'sococim'
-) {
-  doc.text(`Total B: ${totalCoefB.toFixed(0)}`, 97, currentY)
-  currentY += 5
-}
-
-      currentY += 2 // Ajuster l'espacement avant de tracer la ligne de fin
-
-      doc.line(20, currentY, 190, currentY) // Tracer la ligne
-
-      // Déterminer l'espace avant la première ligne
-      currentY += 2
-
-      // Tracer une ligne avant l'affichage du montant total HT ou de la réduction
-      doc.setDrawColor(0) // Définir la couleur de la ligne, ici noire
-      doc.setLineWidth(0.1) // Définir l'épaisseur de la ligne
-      doc.line(20, currentY, 190, currentY) // Tracer la ligne
-
-      currentY += 5 // Ajuster l'espacement après la ligne
-
-      // Vérifie si 'typePartenaire' n'est ni 'ipm' ni 'assurance'
-      if (
-        invoice.partenaireId?.typePartenaire !== 'ipm' &&
-        invoice.partenaireId?.typePartenaire !== 'assurance' &&
-        invoice.partenaireId?.typePartenaire !== 'sococim'
-      ) {
-        doc.setFont('helvetica', 'bold')
-        // currentY += 2 // Ajuster selon vos besoins
-        doc.text(
-          `MONTANT TOTAL HT: ${invoice.prixPatient.toFixed(0)} `,
-          122,
-          currentY
-        )
+        currentY += 2
+        doc.line(20, currentY, 190, currentY) // ligne du bas
+        currentY += 2
       }
 
-      doc.setFont('helvetica', 'normal')
+      // === BLOC TOTAUX (MONTANT TOTAL HT + Remise) ===
+      // Idem : lignes tracées uniquement si le bloc a du contenu
+      if (hasTotaux) {
+        doc.setDrawColor(0)
+        doc.setLineWidth(0.1)
+        doc.line(20, currentY, 190, currentY) // ligne du haut
 
-      // Ajouter un espace avant la réduction si nécessaire
-      if (invoice.reduction > 0) {
-        // Déterminez le suffixe à utiliser en fonction du type de réduction
-        const reductionSuffix = invoice.typeReduction === 'montant' ? ' ' : '%'
+        currentY += 5
 
-        // Construisez la chaîne de texte pour la réduction en incluant le suffixe approprié
-        const reductionText = `Remise: ${invoice.reduction.toFixed(0)} ${reductionSuffix}`
+        if (showMontantHT) {
+          doc.setFont('helvetica', 'bold')
+          doc.text(
+            `MONTANT TOTAL HT: ${invoice.prixPatient.toFixed(0)} `,
+            122,
+            currentY
+          )
+        }
 
-        // Affichez le texte de la réduction à la position Y actuelle
-        doc.text(reductionText, 35, currentY) // Ajustez la position Y selon vos besoins
+        doc.setFont('helvetica', 'normal')
 
-        // Assurez-vous d'ajuster `currentY` si vous avez besoin d'ajouter d'autres lignes après
-        // currentY += 5 // Par exemple, ajoutez 5 pour l'espacement avant la prochaine ligne
+        if (hasReduction) {
+          const reductionSuffix =
+            invoice.typeReduction === 'montant' ? ' ' : '%'
+          const reductionText = `Remise: ${invoice.reduction.toFixed(0)} ${reductionSuffix}`
+          doc.text(reductionText, 35, currentY)
+        }
+
+        currentY += 2
+        doc.line(20, currentY, 190, currentY) // ligne du bas
+        currentY += 2
       }
-
-      currentY += 2 // Ajuster l'espacement avant de tracer la ligne de fin
-
-      // Tracer une ligne après l'affichage du montant total HT, de la réduction et du Total B
-      doc.line(20, currentY, 190, currentY) // Tracer la ligne
-
-      currentY += 2
       // Dernière ligne verte
       if (currentY > 250) {
         // Encore une vérification avant d'ajouter la ligne finale
@@ -625,31 +593,32 @@ if (
       }
       currentY += 10
 
-      doc.setFontSize(10)
-      doc.setFont('helvetica', 'bold')
+      // Statut "Facture Payée / Impayée / sous Reliquat" :
+      // Dessiné comme un TAMPON OBLIQUE à l'intérieur du tableau,
+      // centré entre les colonnes "B" (x=110) et "Total" (x=166),
+      // toujours sur la PREMIÈRE page quelle que soit la longueur du tableau.
       const text =
         invoice.statusPayement === 'Reliquat'
           ? `Facture sous ${invoice.statusPayement}`
           : `Facture ${invoice.statusPayement}`
 
-      // Dessiner le texte
-      doc.text(text, 135, currentY)
+      // Mémoriser la page courante pour y revenir ensuite
+      const pageAvantStatut = doc.internal.getCurrentPageInfo().pageNumber
+      doc.setPage(1)
 
-      // Calculer la largeur et la hauteur du texte pour dessiner un rectangle autour
-      const textWidth =
-        (doc.getStringUnitWidth(text) * doc.internal.getFontSize()) /
-        doc.internal.scaleFactor
-      const textHeight = doc.getFontSize() / doc.internal.scaleFactor
+      // Style tampon : grand, gras, gris pour effet filigrane
+      doc.setFontSize(22)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(150, 150, 150)
 
-      // Ajouter un rectangle autour du texte (avec une bordure plus épaisse)
-      const padding = 2 // Ajouter un peu d'espace entre le texte et le rectangle
-      doc.setLineWidth(0.5) // Épaisseur de la bordure
-      doc.rect(
-        135 - padding,
-        currentY - textHeight - padding,
-        textWidth + 2 * padding,
-        textHeight + 2 * padding
-      )
+      // Position : centre entre B (x=110) et Total (x=166) => x=138
+      // Y au milieu de la zone visible du tableau sur la 1ère page
+      // Angle oblique de 30 degrés (anti-horaire)
+      doc.text(text, 138, 150, { align: 'center', angle: 30 })
+
+      // Réinitialiser la couleur et revenir sur la page courante
+      doc.setTextColor(0, 0, 0)
+      doc.setPage(pageAvantStatut)
 
       // Dernière ligne verte
       if (currentY > 250) {

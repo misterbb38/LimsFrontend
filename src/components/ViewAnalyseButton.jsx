@@ -24,6 +24,19 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
 
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
 
+  // Ouvre un <dialog> et remet son contenu (modal-box) en haut pour que
+  // l'utilisateur commence toujours au début du formulaire.
+  const openDialogAtTop = (dialogId) => {
+    const dialog = document.getElementById(dialogId)
+    if (!dialog) return
+    dialog.showModal()
+    requestAnimationFrame(() => {
+      const modalBox = dialog.querySelector('.modal-box')
+      if (modalBox) modalBox.scrollTop = 0
+      dialog.scrollTop = 0
+    })
+  }
+
   useEffect(() => {
     fetchAnalyseData(analyseId)
   }, [analyseId, apiUrl])
@@ -235,9 +248,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
       {/* You can open the modal using document.getElementById('ID').showModal() method */}
       <button
         className="btn"
-        onClick={() =>
-          document.getElementById(`my_modal_4_${analyseId}`).showModal()
-        }
+        onClick={() => openDialogAtTop(`my_modal_4_${analyseId}`)}
       >
         <FontAwesomeIcon icon={faEye} />
       </button>
@@ -276,18 +287,14 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
           {/* Open the modal using document.getElementById('ID').showModal() method */}
           <button
             className="btn mr-2"
-            onClick={() =>
-              document.getElementById(`my_modal_5_${analyseId}`).showModal()
-            }
+            onClick={() => openDialogAtTop(`my_modal_5_${analyseId}`)}
           >
             Ajouter une mise à jour
           </button>
 
           <button
             className="btn"
-            onClick={() =>
-              document.getElementById(`my_modal_6_${analyseId}`).showModal()
-            }
+            onClick={() => openDialogAtTop(`my_modal_6_${analyseId}`)}
           >
             Ajouter un résultat
           </button>
@@ -332,9 +339,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
 
           <button
             className="btn ml-2"
-            onClick={() =>
-              document.getElementById(`my_modal_7_${analyseId}`).showModal()
-            }
+            onClick={() => openDialogAtTop(`my_modal_7_${analyseId}`)}
           >
             Ajouter un résultat externe
           </button>
