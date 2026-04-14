@@ -180,7 +180,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
 
     // Taux de Prothrombine (TP + INR mesures sur le meme tube)
     tauxProthrombine: {
-      tp:  { valeur: '', unite: '%', reference: '> 70' },
+      tp:  { valeur: '', unite: '%', reference: '> 70 %' },
       inr: { valeur: '', unite: '',  reference: '0,9 - 1,2' },
     },
 
@@ -1027,7 +1027,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
         sao2:        { valeur: '', unite: '%',      reference: '95 - 99' },
       },
       tauxProthrombine: {
-        tp:  { valeur: '', unite: '%', reference: '> 70' },
+        tp:  { valeur: '', unite: '%', reference: '> 70 %' },
         inr: { valeur: '', unite: '',  reference: '0,9 - 1,2' },
       },
     })
@@ -3947,10 +3947,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                         }
                       />
                       <small className="text-gray-500">
-                        {excepValues.tauxProthrombine?.[f.key]?.unite
-                          ? `${excepValues.tauxProthrombine[f.key].unite} | `
-                          : ''}
-                        Réf : {excepValues.tauxProthrombine?.[f.key]?.reference || ''}
+                        {excepValues.tauxProthrombine?.[f.key]?.reference || ''}
                       </small>
                     </div>
                   ))}

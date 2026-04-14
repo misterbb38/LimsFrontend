@@ -692,16 +692,8 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
     const visibleRows = rows.filter(r => r.value && String(r.value).trim() !== '')
     if (visibleRows.length === 0) return excepY
 
-    // En-tetes de colonnes
-    doc.setFont('Times', 'bold')
-    doc.setFontSize(9)
-    doc.text('Paramètre',            25,  excepY)
-    doc.text('Résultat',              95, excepY)
-    doc.text('Unité',                120, excepY)
-    doc.text('Valeurs de référence', 140, excepY)
-    excepY += 5
-
     doc.setFont('Times', 'normal')
+    doc.setFontSize(9)
     visibleRows.forEach((r) => {
       excepY = checkNewPage(doc, excepY, invoice)
       doc.text(String(r.label),     25,  excepY)
@@ -1575,7 +1567,7 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     return excepY
   }
 
-  // 16. Taux de Prothrombine (TP + INR) — tableau structure, seules les lignes renseignees
+  // 16. Taux de Prothrombine (TP + INR) — format parametre simple, une ligne par valeur
   const renderTauxProthrombineException = (doc, test, excepY, invoice) => {
     const tp = test.exceptions?.tauxProthrombine
     if (!tp) return excepY
@@ -1592,24 +1584,34 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     if (visibleRows.length === 0) return excepY
 
     excepY = checkNewPage(doc, excepY, invoice)
-
-    // En-tetes (pas de titre de section : le label du test fait office de titre)
-    doc.setFont('Times', 'bold')
     doc.setFontSize(9)
-    doc.text('Paramètre',             25, excepY)
-    doc.text('Résultats',              95, excepY)
-    doc.text('Unité',                 125, excepY)
-    doc.text('Valeurs de référence',  150, excepY)
-    excepY += 5
 
-    doc.setFont('Times', 'normal')
     visibleRows.forEach((r) => {
       excepY = checkNewPage(doc, excepY, invoice)
       const cell = tp[r.key] || {}
-      doc.text(String(r.label),                 25, excepY)
-      doc.text(String(cell.valeur ?? ''),       95, excepY)
-      doc.text(String(cell.unite ?? ''),       125, excepY)
-      doc.text(String(cell.reference ?? ''),   150, excepY)
+      const valeur = String(cell.valeur ?? '')
+      let ref      = String(cell.reference ?? '')
+      const unite  = String(cell.unite ?? '')
+
+      // Robustesse : si l'unite est definie (ex: "%") mais que la reference ne
+      // la contient pas, on l'ajoute a la fin. Ex: "> 70" + unite "%" => "> 70 %".
+      // Utile pour les anciens enregistrements sauves avant la normalisation.
+      if (unite && ref && !ref.includes(unite)) {
+        ref = `${ref} ${unite}`
+      }
+
+      // Libelle a gauche (gras)
+      doc.setFont('Times', 'bold')
+      doc.text(r.label, 25, excepY)
+
+      // Valeur centree au milieu (gras, sans unite : l'unite apparait
+      // uniquement dans la reference, ex: "> 70 %")
+      if (valeur) doc.text(valeur, 105, excepY, { align: 'center' })
+
+      // Reference alignee a droite (normal)
+      doc.setFont('Times', 'normal')
+      if (ref) doc.text(ref, 150, excepY)
+
       excepY += 5
     })
 
@@ -1647,16 +1649,8 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     doc.text('GAZ DU SANG', 25, excepY)
     excepY += 5
 
-    // En-tetes
-    doc.setFont('Times', 'bold')
-    doc.setFontSize(9)
-    doc.text('Paramètre',             25, excepY)
-    doc.text('Résultats',              95, excepY)
-    doc.text('Unité',                 125, excepY)
-    doc.text('Valeurs de référence',  150, excepY)
-    excepY += 5
-
     doc.setFont('Times', 'normal')
+    doc.setFontSize(9)
     visibleRows.forEach((r) => {
       excepY = checkNewPage(doc, excepY, invoice)
       const cell = gaz[r.key] || {}

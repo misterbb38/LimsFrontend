@@ -31,32 +31,28 @@ const normalizeDecimals = (input) => {
 
 function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
   const [showModal, setShowModal] = useState(false)
-  const dialogRef = useRef(null)
+  // Ref sur la modal-box : remet le scroll en haut a chaque ouverture
+  // et fournit un point d'ancrage pour la fermeture par touche Echap.
+  const modalBoxRef = useRef(null)
 
-  // Utilisation d'un <dialog> natif via showModal() : cela l'inscrit dans
-  // le top-layer du navigateur (empile correctement au-dessus du <dialog>
-  // parent de ViewAnalyseButton), gère Échap, le focus et le scroll de
-  // la page automatiquement — sans toucher à body.style.overflow ni aux
-  // écouteurs clavier manuels qui pouvaient faire sauter le scroll du
-  // dialog parent.
   useEffect(() => {
-    const dialog = dialogRef.current
-    if (!dialog) return
-    if (showModal && !dialog.open) {
-      dialog.showModal()
-      // Reset du scroll interne de la modal-box en haut
-      requestAnimationFrame(() => {
-        const box = dialog.querySelector('.modal-box')
-        if (box) box.scrollTop = 0
-      })
+    if (!showModal) return
+
+    // Reset scroll du contenu du modal en haut
+    if (modalBoxRef.current) {
+      modalBoxRef.current.scrollTop = 0
+    }
+
+    // Fermeture par touche Echap
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') setShowModal(false)
+    }
+    document.addEventListener('keydown', handleEscape)
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
     }
   }, [showModal])
-
-  const closeEditModal = () => {
-    const dialog = dialogRef.current
-    if (dialog && dialog.open) dialog.close()
-    setShowModal(false)
-  }
   const [currentView, setCurrentView] = useState('simple')
   const [tests, setTests] = useState([])
   const [machineA, setMachineA] = useState('')
@@ -531,7 +527,7 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
     sao2:        { valeur: '', unite: '%',      reference: '95 - 99' },
   },
   tauxProthrombine: {
-    tp:  { valeur: '', unite: '%', reference: '> 70' },
+    tp:  { valeur: '', unite: '%', reference: '> 70 %' },
     inr: { valeur: '', unite: '',  reference: '0,9 - 1,2' },
   },
 },
@@ -4321,10 +4317,7 @@ if (data.data.exceptions) {
             }
           />
           <small className="text-gray-500">
-            {formData.exceptions.tauxProthrombine?.[f.key]?.unite
-              ? `${formData.exceptions.tauxProthrombine[f.key].unite} | `
-              : ''}
-            Réf : {formData.exceptions.tauxProthrombine?.[f.key]?.reference || ''}
+            {formData.exceptions.tauxProthrombine?.[f.key]?.reference || ''}
           </small>
         </div>
       ))}
