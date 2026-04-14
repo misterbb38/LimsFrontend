@@ -530,6 +530,10 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
     hco3:        { valeur: '', unite: 'mmol/l', reference: '22 - 26' },
     sao2:        { valeur: '', unite: '%',      reference: '95 - 99' },
   },
+  tauxProthrombine: {
+    tp:  { valeur: '', unite: '%', reference: '> 70' },
+    inr: { valeur: '', unite: '',  reference: '0,9 - 1,2' },
+  },
 },
   })
   const [isLoading, setIsLoading] = useState(false)
@@ -696,6 +700,15 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
     nameLower.includes('gazometrie')
   ) {
     return 'gazDuSang'
+  }
+  // Taux de Prothrombine (inclut INR)
+  else if (
+    nameLower.includes('prothrombine') ||
+    nameLower.includes('tp/inr') ||
+    nameLower === 'tp' ||
+    nameLower === 'inr'
+  ) {
+    return 'tauxProthrombine'
   }
 
   return 'normal'
@@ -4263,6 +4276,55 @@ if (data.data.exceptions) {
               ? `${formData.exceptions.gazDuSang[f.key].unite} | `
               : ''}
             Réf : {formData.exceptions.gazDuSang?.[f.key]?.reference || ''}
+          </small>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
+{/* 16. Taux de Prothrombine (TP + INR) */}
+{selectedTestCategory === 'tauxProthrombine' && (
+  <div className="border p-4 mt-4">
+    <h3 className="font-bold mb-2">Taux de Prothrombine</h3>
+    <p className="text-sm text-gray-600 mb-3">
+      TP et INR sont mesurés sur le même tube. Unités et références
+      figées.
+    </p>
+    <div className="flex flex-wrap gap-4 items-start">
+      {[
+        { key: 'tp',  label: 'Taux de Prothrombine (TP)', placeholder: 'ex: 85' },
+        { key: 'inr', label: 'INR',                       placeholder: 'ex: 1,10' },
+      ].map((f) => (
+        <div key={f.key} className="flex flex-col">
+          <label className="label">{f.label}</label>
+          <input
+            type="text"
+            inputMode="decimal"
+            className="input input-bordered w-[180px]"
+            placeholder={f.placeholder}
+            value={formData.exceptions.tauxProthrombine?.[f.key]?.valeur || ''}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                exceptions: {
+                  ...prev.exceptions,
+                  tauxProthrombine: {
+                    ...prev.exceptions.tauxProthrombine,
+                    [f.key]: {
+                      ...prev.exceptions.tauxProthrombine?.[f.key],
+                      valeur: e.target.value,
+                    },
+                  },
+                },
+              }))
+            }
+          />
+          <small className="text-gray-500">
+            {formData.exceptions.tauxProthrombine?.[f.key]?.unite
+              ? `${formData.exceptions.tauxProthrombine[f.key].unite} | `
+              : ''}
+            Réf : {formData.exceptions.tauxProthrombine?.[f.key]?.reference || ''}
           </small>
         </div>
       ))}

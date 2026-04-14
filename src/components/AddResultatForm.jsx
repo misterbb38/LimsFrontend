@@ -178,6 +178,12 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
       sao2:        { valeur: '', unite: '%',      reference: '95 - 99' },
     },
 
+    // Taux de Prothrombine (TP + INR mesures sur le meme tube)
+    tauxProthrombine: {
+      tp:  { valeur: '', unite: '%', reference: '> 70' },
+      inr: { valeur: '', unite: '',  reference: '0,9 - 1,2' },
+    },
+
     // 👇 Nouvel ajout : NFS
     nfs: {
       hematiesEtConstantes: {
@@ -1020,6 +1026,10 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
         hco3:        { valeur: '', unite: 'mmol/l', reference: '22 - 26' },
         sao2:        { valeur: '', unite: '%',      reference: '95 - 99' },
       },
+      tauxProthrombine: {
+        tp:  { valeur: '', unite: '%', reference: '> 70' },
+        inr: { valeur: '', unite: '',  reference: '0,9 - 1,2' },
+      },
     })
     setAntibiogrammes([])
     setMacroscopique('')
@@ -1229,6 +1239,16 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
       nameLower.includes('gazometrie')
     ) {
       return 'gazDuSang'
+    }
+
+    // 16. Taux de Prothrombine (inclut INR)
+    else if (
+      nameLower.includes('prothrombine') ||
+      nameLower.includes('tp/inr') ||
+      nameLower === 'tp' ||
+      nameLower === 'inr'
+    ) {
+      return 'tauxProthrombine'
     }
 
     return 'normal'
@@ -3885,6 +3905,52 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                           ? `${excepValues.gazDuSang[f.key].unite} | `
                           : ''}
                         Réf : {excepValues.gazDuSang?.[f.key]?.reference || ''}
+                      </small>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 16. Taux de Prothrombine (TP + INR) */}
+            {selectedTestCategory === 'tauxProthrombine' && (
+              <div className="border p-4 mt-4">
+                <h3 className="font-bold mb-2">Taux de Prothrombine</h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  TP et INR sont mesurés sur le même tube. Unités et références
+                  figées.
+                </p>
+                <div className="flex flex-wrap gap-4 items-start">
+                  {[
+                    { key: 'tp',  label: 'Taux de Prothrombine (TP)', placeholder: 'ex: 85' },
+                    { key: 'inr', label: 'INR',                       placeholder: 'ex: 1,10' },
+                  ].map((f) => (
+                    <div key={f.key} className="flex flex-col">
+                      <label className="label">{f.label}</label>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        className="input input-bordered w-[180px]"
+                        placeholder={f.placeholder}
+                        value={excepValues.tauxProthrombine?.[f.key]?.valeur || ''}
+                        onChange={(e) =>
+                          setExcepValues((prev) => ({
+                            ...prev,
+                            tauxProthrombine: {
+                              ...prev.tauxProthrombine,
+                              [f.key]: {
+                                ...prev.tauxProthrombine?.[f.key],
+                                valeur: e.target.value,
+                              },
+                            },
+                          }))
+                        }
+                      />
+                      <small className="text-gray-500">
+                        {excepValues.tauxProthrombine?.[f.key]?.unite
+                          ? `${excepValues.tauxProthrombine[f.key].unite} | `
+                          : ''}
+                        Réf : {excepValues.tauxProthrombine?.[f.key]?.reference || ''}
                       </small>
                     </div>
                   ))}

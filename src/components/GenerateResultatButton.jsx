@@ -626,6 +626,16 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
       }
     }
 
+    // Taux de Prothrombine (TP + INR)
+    if (test.exceptions.tauxProthrombine) {
+      const t = test.exceptions.tauxProthrombine
+      const hasAny = ['tp','inr']
+        .some((k) => t[k]?.valeur !== undefined && t[k]?.valeur !== null && String(t[k]?.valeur).trim() !== '')
+      if (hasAny) {
+        excepY = renderTauxProthrombineException(doc, test, excepY, invoice)
+      }
+    }
+
     return excepY
   }
 
@@ -1563,6 +1573,47 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     }
 
     return excepY
+  }
+
+  // 16. Taux de Prothrombine (TP + INR) — tableau structure, seules les lignes renseignees
+  const renderTauxProthrombineException = (doc, test, excepY, invoice) => {
+    const tp = test.exceptions?.tauxProthrombine
+    if (!tp) return excepY
+
+    const rows = [
+      { key: 'tp',  label: 'Taux de Prothrombine' },
+      { key: 'inr', label: 'INR' },
+    ]
+
+    const visibleRows = rows.filter((r) => {
+      const v = tp[r.key]?.valeur
+      return v !== undefined && v !== null && String(v).trim() !== ''
+    })
+    if (visibleRows.length === 0) return excepY
+
+    excepY = checkNewPage(doc, excepY, invoice)
+
+    // En-tetes (pas de titre de section : le label du test fait office de titre)
+    doc.setFont('Times', 'bold')
+    doc.setFontSize(9)
+    doc.text('Paramètre',             25, excepY)
+    doc.text('Résultats',              95, excepY)
+    doc.text('Unité',                 125, excepY)
+    doc.text('Valeurs de référence',  150, excepY)
+    excepY += 5
+
+    doc.setFont('Times', 'normal')
+    visibleRows.forEach((r) => {
+      excepY = checkNewPage(doc, excepY, invoice)
+      const cell = tp[r.key] || {}
+      doc.text(String(r.label),                 25, excepY)
+      doc.text(String(cell.valeur ?? ''),       95, excepY)
+      doc.text(String(cell.unite ?? ''),       125, excepY)
+      doc.text(String(cell.reference ?? ''),   150, excepY)
+      excepY += 5
+    })
+
+    return excepY + 5
   }
 
   // 15. Gaz du sang — tableau structure, seules les lignes renseignees sont affichees
