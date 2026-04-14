@@ -615,6 +615,17 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
       excepY = renderBilirubineIndirecteException(doc, test, excepY, invoice)
     }
 
+    // Gaz du sang : on passe la main au renderer des que l'objet existe ;
+    // le renderer filtre lui-meme les lignes non renseignees.
+    if (test.exceptions.gazDuSang) {
+      const g = test.exceptions.gazDuSang
+      const hasAny = ['ph','pco2','po2','excesDeBase','tco2','hco3','sao2']
+        .some((k) => g[k]?.valeur !== undefined && g[k]?.valeur !== null && String(g[k]?.valeur).trim() !== '')
+      if (hasAny) {
+        excepY = renderGazDuSangException(doc, test, excepY, invoice)
+      }
+    }
+
     return excepY
   }
 
@@ -656,25 +667,41 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
 
   const renderHgpoException = (doc, test, excepY, invoice) => {
     excepY = checkNewPage(doc, excepY, invoice)
-    doc.setFont('Times', 'normal')
+
+    const hgpo = test.exceptions.hgpo || {}
+
+    // HGPO est stocke comme des strings simples (t0, t60, t120).
+    // Unites et references sont figees (standards HGPO).
+    const rows = [
+      { label: 'Glycémie à jeun',        value: hgpo.t0,   unite: 'g/L', reference: '< 0,92' },
+      { label: 'Glycémie après 1 heure', value: hgpo.t60,  unite: 'g/L', reference: '< 1,80' },
+      { label: 'Glycémie après 2 heures',value: hgpo.t120, unite: 'g/L', reference: '< 1,53' },
+    ]
+
+    // Seules les lignes renseignees sont affichees (String non vide).
+    const visibleRows = rows.filter(r => r.value && String(r.value).trim() !== '')
+    if (visibleRows.length === 0) return excepY
+
+    // En-tetes de colonnes
+    doc.setFont('Times', 'bold')
     doc.setFontSize(9)
+    doc.text('Paramètre',            25,  excepY)
+    doc.text('Résultat',              95, excepY)
+    doc.text('Unité',                120, excepY)
+    doc.text('Valeurs de référence', 140, excepY)
+    excepY += 5
 
-    if (test.exceptions.hgpo.t0?.valeur) {
-      doc.text(`T0 : ${test.exceptions.hgpo.t0.valeur} ${test.exceptions.hgpo.t0.unite}`, 25, excepY)
+    doc.setFont('Times', 'normal')
+    visibleRows.forEach((r) => {
+      excepY = checkNewPage(doc, excepY, invoice)
+      doc.text(String(r.label),     25,  excepY)
+      doc.text(String(r.value),      95, excepY)
+      doc.text(String(r.unite),     120, excepY)
+      doc.text(String(r.reference), 140, excepY)
       excepY += 5
-    }
+    })
 
-    if (test.exceptions.hgpo.t60?.valeur) {
-      doc.text(`T60 : ${test.exceptions.hgpo.t60.valeur} ${test.exceptions.hgpo.t60.unite}`, 25, excepY)
-      excepY += 5
-    }
-
-    if (test.exceptions.hgpo.t120?.valeur) {
-      doc.text(`T120 : ${test.exceptions.hgpo.t120.valeur} ${test.exceptions.hgpo.t120.unite}`, 25, excepY)
-      excepY += 10
-    }
-
-    return excepY
+    return excepY + 5
   }
 
   const renderIonogrammeException = (doc, test, excepY, invoice) => {
@@ -1536,6 +1563,60 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     }
 
     return excepY
+  }
+
+  // 15. Gaz du sang — tableau structure, seules les lignes renseignees sont affichees
+  const renderGazDuSangException = (doc, test, excepY, invoice) => {
+    const gaz = test.exceptions?.gazDuSang
+    if (!gaz) return excepY
+
+    // Ordre d'affichage conforme au scan de reference du labo
+    const rows = [
+      { key: 'ph',          label: 'pH' },
+      { key: 'pco2',        label: 'pCO2' },
+      { key: 'po2',         label: 'pO2' },
+      { key: 'excesDeBase', label: 'Excès de base' },
+      { key: 'tco2',        label: 'tCO2' },
+      { key: 'hco3',        label: 'HCO3' },
+      { key: 'sao2',        label: 'Saturation en O2 (SaO2)' },
+    ]
+
+    // Seules les lignes avec une valeur renseignee (0 inclus si valide)
+    const visibleRows = rows.filter((r) => {
+      const v = gaz[r.key]?.valeur
+      return v !== undefined && v !== null && String(v).trim() !== ''
+    })
+    if (visibleRows.length === 0) return excepY
+
+    excepY = checkNewPage(doc, excepY, invoice)
+
+    // Titre de section
+    doc.setFont('Times', 'bold')
+    doc.setFontSize(10)
+    doc.text('GAZ DU SANG', 25, excepY)
+    excepY += 5
+
+    // En-tetes
+    doc.setFont('Times', 'bold')
+    doc.setFontSize(9)
+    doc.text('Paramètre',             25, excepY)
+    doc.text('Résultats',              95, excepY)
+    doc.text('Unité',                 125, excepY)
+    doc.text('Valeurs de référence',  150, excepY)
+    excepY += 5
+
+    doc.setFont('Times', 'normal')
+    visibleRows.forEach((r) => {
+      excepY = checkNewPage(doc, excepY, invoice)
+      const cell = gaz[r.key] || {}
+      doc.text(String(r.label),                 25, excepY)
+      doc.text(String(cell.valeur ?? ''),       95, excepY)
+      doc.text(String(cell.unite ?? ''),       125, excepY)
+      doc.text(String(cell.reference ?? ''),   150, excepY)
+      excepY += 5
+    })
+
+    return excepY + 5
   }
 
   // ✅ SEULE FONCTION AUTORISÉE À AFFICHER DES INTERPRÉTATIONS

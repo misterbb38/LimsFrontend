@@ -521,6 +521,15 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
     bilirubineDirecte: { valeur: '', unite: 'mg/L' },
     bilirubineIndirecte: { valeur: '', unite: 'mg/L' },
   },
+  gazDuSang: {
+    ph:          { valeur: '', unite: '',       reference: '7,35 - 7,45' },
+    pco2:        { valeur: '', unite: 'mmHg',   reference: '35 - 45' },
+    po2:         { valeur: '', unite: 'mmHg',   reference: '70 - 115' },
+    excesDeBase: { valeur: '', unite: 'mmol/l', reference: '-2,0 - 2,0' },
+    tco2:        { valeur: '', unite: 'mmol/l', reference: '23 - 27' },
+    hco3:        { valeur: '', unite: 'mmol/l', reference: '22 - 26' },
+    sao2:        { valeur: '', unite: '%',      reference: '95 - 99' },
+  },
 },
   })
   const [isLoading, setIsLoading] = useState(false)
@@ -679,6 +688,14 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
     (nameLower.includes('bilirubine') && nameLower.includes('indirect'))
   ) {
     return 'bilirubineIndirecte'
+  }
+  // Gaz du sang
+  else if (
+    (nameLower.includes('gaz') && nameLower.includes('sang')) ||
+    nameLower.includes('gazométrie') ||
+    nameLower.includes('gazometrie')
+  ) {
+    return 'gazDuSang'
   }
 
   return 'normal'
@@ -4194,6 +4211,61 @@ if (data.data.exceptions) {
           Formule: Totale - Directe
         </small>
       </div>
+    </div>
+  </div>
+)}
+
+{/* 15. Gaz du sang */}
+{selectedTestCategory === 'gazDuSang' && (
+  <div className="border p-4 mt-4">
+    <h3 className="font-bold mb-2">Gaz du sang (Biochimie sanguine)</h3>
+    <p className="text-sm text-gray-600 mb-3">
+      Unités et références figées. HCO3 et tCO2 sont calculés
+      automatiquement si pH et pCO2 sont renseignés mais qu&apos;ils ne
+      sont pas saisis.
+    </p>
+    <div className="flex flex-wrap gap-4 items-start">
+      {[
+        { key: 'ph',          label: 'pH',                    placeholder: 'ex: 7,44' },
+        { key: 'pco2',        label: 'pCO2',                  placeholder: 'ex: 37,0' },
+        { key: 'po2',         label: 'pO2',                   placeholder: 'ex: 68,1' },
+        { key: 'excesDeBase', label: 'Excès de base',         placeholder: 'ex: 0,8' },
+        { key: 'tco2',        label: 'tCO2 (auto si vide)',   placeholder: 'ex: 25,8' },
+        { key: 'hco3',        label: 'HCO3 (auto si vide)',   placeholder: 'ex: 24,6' },
+        { key: 'sao2',        label: 'Saturation O2 (SaO2)',  placeholder: 'ex: 94,0' },
+      ].map((f) => (
+        <div key={f.key} className="flex flex-col">
+          <label className="label">{f.label}</label>
+          <input
+            type="text"
+            inputMode="decimal"
+            className="input input-bordered w-[150px]"
+            placeholder={f.placeholder}
+            value={formData.exceptions.gazDuSang?.[f.key]?.valeur || ''}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                exceptions: {
+                  ...prev.exceptions,
+                  gazDuSang: {
+                    ...prev.exceptions.gazDuSang,
+                    [f.key]: {
+                      ...prev.exceptions.gazDuSang?.[f.key],
+                      valeur: e.target.value,
+                    },
+                  },
+                },
+              }))
+            }
+          />
+          <small className="text-gray-500">
+            {formData.exceptions.gazDuSang?.[f.key]?.unite
+              ? `${formData.exceptions.gazDuSang[f.key].unite} | `
+              : ''}
+            Réf : {formData.exceptions.gazDuSang?.[f.key]?.reference || ''}
+          </small>
+        </div>
+      ))}
     </div>
   </div>
 )}
