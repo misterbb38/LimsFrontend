@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEdit } from '@fortawesome/free-solid-svg-icons'
@@ -35,13 +35,40 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
   // et fournit un point d'ancrage pour la fermeture par touche Echap.
   const modalBoxRef = useRef(null)
 
+  // Reset scroll synchrone (avant le paint) + plusieurs tentatives differees
+  // pour contrer les re-renders provoques par le chargement asynchrone des
+  // donnees du resultat, qui peuvent reinitialiser le scroll a une autre
+  // position et faire apparaitre le modal "scrolle au milieu".
+  // Le modal d'edition vivant a l'interieur du modal de visualisation, on
+  // remonte AUSSI le scroll de tous les .modal-box ancetres.
+  useLayoutEffect(() => {
+    if (!showModal) return
+    const reset = () => {
+      if (modalBoxRef.current) {
+        modalBoxRef.current.scrollTop = 0
+        let parent = modalBoxRef.current.parentElement
+        while (parent) {
+          if (parent.classList && parent.classList.contains('modal-box')) {
+            parent.scrollTop = 0
+          }
+          parent = parent.parentElement
+        }
+      }
+      window.scrollTo(0, 0)
+    }
+    reset()
+    const t1 = setTimeout(reset, 0)
+    const t2 = setTimeout(reset, 100)
+    const t3 = setTimeout(reset, 300)
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+      clearTimeout(t3)
+    }
+  }, [showModal])
+
   useEffect(() => {
     if (!showModal) return
-
-    // Reset scroll du contenu du modal en haut
-    if (modalBoxRef.current) {
-      modalBoxRef.current.scrollTop = 0
-    }
 
     // Fermeture par touche Echap
     const handleEscape = (e) => {
@@ -1591,7 +1618,19 @@ if (data.data.exceptions) {
 
   return (
     <>
-      <button className="btn btn-secondary" onClick={() => setShowModal(true)}>
+      <button
+        className="btn btn-secondary"
+        onClick={(e) => {
+          // Le modal d'edition est imbrique dans le modal de visualisation
+          // (ViewAnalyseButton) : c'est CE conteneur parent qu'il faut ramener
+          // en haut pour que le modal d'edition s'aligne avec la zone visible.
+          // Fallback : on remonte aussi la fenetre au cas ou.
+          const parentModalBox = e.currentTarget.closest('.modal-box')
+          if (parentModalBox) parentModalBox.scrollTop = 0
+          window.scrollTo(0, 0)
+          setShowModal(true)
+        }}
+      >
         <FontAwesomeIcon icon={faEdit} />
       </button>
       {showModal && (
