@@ -168,7 +168,7 @@ const SignUp = ({ onUser }) => {
           sexe: '',
           partenaireId: '',
         })
-        onUser()
+        onUser(data)
       }
     } catch (error) {
       displayToast(

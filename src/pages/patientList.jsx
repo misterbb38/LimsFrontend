@@ -207,6 +207,7 @@ import EditPatientButton from '../components/EditPatientButton' // Ajustez le ch
 import NavigationBreadcrumb from '../components/NavigationBreadcrumb'
 import Chatbot from '../components/Chatbot'
 import SignUp from '../components/Auth/SignUp'
+import CreateAnalyseForm from '../components/CreateAnalyseForm'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash } from '@fortawesome/free-solid-svg-icons'
 
@@ -216,6 +217,7 @@ function PatientList() {
   const [loading, setLoading] = useState(false)
   const [phoneSearchTerm, setPhoneSearchTerm] = useState('')
   const [nipSearchTerm, setNipSearchTerm] = useState('')
+  const [newPatientId, setNewPatientId] = useState('')
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
 
   useEffect(() => {
@@ -278,6 +280,18 @@ function PatientList() {
 
   const refreshPatients = () => {
     fetchPatients()
+  }
+
+  // Appelé par SignUp après création réussie d'un patient :
+  // ferme le modal d'inscription puis ouvre directement le modal d'ajout d'analyse
+  // avec le patient fraîchement créé déjà sélectionné.
+  const handlePatientCreated = (createdUser) => {
+    fetchPatients()
+    if (createdUser?._id) {
+      setNewPatientId(createdUser._id)
+      document.getElementById('my_modal_4')?.close()
+      document.getElementById('analyse_after_patient_modal')?.showModal()
+    }
   }
 
   const deletePatient = async (patientId) => {
@@ -344,12 +358,29 @@ function PatientList() {
 
       <dialog id="my_modal_4" className="modal">
         <div className="modal-box w-11/12 max-w-5xl">
-          <SignUp onUser={refreshPatients} />
+          <SignUp onUser={handlePatientCreated} />
           <div className="modal-action">
             <form method="dialog">
               <button className="btn">Fermer</button>
             </form>
           </div>
+        </div>
+      </dialog>
+
+      <dialog id="analyse_after_patient_modal" className="modal">
+        <div className="modal-box">
+          <form method="dialog">
+            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+              ✕
+            </button>
+          </form>
+          <CreateAnalyseForm
+            preselectedUserId={newPatientId}
+            onAnalyseChange={() => {
+              document.getElementById('analyse_after_patient_modal')?.close()
+              setNewPatientId('')
+            }}
+          />
         </div>
       </dialog>
       <div className="divider"></div>
@@ -364,6 +395,7 @@ function PatientList() {
               <tr>
                 <th className="font-bold text-lg text-base-content">NIP</th>
                 <th className="font-bold text-lg text-base-content">Nom</th>
+                <th className="font-bold text-lg text-base-content">Prénom</th>
                 <th className="font-bold text-lg text-base-content">Email</th>
                 <th className="font-bold text-lg text-base-content">Adresse</th>
                 <th className="font-bold text-lg text-base-content">
@@ -376,7 +408,8 @@ function PatientList() {
               {filteredPatients.map((patient) => (
                 <tr key={patient._id}>
                   <td className="font-mono text-sm">{patient.nip}</td>
-                  <td>{`${patient.nom} ${patient.prenom || ''}`}</td>
+                  <td>{patient.nom}</td>
+                  <td>{patient.prenom || ''}</td>
                   <td>{patient.email}</td>
                   <td>{patient.adresse}</td>
                   <td>{patient.telephone}</td>

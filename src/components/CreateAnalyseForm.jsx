@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
-function CreateAnalyseForm({ onAnalyseChange }) {
+function CreateAnalyseForm({ onAnalyseChange, preselectedUserId }) {
   const [selectedPartenaireType, setSelectedPartenaireType] = useState('')
 
   const [selectedTests, setSelectedTests] = useState([])
@@ -11,7 +11,7 @@ function CreateAnalyseForm({ onAnalyseChange }) {
   const [ordonnancePdf, setOrdonnancePdf] = useState(null)
   const [users, setUsers] = useState([])
   const [userOwn, setUserOwn] = useState([])
-  const [selectedUserId, setSelectedUserId] = useState('')
+  const [selectedUserId, setSelectedUserId] = useState(preselectedUserId || '')
   const [hasInsurance, setHasInsurance] = useState('')
   const [selectedPartenaireId, setSelectedPartenaireId] = useState('')
   const [statusPayement, setStatusPayement] = useState('')
@@ -100,6 +100,14 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
     fetchAvailableTests()
     fetchPartenaires() // Chargez les partenaires au montage du composant
   }, [])
+
+  // Pré-sélection du patient quand un patient vient d'être créé.
+  // On refetch la liste pour s'assurer que le nouveau patient y figure avant de le sélectionner.
+  useEffect(() => {
+    if (preselectedUserId) {
+      fetchUsers().finally(() => setSelectedUserId(preselectedUserId))
+    }
+  }, [preselectedUserId])
 
   // const handleTestSelection = (testId) => {
   //   if (!selectedTests.find((test) => test._id === testId)) {
@@ -696,6 +704,7 @@ if (pc2Quantity > 0) formData.append('pc2', pc2Quantity * 4000)
 
 CreateAnalyseForm.propTypes = {
   onAnalyseChange: PropTypes.func.isRequired,
+  preselectedUserId: PropTypes.string,
 }
 
 export default CreateAnalyseForm

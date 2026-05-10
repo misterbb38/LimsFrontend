@@ -486,7 +486,7 @@ function GeneratePDFButton({ invoice }) {
       ) {
         // Coordonnées initiales
         let startX = 25 // Position de départ X
-        let startY = currentY + 20 // Position de départ Y, ajusté selon votre description
+        let startY = currentY + 5 // Position de départ Y, ajusté selon votre description
         let tableWidth = 160 // Largeur totale du tableau
         let cellHeight = 6 // Hauteur de chaque ligne
 
@@ -607,7 +607,7 @@ function GeneratePDFButton({ invoice }) {
       doc.setPage(1)
 
       // Style tampon : grand, gras, gris pour effet filigrane
-      doc.setFontSize(22)
+      doc.setFontSize(16)
       doc.setFont('helvetica', 'bold')
       doc.setTextColor(150, 150, 150)
 
@@ -620,13 +620,10 @@ function GeneratePDFButton({ invoice }) {
       doc.setTextColor(0, 0, 0)
       doc.setPage(pageAvantStatut)
 
-      // Dernière ligne verte
-      if (currentY > 250) {
-        // Encore une vérification avant d'ajouter la ligne finale
-        doc.addPage()
-        currentY = 20
-        addFooter()
-      }
+      // (Ancien addPage si currentY > 250 supprime : il poussait la mise en
+      // garde sur une page 2 vide. La logique ci-dessous decide elle-meme
+      // si une nouvelle page est necessaire.)
+
       // Avant d'ajouter la mise en garde, assurez-vous qu'il y a assez d'espace pour elle et le pied de page
       // Calculez l'espace nécessaire pour la mise en garde
       // Conversion de la date de récupération au format souhaité
@@ -655,29 +652,35 @@ function GeneratePDFButton({ invoice }) {
           miseEnGarde += `\nRésultats à récupérer le ${formattedDateDeRecuperation}`
         }
 
-        // Puis, utilisez `miseEnGarde` où vous avez besoin de l'afficher
+        // Mise en garde : toujours sur la derniere page non-vide (jamais sur
+        // une page blanche). On la place de preference juste au-dessus du pied
+        // de page ; si le contenu est deja descendu trop bas, on l'inscrit
+        // simplement sous ce contenu pour eviter de creer une page vide.
         doc.setFont('helvetica', 'bold')
-        const miseEnGardeWrapped = doc.splitTextToSize(miseEnGarde, 180) // Ajustez la largeur selon la mise en page de votre PDF
-        const miseEnGardeHeight = miseEnGardeWrapped.length * 10 // Estimation de la hauteur nécessaire pour le texte
-        doc.setFont('helvetica', 'normal')
-        // Calculez la hauteur disponible sur la page
-        const availableSpace = 297 - currentY // 297mm est la hauteur d'une page A4
+        doc.setFontSize(11) // Taille explicite pour lisibilité
+        const miseEnGardeWrapped = doc.splitTextToSize(miseEnGarde, 180)
+        const miseEnGardeHeight = miseEnGardeWrapped.length * 6 // ~6mm/ligne a fontSize 11
 
-        // Vérifiez si l'espace disponible est suffisant pour la mise en garde et le pied de page
-        // Supposons que le pied de page nécessite environ 20mm d'espace
-        if (availableSpace < miseEnGardeHeight + 20) {
-          // Ajoutez une nouvelle page si l'espace n'est pas suffisant
-          doc.addPage()
-          currentY = 20 // Réinitialisez la position Y pour le contenu de la nouvelle page
-          addFooter() // Appelez votre fonction pour ajouter un pied de page si nécessaire
+        // Position ideale : 5mm au-dessus du pied de page (~y=277)
+        let miseEnGardeY = 277 - miseEnGardeHeight - 5
+
+        // Si le contenu existant chevauche la zone ideale, on rabaisse juste
+        // sous le contenu (toujours sur la page courante).
+        if (currentY > miseEnGardeY) {
+          miseEnGardeY = currentY + 3
         }
 
-        // Positionnez `currentY` pour la mise en garde juste au-dessus du pied de page
-        // Supposons que le pied de page commence à 277mm du haut, laissez un espace de 5mm au-dessus du pied de page pour la mise en garde
-        currentY = 277 - miseEnGardeHeight - 5
+        // Cas extreme : si la mise en garde ne tient meme plus sur la page
+        // courante, on en cree une nouvelle (rarissime).
+        if (miseEnGardeY + miseEnGardeHeight > 287) {
+          doc.addPage()
+          addFooter()
+          miseEnGardeY = 20
+        }
 
-        // Ajoutez la mise en garde à la position calculée
-        doc.text(miseEnGardeWrapped, 20, currentY)
+        doc.text(miseEnGardeWrapped, 20, miseEnGardeY)
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(9) // Restaurer la taille par defaut
       }
 
       // Continuer avec la logique de création du PDF comme avant

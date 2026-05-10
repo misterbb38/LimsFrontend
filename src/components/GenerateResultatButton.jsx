@@ -1589,9 +1589,18 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     visibleRows.forEach((r) => {
       excepY = checkNewPage(doc, excepY, invoice)
       const cell = tp[r.key] || {}
-      const valeur = String(cell.valeur ?? '')
+      let valeur = String(cell.valeur ?? '')
       let ref      = String(cell.reference ?? '')
       const unite  = String(cell.unite ?? '')
+
+      // Convention clinique : seuils de detection de l'analyseur.
+      // TP < 5 % et INR > 10 sortent au-dela des bornes fiables : on remplace
+      // la valeur brute par le seuil prefixe du signe approprie.
+      const numericValeur = Number(String(cell.valeur ?? '').replace(',', '.'))
+      if (Number.isFinite(numericValeur)) {
+        if (r.key === 'tp' && numericValeur < 5) valeur = '< 5'
+        if (r.key === 'inr' && numericValeur > 10) valeur = '> 10'
+      }
 
       // Robustesse : si l'unite est definie (ex: "%") mais que la reference ne
       // la contient pas, on l'ajoute a la fin. Ex: "> 70" + unite "%" => "> 70 %".
@@ -1654,10 +1663,16 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     visibleRows.forEach((r) => {
       excepY = checkNewPage(doc, excepY, invoice)
       const cell = gaz[r.key] || {}
-      doc.text(String(r.label),                 25, excepY)
-      doc.text(String(cell.valeur ?? ''),       95, excepY)
-      doc.text(String(cell.unite ?? ''),       125, excepY)
-      doc.text(String(cell.reference ?? ''),   150, excepY)
+      const ref = String(cell.reference ?? '')
+      const unite = String(cell.unite ?? '')
+      // L'unite est concatenee a la fin de la reference (ex: "35 - 45 mmHg")
+      // au lieu d'occuper sa propre colonne au milieu.
+      const refWithUnite = unite && ref && !ref.includes(unite)
+        ? `${ref} ${unite}`
+        : ref
+      doc.text(String(r.label),           25, excepY)
+      doc.text(String(cell.valeur ?? ''), 95, excepY)
+      doc.text(refWithUnite,             150, excepY)
       excepY += 5
     })
 
@@ -2559,6 +2574,19 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
       console.log('[PDF] Début de génération du PDF')
       const doc = new jsPDF()
       const userColor = getColorValue('gris')
+
+      // Notation francaise : convertit tous les separateurs decimaux "." en ","
+      // dans le texte affiche par doc.text (ex: "2.4" -> "2,4", "70.5 mmol/l"
+      // -> "70,5 mmol/l"). Le regex ne touche que les points encadres par des
+      // chiffres : libelles, dates, abreviations restent intacts.
+      const decimalToComma = (val) => {
+        if (typeof val === 'string') return val.replace(/(\d)\.(\d)/g, '$1,$2')
+        if (Array.isArray(val)) return val.map(decimalToComma)
+        return val
+      }
+      const originalDocText = doc.text.bind(doc)
+      doc.text = (text, x, y, options) =>
+        originalDocText(decimalToComma(text), x, y, options)
 
       const [imgLeft] = await Promise.all([
         loadImage(logoLeft),
