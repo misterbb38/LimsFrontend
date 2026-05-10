@@ -656,7 +656,7 @@ function GeneratePDFButton({ invoice }) {
         // une page blanche). On la place de preference juste au-dessus du pied
         // de page ; si le contenu est deja descendu trop bas, on l'inscrit
         // simplement sous ce contenu pour eviter de creer une page vide.
-        doc.setFont('helvetica', 'bold')
+        doc.setFont('helvetica', 'bolditalic')
         doc.setFontSize(11) // Taille explicite pour lisibilité
         const miseEnGardeWrapped = doc.splitTextToSize(miseEnGarde, 180)
         const miseEnGardeHeight = miseEnGardeWrapped.length * 6 // ~6mm/ligne a fontSize 11

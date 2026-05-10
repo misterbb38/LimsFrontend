@@ -135,8 +135,10 @@ function GenerateResultatButton({ invoice }) {
    * CONSTANTES DE PAGINATION SIMPLES
    */
   const FOOTER_Y = 277
-  const MARGIN_BEFORE_FOOTER = 30
-  const MAX_CONTENT_Y = FOOTER_Y - MARGIN_BEFORE_FOOTER // 247mm
+  const MARGIN_BEFORE_FOOTER = 15 // Reduit de 30 a 15 : la marge basse precedente
+  // gaspillait ~30mm en bas de chaque page, poussant inutilement le contenu
+  // sur des pages suivantes a moitie vides.
+  const MAX_CONTENT_Y = FOOTER_Y - MARGIN_BEFORE_FOOTER // 262mm
   const MIN_SPACE = 15 // Espace minimum pour continuer sur la même page
   const MIN_SPACE_FOR_TITLE = 25 // Espace minimum pour un titre + début de contenu (évite les titres orphelins)
 
@@ -1024,12 +1026,12 @@ const renderPsaRapportException = (doc, test, excepY, invoice) => {
 
     if (test.exceptions.psaRapport.rapport?.valeur) {
       doc.setFont('Times', 'bold')
-      doc.text(`Rapport : ${test.exceptions.psaRapport.rapport.valeur} `, 25, excepY)
-      
+      doc.text(`Rapport : ${test.exceptions.psaRapport.rapport.valeur} `, 105, excepY, { align: 'center' })
+
       // ✅ Valeur de référence sur la même ligne à droite
       doc.setFont('Times', 'normal')
       doc.text('Réf: N : >15 %', 130, excepY)
-      
+
       excepY += 10
     }
 
@@ -1097,7 +1099,7 @@ const renderReticulocytesException = (doc, test, excepY, invoice) => {
 
     if (test.exceptions.clairanceCreatinine.clairance?.valeur) {
       doc.setFont('Times', 'bold')
-      doc.text(`Clairance  : ${test.exceptions.clairanceCreatinine.clairance.valeur} `, 25, excepY)
+      doc.text(`Clairance  : ${test.exceptions.clairanceCreatinine.clairance.valeur} `, 105, excepY, { align: 'center' })
       doc.setFont('Times', 'normal')
       excepY += 10
     }
@@ -1118,7 +1120,7 @@ const renderReticulocytesException = (doc, test, excepY, invoice) => {
 
     if (test.exceptions.dfg.dfgValue?.valeur) {
       doc.setFont('Times', 'bold')
-      doc.text(`${test.exceptions.dfg.dfgValue.valeur}`, 25, excepY)
+      doc.text(`${test.exceptions.dfg.dfgValue.valeur}`, 105, excepY, { align: 'center' })
       doc.setFont('Times', 'normal')
       excepY += 7
     }
@@ -1143,7 +1145,7 @@ const renderReticulocytesException = (doc, test, excepY, invoice) => {
 
     if (test.exceptions.saturationTransferrine.coefficient?.valeur) {
       doc.setFont('Times', 'bold')
-      doc.text(`Coefficient de saturation : ${test.exceptions.saturationTransferrine.coefficient.valeur} ${test.exceptions.saturationTransferrine.coefficient.unite}`, 25, excepY)
+      doc.text(`Coefficient de saturation : ${test.exceptions.saturationTransferrine.coefficient.valeur} ${test.exceptions.saturationTransferrine.coefficient.unite}`, 105, excepY, { align: 'center' })
       doc.setFont('Times', 'normal')
       excepY += 10
     }
@@ -1254,7 +1256,7 @@ const renderCalciumCorrigeException = (doc, test, excepY, invoice) => {
 
     if (test.exceptions.calciumCorrige.calciumCorrige?.valeur) {
       doc.setFont('Times', 'bold')
-      doc.text(`Calcium corrigé : ${test.exceptions.calciumCorrige.calciumCorrige.valeur} `, 25, excepY)
+      doc.text(`Calcium corrigé : ${test.exceptions.calciumCorrige.calciumCorrige.valeur} `, 105, excepY, { align: 'center' })
       doc.setFont('Times', 'normal')
       excepY += 10
     }
@@ -1280,8 +1282,8 @@ const renderRapportAlbuminurieException = (doc, test, excepY, invoice) => {
 
     if (test.exceptions.rapportAlbuminurie.rapport?.valeur) {
       doc.setFont('Times', 'bold')
-      doc.text(`Rapport : ${test.exceptions.rapportAlbuminurie.rapport.valeur} `, 25, excepY)
-      
+      doc.text(`Rapport : ${test.exceptions.rapportAlbuminurie.rapport.valeur} `, 105, excepY, { align: 'center' })
+
       // ✅ Valeur de référence sur la même ligne à droite
       doc.setFont('Times', 'normal')
       doc.text('Réf: N : < 30 mg/g', 130, excepY)
@@ -1309,7 +1311,7 @@ const renderRapportAlbuminurieException = (doc, test, excepY, invoice) => {
 
     if (test.exceptions.rapportProteines.rapport?.valeur) {
       doc.setFont('Times', 'bold')
-      doc.text(`Rapport : ${test.exceptions.rapportProteines.rapport.valeur} `, 25, excepY)
+      doc.text(`Rapport : ${test.exceptions.rapportProteines.rapport.valeur} `, 105, excepY, { align: 'center' })
       doc.setFont('Times', 'normal')
       // ✅ Valeur de référence sur la même ligne à droite
       doc.setFont('Times', 'normal')
@@ -1327,10 +1329,10 @@ const renderRapportAlbuminurieException = (doc, test, excepY, invoice) => {
 
     if (test.exceptions.cholesterolLdl.ldl?.valeur) {
       doc.setFont('Times', 'bold')
-      doc.text(`LDL Dosé: ${test.exceptions.cholesterolLdl.ldl.valeur} ${test.exceptions.cholesterolLdl.ldl.unite}`, 25, excepY)
+      doc.text(`LDL Dosé: ${test.exceptions.cholesterolLdl.ldl.valeur} ${test.exceptions.cholesterolLdl.ldl.unite}`, 105, excepY, { align: 'center' })
       doc.setFont('Times', 'normal')
       excepY += 5
-      
+
       doc.setFontSize(7)
       doc.text('* Valable si triglycérides < 3.5 g/L', 25, excepY)
       doc.setFontSize(9)
@@ -1347,7 +1349,7 @@ const renderRapportAlbuminurieException = (doc, test, excepY, invoice) => {
 
     if (test.exceptions.lipidesTotaux.lipidesTotaux?.valeur) {
       doc.setFont('Times', 'bold')
-      doc.text(`Lipides totaux : ${test.exceptions.lipidesTotaux.lipidesTotaux.valeur} ${test.exceptions.lipidesTotaux.lipidesTotaux.unite}`, 25, excepY)
+      doc.text(`Lipides totaux : ${test.exceptions.lipidesTotaux.lipidesTotaux.valeur} ${test.exceptions.lipidesTotaux.lipidesTotaux.unite}`, 105, excepY, { align: 'center' })
       doc.setFont('Times', 'normal')
       excepY += 10
     }
@@ -1477,13 +1479,13 @@ const renderMicroalbuminurie24hException = (doc, test, excepY, invoice) => {
 
   if (test.exceptions.microalbuminurie24h.microalbuminurie?.valeur) {
     const valeur = test.exceptions.microalbuminurie24h.microalbuminurie.valeur
-    
+
     doc.setFont('Times', 'bold')
-    doc.text(`Microalbuminurie : ${valeur} `, 25, excepY)
-    
+    doc.text(`Microalbuminurie : ${valeur} `, 105, excepY, { align: 'center' })
+
     doc.setFont('Times', 'normal')
     doc.text('< 30 mg/24h', 130, excepY)  // ✅ Valeur de référence à droite
-    
+
     excepY += 10
   }
 
@@ -1538,13 +1540,13 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
 
   if (test.exceptions.proteinurie24h.proteinurie?.valeur) {
     const valeur = test.exceptions.proteinurie24h.proteinurie.valeur
-    
+
     doc.setFont('Times', 'bold')
-    doc.text(`Protéinurie : ${valeur}`, 25, excepY)
-    
+    doc.text(`Protéinurie : ${valeur}`, 105, excepY, { align: 'center' })
+
     doc.setFont('Times', 'normal')
     doc.text('< 150 mg/24h', 130, excepY)  // ✅ Valeur de référence à droite
-    
+
     excepY += 10
   }
 
@@ -1559,7 +1561,7 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
 
     if (test.exceptions.bilirubineIndirecte.bilirubineIndirecte?.valeur) {
       doc.setFont('Times', 'bold')
-      doc.text(`Bilirubine indirecte : ${test.exceptions.bilirubineIndirecte.bilirubineIndirecte.valeur} ${test.exceptions.bilirubineIndirecte.bilirubineIndirecte.unite}`, 25, excepY)
+      doc.text(`Bilirubine indirecte : ${test.exceptions.bilirubineIndirecte.bilirubineIndirecte.valeur} ${test.exceptions.bilirubineIndirecte.bilirubineIndirecte.unite}`, 105, excepY, { align: 'center' })
       doc.setFont('Times', 'normal')
       excepY += 10
     }
@@ -2499,9 +2501,14 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
         continue
       }
 
-      doc.addPage()
-      addFooter(doc, getColorValue('gris'))
-      currentY = addPageHeader(doc, invoice)
+      // Hauteur estimee : titre (7) + entete tableau (7) + lignes (7 chacune)
+      // + legende (10). On n'ajoute une nouvelle page QUE si l'antibiogramme
+      // ne tient pas sur la page courante. L'ancien comportement forcait
+      // une page par germe, generant des pages a moitie vides.
+      const lineCount = Object.keys(germe.antibiogramme).length
+      const neededHeight = 7 + 7 + lineCount * 7 + 10 + 5
+      currentY = checkSpace(doc, currentY, neededHeight, invoice)
+      currentY += 5 // petit espacement avant le bloc antibiogramme
 
       doc.setFontSize(10)
       doc.setFont('Times', 'bold')
