@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import SpermogrammeFormSection from './SpermogrammeFormSection'
 
 // Convertit récursivement les virgules en points dans toutes les chaînes
 // numériques de l'objet (ex: "12,5" -> "12.5"). Garantit que le backend
@@ -182,6 +183,35 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
     tauxProthrombine: {
       tp:  { valeur: '', unite: '%', reference: '> 70 %' },
       inr: { valeur: '', unite: '',  reference: '0,9 - 1,2' },
+    },
+
+    // Spermogramme + Spermocytogramme (normes OMS)
+    spermogramme: {
+      dureeAbstinence:        { valeur: '', unite: 'jours', reference: '2 - 7' },
+      modePrelevement:        '',
+      volume:                 { valeur: '', unite: 'ml',    reference: '> 1,5' },
+      ph:                     { valeur: '', unite: '',      reference: '> 7,2' },
+      viscosite:              '',
+      aspect:                 '',
+      numeration:             { valeur: '', unite: '/ml',   reference: '>= 16 000 000' },
+      ejaculatTotal:          { valeur: '', unite: '',      reference: '>= 39 000 000' },
+      agglutinatsSpontanes:   '',
+      leucocytes:             '',
+      hematies:               '',
+      cellulesRondes:         '',
+      spermatozoidesVivants:  { valeur: '', unite: '%',     reference: '>= 54' },
+      mobiliteProgressive:    { valeur: '', unite: '%',     reference: '> 30 a 1h' },
+      mobiliteNonProgressive: { valeur: '', unite: '%',     reference: '' },
+      immobiles:              { valeur: '', unite: '%',     reference: '' },
+      morphoNormal:           { count: '', pourcentage: '', reference: '>= 4 %' },
+      morphoAnormal:          { count: '', pourcentage: '' },
+      defautsTete:            { count: '', pourcentage: '' },
+      defautsPieceInter:      { count: '', pourcentage: '' },
+      defautsFlagelle:        { count: '', pourcentage: '' },
+      resteCytoplasmique:     { count: '', pourcentage: '' },
+      indexAnomaliesMultiples:{ valeur: '' },
+      conclusionSpermogramme:     '',
+      conclusionSpermocytogramme: '',
     },
 
     // 👇 Nouvel ajout : NFS
@@ -1030,6 +1060,33 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
         tp:  { valeur: '', unite: '%', reference: '> 70 %' },
         inr: { valeur: '', unite: '',  reference: '0,9 - 1,2' },
       },
+      spermogramme: {
+        dureeAbstinence:        { valeur: '', unite: 'jours', reference: '2 - 7' },
+        modePrelevement:        '',
+        volume:                 { valeur: '', unite: 'ml',    reference: '> 1,5' },
+        ph:                     { valeur: '', unite: '',      reference: '> 7,2' },
+        viscosite:              '',
+        aspect:                 '',
+        numeration:             { valeur: '', unite: '/ml',   reference: '>= 16 000 000' },
+        ejaculatTotal:          { valeur: '', unite: '',      reference: '>= 39 000 000' },
+        agglutinatsSpontanes:   '',
+        leucocytes:             '',
+        hematies:               '',
+        cellulesRondes:         '',
+        spermatozoidesVivants:  { valeur: '', unite: '%',     reference: '>= 54' },
+        mobiliteProgressive:    { valeur: '', unite: '%',     reference: '> 30 a 1h' },
+        mobiliteNonProgressive: { valeur: '', unite: '%',     reference: '' },
+        immobiles:              { valeur: '', unite: '%',     reference: '' },
+        morphoNormal:           { count: '', pourcentage: '', reference: '>= 4 %' },
+        morphoAnormal:          { count: '', pourcentage: '' },
+        defautsTete:            { count: '', pourcentage: '' },
+        defautsPieceInter:      { count: '', pourcentage: '' },
+        defautsFlagelle:        { count: '', pourcentage: '' },
+        resteCytoplasmique:     { count: '', pourcentage: '' },
+        indexAnomaliesMultiples:{ valeur: '' },
+        conclusionSpermogramme:     '',
+        conclusionSpermocytogramme: '',
+      },
     })
     setAntibiogrammes([])
     setMacroscopique('')
@@ -1249,6 +1306,16 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
       nameLower === 'inr'
     ) {
       return 'tauxProthrombine'
+    }
+
+    // 17. Spermogramme + Spermocytogramme
+    else if (
+      nameLower.includes('spermogramme') ||
+      nameLower.includes('spermocytogramme') ||
+      nameLower.includes('sperme') ||
+      nameLower.includes('fecondite')
+    ) {
+      return 'spermogramme'
     }
 
     return 'normal'
@@ -3953,6 +4020,14 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   ))}
                 </div>
               </div>
+            )}
+
+            {/* 17. Spermogramme + Spermocytogramme (normes OMS) */}
+            {selectedTestCategory === 'spermogramme' && (
+              <SpermogrammeFormSection
+                excepValues={excepValues}
+                setExcepValues={setExcepValues}
+              />
             )}
 
             {/* ==================== FIN DES NOUVEAUX PARAMÈTRES ==================== */}

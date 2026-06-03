@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEdit } from '@fortawesome/free-solid-svg-icons'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import SpermogrammeFormSection from './SpermogrammeFormSection'
 
 // Convertit récursivement les virgules en points dans toutes les chaînes
 // numériques de l'objet (ex: "12,5" -> "12.5"). Garantit que le backend
@@ -557,6 +558,33 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
     tp:  { valeur: '', unite: '%', reference: '> 70 %' },
     inr: { valeur: '', unite: '',  reference: '0,9 - 1,2' },
   },
+  spermogramme: {
+    dureeAbstinence:        { valeur: '', unite: 'jours', reference: '2 - 7' },
+    modePrelevement:        '',
+    volume:                 { valeur: '', unite: 'ml',    reference: '> 1,5' },
+    ph:                     { valeur: '', unite: '',      reference: '> 7,2' },
+    viscosite:              '',
+    aspect:                 '',
+    numeration:             { valeur: '', unite: '/ml',   reference: '>= 16 000 000' },
+    ejaculatTotal:          { valeur: '', unite: '',      reference: '>= 39 000 000' },
+    agglutinatsSpontanes:   '',
+    leucocytes:             '',
+    hematies:               '',
+    cellulesRondes:         '',
+    spermatozoidesVivants:  { valeur: '', unite: '%',     reference: '>= 54' },
+    mobiliteProgressive:    { valeur: '', unite: '%',     reference: '> 30 a 1h' },
+    mobiliteNonProgressive: { valeur: '', unite: '%',     reference: '' },
+    immobiles:              { valeur: '', unite: '%',     reference: '' },
+    morphoNormal:           { count: '', pourcentage: '', reference: '>= 4 %' },
+    morphoAnormal:          { count: '', pourcentage: '' },
+    defautsTete:            { count: '', pourcentage: '' },
+    defautsPieceInter:      { count: '', pourcentage: '' },
+    defautsFlagelle:        { count: '', pourcentage: '' },
+    resteCytoplasmique:     { count: '', pourcentage: '' },
+    indexAnomaliesMultiples:{ valeur: '' },
+    conclusionSpermogramme:     '',
+    conclusionSpermocytogramme: '',
+  },
 },
   })
   const [isLoading, setIsLoading] = useState(false)
@@ -732,6 +760,16 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
     nameLower === 'inr'
   ) {
     return 'tauxProthrombine'
+  }
+
+  // Spermogramme + Spermocytogramme
+  else if (
+    nameLower.includes('spermogramme') ||
+    nameLower.includes('spermocytogramme') ||
+    nameLower.includes('sperme') ||
+    nameLower.includes('fecondite')
+  ) {
+    return 'spermogramme'
   }
 
   return 'normal'
@@ -969,6 +1007,9 @@ if (data.data.exceptions) {
   }
   if (data.data.exceptions.bilirubineIndirecte) {
     fetchedExceptions.bilirubineIndirecte = data.data.exceptions.bilirubineIndirecte
+  }
+  if (data.data.exceptions.spermogramme) {
+    fetchedExceptions.spermogramme = data.data.exceptions.spermogramme
   }
 }
         // Ensuite, si le back renvoie nfs :
@@ -4362,6 +4403,20 @@ if (data.data.exceptions) {
       ))}
     </div>
   </div>
+)}
+
+{/* 17. Spermogramme + Spermocytogramme (normes OMS) */}
+{selectedTestCategory === 'spermogramme' && (
+  <SpermogrammeFormSection
+    excepValues={formData.exceptions}
+    setExcepValues={(updater) =>
+      setFormData((prev) => ({
+        ...prev,
+        exceptions:
+          typeof updater === 'function' ? updater(prev.exceptions) : updater,
+      }))
+    }
+  />
 )}
                 </>
               ) : (

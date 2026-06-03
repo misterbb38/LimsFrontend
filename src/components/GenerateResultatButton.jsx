@@ -638,6 +638,12 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
       }
     }
 
+    // Spermogramme + Spermocytogramme : le renderer decide lui-meme s'il y a
+    // de quoi afficher (champs numeriques OU textuels OU conclusion).
+    if (test.exceptions.spermogramme) {
+      excepY = renderSpermogrammeException(doc, test, excepY, invoice)
+    }
+
     return excepY
   }
 
@@ -1625,6 +1631,182 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
 
       excepY += 5
     })
+
+    return excepY + 5
+  }
+
+  // 17. Spermogramme + Spermocytogramme (normes OMS)
+  // Rendu structure type bilan de fertilite : sections caracteres generaux,
+  // numeration, vitalite, mobilite, morphologie (tableau), conclusion.
+  const renderSpermogrammeException = (doc, test, excepY, invoice) => {
+    const sp = test.exceptions?.spermogramme
+    if (!sp) return excepY
+
+    const hasVal = (cell) => {
+      if (!cell) return false
+      const v = cell.valeur ?? cell.count ?? cell.pourcentage
+      return v !== undefined && v !== null && String(v).trim() !== ''
+    }
+    const hasText = (s) => typeof s === 'string' && s.trim() !== ''
+
+    // Si rien n'est saisi, on ne rend rien.
+    const anySaisi =
+      hasVal(sp.dureeAbstinence) || hasText(sp.modePrelevement) ||
+      hasVal(sp.volume) || hasVal(sp.ph) || hasText(sp.viscosite) || hasText(sp.aspect) ||
+      hasVal(sp.numeration) || hasVal(sp.ejaculatTotal) ||
+      hasText(sp.agglutinatsSpontanes) || hasText(sp.leucocytes) ||
+      hasText(sp.hematies) || hasText(sp.cellulesRondes) ||
+      hasVal(sp.spermatozoidesVivants) || hasVal(sp.mobiliteProgressive) ||
+      hasVal(sp.mobiliteNonProgressive) || hasVal(sp.immobiles) ||
+      hasVal(sp.morphoNormal) || hasVal(sp.morphoAnormal) ||
+      hasVal(sp.defautsTete) || hasVal(sp.defautsPieceInter) ||
+      hasVal(sp.defautsFlagelle) || hasVal(sp.resteCytoplasmique) ||
+      hasVal(sp.indexAnomaliesMultiples) ||
+      hasText(sp.conclusionSpermogramme) || hasText(sp.conclusionSpermocytogramme)
+    if (!anySaisi) return excepY
+
+    excepY = checkNewPage(doc, excepY, invoice)
+
+    // Helpers d'affichage
+    const drawLine = (label, valeur, ref) => {
+      excepY = checkNewPage(doc, excepY, invoice)
+      doc.setFont('Times', 'normal')
+      doc.text(String(label), 25, excepY)
+      if (valeur !== undefined && valeur !== null && String(valeur).trim() !== '') {
+        doc.text(String(valeur), 105, excepY, { align: 'center' })
+      }
+      if (ref) doc.text(String(ref), 150, excepY)
+      excepY += 5
+    }
+
+    const drawSectionTitle = (title) => {
+      excepY = checkNewPage(doc, excepY, invoice)
+      excepY += 2
+      doc.setFont('Times', 'bold')
+      doc.setFontSize(10)
+      doc.text(String(title), 25, excepY)
+      excepY += 5
+      doc.setFontSize(9)
+    }
+
+    // Reusable formatter : "70 mmol/l" si unite, sinon juste reference.
+    const fmtRef = (cell) => {
+      if (!cell) return ''
+      const ref = String(cell.reference ?? '')
+      const unite = String(cell.unite ?? '')
+      if (unite && ref && !ref.includes(unite)) return `${ref} ${unite}`
+      return ref
+    }
+
+    // Titre principal
+    doc.setFont('Times', 'bold')
+    doc.setFontSize(11)
+    doc.text('SPERMOGRAMME', 25, excepY)
+    excepY += 6
+    doc.setFontSize(9)
+    doc.setFont('Times', 'normal')
+
+    // Pre-analytique
+    if (hasVal(sp.dureeAbstinence)) {
+      drawLine("Duree d'abstinence", sp.dureeAbstinence.valeur, fmtRef(sp.dureeAbstinence))
+    }
+    if (hasText(sp.modePrelevement)) {
+      drawLine('Mode de prelevement', sp.modePrelevement, '')
+    }
+
+    // CARACTERES GENERAUX
+    if (hasVal(sp.volume) || hasVal(sp.ph) || hasText(sp.viscosite) || hasText(sp.aspect)) {
+      drawSectionTitle('CARACTERES GENERAUX')
+      if (hasVal(sp.volume)) drawLine('Volume', sp.volume.valeur, fmtRef(sp.volume))
+      if (hasVal(sp.ph))     drawLine('pH',     sp.ph.valeur,     fmtRef(sp.ph))
+      if (hasText(sp.viscosite)) drawLine('Viscosite', sp.viscosite, '')
+      if (hasText(sp.aspect))    drawLine('Aspect',    sp.aspect,    '')
+    }
+
+    // NUMERATION
+    const hasAnyNum =
+      hasVal(sp.numeration) || hasVal(sp.ejaculatTotal) ||
+      hasText(sp.agglutinatsSpontanes) || hasText(sp.leucocytes) ||
+      hasText(sp.hematies) || hasText(sp.cellulesRondes)
+    if (hasAnyNum) {
+      drawSectionTitle('NUMERATION DES SPERMATOZOIDES')
+      if (hasVal(sp.numeration))    drawLine('Numeration',    sp.numeration.valeur,    fmtRef(sp.numeration))
+      if (hasVal(sp.ejaculatTotal)) drawLine('Soit/ejaculat', sp.ejaculatTotal.valeur, fmtRef(sp.ejaculatTotal))
+      if (hasText(sp.agglutinatsSpontanes)) drawLine('Agglutinats spontanes', sp.agglutinatsSpontanes, '')
+      if (hasText(sp.leucocytes))     drawLine('Leucocytes',     sp.leucocytes,     '')
+      if (hasText(sp.hematies))       drawLine('Hematies',       sp.hematies,       '')
+      if (hasText(sp.cellulesRondes)) drawLine('Cellules rondes', sp.cellulesRondes, '')
+    }
+
+    // VITALITE
+    if (hasVal(sp.spermatozoidesVivants)) {
+      drawSectionTitle('VITALITE (Test de Williams)')
+      drawLine('Spermatozoides vivants', sp.spermatozoidesVivants.valeur, fmtRef(sp.spermatozoidesVivants))
+    }
+
+    // MOBILITE
+    if (hasVal(sp.mobiliteProgressive) || hasVal(sp.mobiliteNonProgressive) || hasVal(sp.immobiles)) {
+      drawSectionTitle('MOBILITE')
+      if (hasVal(sp.mobiliteProgressive))    drawLine('Mobilite progressive',     sp.mobiliteProgressive.valeur,    fmtRef(sp.mobiliteProgressive))
+      if (hasVal(sp.mobiliteNonProgressive)) drawLine('Mobilite non progressive', sp.mobiliteNonProgressive.valeur, fmtRef(sp.mobiliteNonProgressive))
+      if (hasVal(sp.immobiles))              drawLine('Immobiles',                sp.immobiles.valeur,              fmtRef(sp.immobiles))
+    }
+
+    // SPERMOCYTOGRAMME (morphologie)
+    const morphoRows = [
+      { key: 'morphoNormal',       label: 'Formes normales' },
+      { key: 'morphoAnormal',      label: 'Formes anormales' },
+      { key: 'defautsTete',        label: 'Defauts tete' },
+      { key: 'defautsPieceInter',  label: 'Defauts piece intermediaire' },
+      { key: 'defautsFlagelle',    label: 'Defauts flagelle' },
+      { key: 'resteCytoplasmique', label: 'Reste cytoplasmique' },
+    ]
+    const visibleMorpho = morphoRows.filter((r) => hasVal(sp[r.key]))
+    if (visibleMorpho.length > 0 || hasVal(sp.indexAnomaliesMultiples)) {
+      drawSectionTitle('SPERMOCYTOGRAMME (morphologie)')
+      if (visibleMorpho.length > 0) {
+        excepY = checkNewPage(doc, excepY, invoice)
+        doc.setFont('Times', 'bold')
+        doc.text('Nb',  100, excepY)
+        doc.text('%',   125, excepY)
+        doc.text('Ref', 150, excepY)
+        excepY += 5
+        doc.setFont('Times', 'normal')
+        visibleMorpho.forEach((r) => {
+          const cell = sp[r.key] || {}
+          excepY = checkNewPage(doc, excepY, invoice)
+          doc.text(r.label, 25, excepY)
+          if (cell.count !== undefined && String(cell.count).trim() !== '') {
+            doc.text(String(cell.count), 100, excepY)
+          }
+          if (cell.pourcentage !== undefined && String(cell.pourcentage).trim() !== '') {
+            doc.text(String(cell.pourcentage), 125, excepY)
+          }
+          if (cell.reference) doc.text(String(cell.reference), 150, excepY)
+          excepY += 5
+        })
+      }
+      if (hasVal(sp.indexAnomaliesMultiples)) {
+        drawLine('Index anomalies multiples', sp.indexAnomaliesMultiples.valeur, '')
+      }
+    }
+
+    // CONCLUSION
+    if (hasText(sp.conclusionSpermogramme) || hasText(sp.conclusionSpermocytogramme)) {
+      drawSectionTitle('CONCLUSION')
+      doc.setFont('Times', 'bold')
+      if (hasText(sp.conclusionSpermogramme)) {
+        excepY = checkNewPage(doc, excepY, invoice)
+        doc.text(`Spermogramme : ${sp.conclusionSpermogramme}`, 25, excepY)
+        excepY += 5
+      }
+      if (hasText(sp.conclusionSpermocytogramme)) {
+        excepY = checkNewPage(doc, excepY, invoice)
+        doc.text(`Spermocytogramme : ${sp.conclusionSpermocytogramme}`, 25, excepY)
+        excepY += 5
+      }
+      doc.setFont('Times', 'normal')
+    }
 
     return excepY + 5
   }
