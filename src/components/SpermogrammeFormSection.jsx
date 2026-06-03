@@ -60,11 +60,14 @@ const MORPHO_FIELDS = [
  * Section commune Spermogramme + Spermocytogramme.
  * - excepValues : objet etat racine de l'exception (excepValues.spermogramme)
  * - setExcepValues : setter React du parent
+ *
+ * NB : tous les inputs sont inlines dans le JSX. NE PAS extraire en
+ * sous-composants definis a l'interieur de cette fonction : React les
+ * recreerait a chaque frappe et le focus serait perdu.
  */
 function SpermogrammeFormSection({ excepValues, setExcepValues }) {
   const sp = excepValues.spermogramme || {}
 
-  // Helpers pour mettre a jour un champ scalaire ou un sous-objet.
   const updateNumericField = (key, valeur) =>
     setExcepValues((prev) => ({
       ...prev,
@@ -89,8 +92,8 @@ function SpermogrammeFormSection({ excepValues, setExcepValues }) {
       },
     }))
 
-  // Rendu d'un input numerique standard avec unite + reference en sous-texte.
-  const NumericInput = ({ field }) => (
+  // Rendu inline d'un input numerique standard (key + label + placeholder).
+  const renderNumericInput = (field) => (
     <div key={field.key} className="flex flex-col">
       <label className="label">{field.label}</label>
       <input
@@ -108,8 +111,8 @@ function SpermogrammeFormSection({ excepValues, setExcepValues }) {
     </div>
   )
 
-  // Rendu d'un dropdown texte (viscosite, aspect, etc.).
-  const TextDropdown = ({ field }) => (
+  // Rendu inline d'un dropdown texte.
+  const renderTextDropdown = (field) => (
     <div key={field.key} className="flex flex-col">
       <label className="label">{field.label}</label>
       <select
@@ -166,8 +169,8 @@ function SpermogrammeFormSection({ excepValues, setExcepValues }) {
       <div>
         <h4 className="font-bold mt-2">Caracteres generaux</h4>
         <div className="flex flex-wrap gap-4 items-end">
-          {NUMERIC_GENERAUX.map((f) => <NumericInput key={f.key} field={f} />)}
-          {TEXT_FIELDS.slice(0, 2).map((f) => <TextDropdown key={f.key} field={f} />)}
+          {NUMERIC_GENERAUX.map(renderNumericInput)}
+          {TEXT_FIELDS.slice(0, 2).map(renderTextDropdown)}
         </div>
       </div>
 
@@ -175,8 +178,8 @@ function SpermogrammeFormSection({ excepValues, setExcepValues }) {
       <div>
         <h4 className="font-bold mt-2">Numeration des spermatozoides</h4>
         <div className="flex flex-wrap gap-4 items-end">
-          {NUMERIC_NUMERATION.map((f) => <NumericInput key={f.key} field={f} />)}
-          {TEXT_FIELDS.slice(2).map((f) => <TextDropdown key={f.key} field={f} />)}
+          {NUMERIC_NUMERATION.map(renderNumericInput)}
+          {TEXT_FIELDS.slice(2).map(renderTextDropdown)}
         </div>
       </div>
 
@@ -184,7 +187,7 @@ function SpermogrammeFormSection({ excepValues, setExcepValues }) {
       <div>
         <h4 className="font-bold mt-2">Etude de la vitalite (test de Williams)</h4>
         <div className="flex flex-wrap gap-4 items-end">
-          {NUMERIC_VITALITE.map((f) => <NumericInput key={f.key} field={f} />)}
+          {NUMERIC_VITALITE.map(renderNumericInput)}
         </div>
       </div>
 
@@ -192,7 +195,7 @@ function SpermogrammeFormSection({ excepValues, setExcepValues }) {
       <div>
         <h4 className="font-bold mt-2">Etude de la mobilite</h4>
         <div className="flex flex-wrap gap-4 items-end">
-          {NUMERIC_MOBILITE.map((f) => <NumericInput key={f.key} field={f} />)}
+          {NUMERIC_MOBILITE.map(renderNumericInput)}
         </div>
       </div>
 
