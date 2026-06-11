@@ -75,18 +75,28 @@ function SpermogrammeFormSection({ excepValues, setExcepValues }) {
   const sp = excepValues.spermogramme || {}
 
   // Calcul automatique en temps reel : ejaculat total = volume x numeration.
-  // S'execute des que volume ou numeration changent ; ecrit la valeur dans
-  // sp.ejaculatTotal.valeur (l'utilisateur peut toujours la surcharger manuellement
-  // si la valeur ne correspond pas a son comptage reel).
-  const volumeVal = parseFloat(String(sp.volume?.valeur ?? '').replace(',', '.'))
-  const numerationVal = parseFloat(String(sp.numeration?.valeur ?? '').replace(',', '.'))
+  // IMPORTANT : on retire les espaces (separateurs de milliers a la francaise)
+  // AVANT parseFloat, sinon "1 580 000" parse en 1. On accepte aussi la virgule
+  // decimale francaise (2,5 -> 2.5). Le resultat est affiche avec separateur
+  // d'espace pour la lisibilite (ex: "3 950 000").
+  const sanitizeNumber = (raw) =>
+    parseFloat(String(raw ?? '').replace(/\s| /g, '').replace(',', '.'))
+  const formatNumber = (raw) => {
+    if (raw === '' || raw === null || raw === undefined) return ''
+    const n = sanitizeNumber(raw)
+    if (!Number.isFinite(n)) return String(raw)
+    return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+  }
+
+  const volumeVal = sanitizeNumber(sp.volume?.valeur)
+  const numerationVal = sanitizeNumber(sp.numeration?.valeur)
   useEffect(() => {
     if (
       Number.isFinite(volumeVal) && Number.isFinite(numerationVal) &&
       volumeVal > 0 && numerationVal > 0
     ) {
       const computed = Math.round(volumeVal * numerationVal)
-      if (String(sp.ejaculatTotal?.valeur ?? '') !== String(computed)) {
+      if (Number(sp.ejaculatTotal?.valeur) !== computed) {
         setExcepValues((prev) => ({
           ...prev,
           spermogramme: {
@@ -127,7 +137,16 @@ function SpermogrammeFormSection({ excepValues, setExcepValues }) {
     }))
 
   // Rendu inline d'un input numerique standard (key + label + placeholder).
-  const renderNumericInput = (field) => (
+  // Pour ejaculatTotal et numeration : on affiche la valeur formatee avec
+  // separateurs d'espace (ex: "3 950 000") pour la lisibilite. La valeur
+  // stockee en state reste un Number, sanitize a chaque modification.
+  const renderNumericInput = (field) => {
+    const useThousandSep = field.key === 'ejaculatTotal' || field.key === 'numeration'
+    const rawVal = sp[field.key]?.valeur
+    const displayedVal = useThousandSep
+      ? formatNumber(rawVal)
+      : (rawVal ?? '')
+    return (
     <div key={field.key} className="flex flex-col">
       <label className="label">{field.label}</label>
       <input
@@ -135,15 +154,27 @@ function SpermogrammeFormSection({ excepValues, setExcepValues }) {
         inputMode="decimal"
         className="input input-bordered w-[180px]"
         placeholder={field.placeholder}
-        value={sp[field.key]?.valeur ?? ''}
-        onChange={(e) => updateNumericField(field.key, e.target.value)}
+        value={displayedVal}
+        onChange={(e) => {
+          // Pour les champs avec separateur, on stocke le nombre sanitize ;
+          // pour les autres, la chaine telle que tapee (autorise les decimales
+          // en cours de saisie, ex: "2," puis "2,5").
+          const raw = e.target.value
+          if (useThousandSep) {
+            const n = sanitizeNumber(raw)
+            updateNumericField(field.key, Number.isFinite(n) ? n : '')
+          } else {
+            updateNumericField(field.key, raw)
+          }
+        }}
       />
       <small className="text-gray-500">
         {sp[field.key]?.unite ? `${sp[field.key].unite} | ` : ''}
         Ref : {sp[field.key]?.reference || '-'}
       </small>
     </div>
-  )
+    )
+  }
 
   // Rendu inline d'un dropdown texte.
   const renderTextDropdown = (field) => (
