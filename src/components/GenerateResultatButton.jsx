@@ -1759,7 +1759,15 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
 
     // VITALITE
     if (hasVal(sp.spermatozoidesVivants)) {
-      drawBanner('Étude de la vitalité des spermatozoïdes (Test de Williams)')
+      drawBanner('Étude de la vitalité des spermatozoïdes')
+      // Mention italique du test de reference (effectue 1h apres l'emission)
+      excepY = checkNewPage(doc, excepY, invoice)
+      doc.setFont('Times', 'italic')
+      doc.setFontSize(8)
+      doc.text("Test de Williams : effectué 1 heure après l'émission", LEFT_X + 5, excepY)
+      doc.setFontSize(9)
+      doc.setFont('Times', 'normal')
+      excepY += ROW_H
       drawLine('Spermatozoïdes vivants', sp.spermatozoidesVivants.valeur, fmtRef(sp.spermatozoidesVivants))
     }
 
@@ -1789,9 +1797,13 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
       hasVal(sp.indexAnomaliesMultiples)
 
     if (anyMorpho) {
-      // Titre principal souligne (comme le titre SPERMOGRAMME)
-      excepY += SECTION_GAP + 4
-      excepY = checkNewPage(doc, excepY, invoice)
+      // SPERMOCYTOGRAMME : toujours en haut d'une nouvelle page comme le
+      // demande la pratique labo (les antibiogrammes et bilans morpho
+      // doivent etre isoles visuellement du spermogramme).
+      doc.addPage()
+      addFooter(doc, getColorValue('gris'))
+      excepY = addPageHeader(doc, invoice)
+
       doc.setFont('Times', 'bold')
       doc.setFontSize(12)
       doc.text('SPERMOCYTOGRAMME', 105, excepY, { align: 'center' })

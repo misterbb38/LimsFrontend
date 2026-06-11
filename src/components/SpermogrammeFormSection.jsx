@@ -1,11 +1,17 @@
+import { useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 // Listes deroulantes predefinies (vocabulaire labo standard).
-const VISCOSITE_OPTIONS  = ['faible', 'normale', 'elevee']
-const ASPECT_OPTIONS     = ['normal', 'anormal', 'opalescent', 'hemorragique']
-const PRESENCE_OPTIONS   = ['absents', 'rares', 'presents', 'nombreux']
-const PRESENCE_F_OPTIONS = ['absentes', 'rares', 'presentes', 'nombreuses']
-const MODE_PRELEV        = ['au laboratoire', 'apporte au laboratoire']
+const VISCOSITE_OPTIONS  = ['faible', 'normale', 'élevée', 'forte']
+const ASPECT_OPTIONS     = ['normal', 'anormal', 'opalescent', 'hémorragique', 'jaunâtre']
+
+// Agglutinats / Leucocytes / Hématies / Cellules rondes : 4 listes proches
+// mais avec genre grammatical et nuances differentes.
+const AGGLUTINATS_OPTIONS    = ['absents',  'rares', 'quelques', 'présents',  'nombreux']
+const LEUCOCYTES_OPTIONS     = ['Absentes', 'Rares', 'Quelques', 'Présentes', 'Nombreuses']
+const HEMATIES_OPTIONS       = ['absentes', 'rares', 'quelques', 'présentes', 'nombreuses']
+const CELLULES_RONDES_OPTIONS = ['absentes', 'rares', 'quelques', 'nombreuses'] // pas de "présentes"
+const MODE_PRELEV        = ['au laboratoire', 'apporté au laboratoire']
 const CONCLUSION_SPG     = [
   'Normozoospermie',
   'Oligozoospermie',
@@ -38,12 +44,12 @@ const NUMERIC_MOBILITE = [
 
 // Champs textuels (dropdowns).
 const TEXT_FIELDS = [
-  { key: 'viscosite',            label: 'Viscosite',             options: VISCOSITE_OPTIONS },
+  { key: 'viscosite',            label: 'Viscosité',             options: VISCOSITE_OPTIONS },
   { key: 'aspect',               label: 'Aspect',                options: ASPECT_OPTIONS },
-  { key: 'agglutinatsSpontanes', label: 'Agglutinats spontanes', options: PRESENCE_OPTIONS },
-  { key: 'leucocytes',           label: 'Leucocytes',            options: PRESENCE_OPTIONS },
-  { key: 'hematies',             label: 'Hematies',              options: PRESENCE_F_OPTIONS },
-  { key: 'cellulesRondes',       label: 'Cellules rondes',       options: PRESENCE_F_OPTIONS },
+  { key: 'agglutinatsSpontanes', label: 'Agglutinats spontanés', options: AGGLUTINATS_OPTIONS },
+  { key: 'leucocytes',           label: 'Leucocytes',            options: LEUCOCYTES_OPTIONS },
+  { key: 'hematies',             label: 'Hématies',              options: HEMATIES_OPTIONS },
+  { key: 'cellulesRondes',       label: 'Cellules rondes',       options: CELLULES_RONDES_OPTIONS },
 ]
 
 // Champs morphologiques (count + pourcentage).
@@ -67,6 +73,34 @@ const MORPHO_FIELDS = [
  */
 function SpermogrammeFormSection({ excepValues, setExcepValues }) {
   const sp = excepValues.spermogramme || {}
+
+  // Calcul automatique en temps reel : ejaculat total = volume x numeration.
+  // S'execute des que volume ou numeration changent ; ecrit la valeur dans
+  // sp.ejaculatTotal.valeur (l'utilisateur peut toujours la surcharger manuellement
+  // si la valeur ne correspond pas a son comptage reel).
+  const volumeVal = parseFloat(String(sp.volume?.valeur ?? '').replace(',', '.'))
+  const numerationVal = parseFloat(String(sp.numeration?.valeur ?? '').replace(',', '.'))
+  useEffect(() => {
+    if (
+      Number.isFinite(volumeVal) && Number.isFinite(numerationVal) &&
+      volumeVal > 0 && numerationVal > 0
+    ) {
+      const computed = Math.round(volumeVal * numerationVal)
+      if (String(sp.ejaculatTotal?.valeur ?? '') !== String(computed)) {
+        setExcepValues((prev) => ({
+          ...prev,
+          spermogramme: {
+            ...prev.spermogramme,
+            ejaculatTotal: {
+              ...prev.spermogramme?.ejaculatTotal,
+              valeur: computed,
+            },
+          },
+        }))
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [volumeVal, numerationVal])
 
   const updateNumericField = (key, valeur) =>
     setExcepValues((prev) => ({
