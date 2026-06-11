@@ -1867,8 +1867,37 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
         doc.text('Index anomalies multiples', LEFT_X + 5, excepY)
         doc.setFont('Times', 'normal')
         doc.text(String(sp.indexAnomaliesMultiples.valeur), 100, excepY, { align: 'center' })
+        // Normes a droite
+        const iamRef = sp.indexAnomaliesMultiples.reference || '< 1,6'
+        doc.text(`Normes : ${iamRef}`, 145, excepY)
+        excepY += ROW_H
+        // Definition en italique sur la ligne du dessous, entre parentheses
+        excepY = checkNewPage(doc, excepY, invoice)
+        doc.setFont('Times', 'italic')
+        doc.setFontSize(8)
+        doc.text(
+          '(total anomalies relevées / spermatozoïdes anormaux)',
+          LEFT_X + 5,
+          excepY
+        )
+        doc.setFontSize(9)
+        doc.setFont('Times', 'normal')
         excepY += ROW_H
       }
+    }
+
+    // --- COMMENTAIRES (liste libre, chacun sur sa propre ligne) ---
+    const commentaires = Array.isArray(sp.commentaires) ? sp.commentaires.filter(Boolean) : []
+    if (commentaires.length > 0) {
+      drawBanner('Commentaires')
+      commentaires.forEach((c) => {
+        excepY = checkNewPage(doc, excepY, invoice)
+        // Ligne avec puce et retour automatique si trop long
+        const wrapped = doc.splitTextToSize(`• ${c}`, SECTION_W - 10)
+        doc.setFont('Times', 'normal')
+        doc.text(wrapped, LEFT_X + 5, excepY)
+        excepY += ROW_H * wrapped.length
+      })
     }
 
     // --- CONCLUSION ---

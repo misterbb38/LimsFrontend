@@ -209,9 +209,10 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
       defautsPieceInter:      { count: '', pourcentage: '' },
       defautsFlagelle:        { count: '', pourcentage: '' },
       resteCytoplasmique:     { count: '', pourcentage: '' },
-      indexAnomaliesMultiples:{ valeur: '' },
+      indexAnomaliesMultiples:{ valeur: '', reference: '< 1,6' },
       conclusionSpermogramme:     '',
       conclusionSpermocytogramme: '',
+      commentaires:               [],
     },
 
     // 👇 Nouvel ajout : NFS
@@ -1083,9 +1084,10 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
         defautsPieceInter:      { count: '', pourcentage: '' },
         defautsFlagelle:        { count: '', pourcentage: '' },
         resteCytoplasmique:     { count: '', pourcentage: '' },
-        indexAnomaliesMultiples:{ valeur: '' },
+        indexAnomaliesMultiples:{ valeur: '', reference: '< 1,6' },
         conclusionSpermogramme:     '',
         conclusionSpermocytogramme: '',
+        commentaires:               [],
       },
     })
     setAntibiogrammes([])

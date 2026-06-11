@@ -1,5 +1,18 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
+
+// Commentaires predefinis frequents en spermogramme. L'utilisateur peut
+// cocher ceux qui s'appliquent et ajouter en plus du texte libre.
+const COMMENTAIRES_PREDEFINIS = [
+  'Hyperviscosité du sperme',
+  'Liquéfaction incomplète',
+  'Présence d\'agglutinats spontanés',
+  'Forte concentration de leucocytes',
+  'Spermoculture recommandée',
+  'Contrôle à 3 mois recommandé',
+  'Bilan hormonal recommandé',
+  'Anti-corps anti-spermatozoïdes suspectés',
+]
 
 // Listes deroulantes predefinies (vocabulaire labo standard).
 const VISCOSITE_OPTIONS  = ['faible', 'normale', 'élevée', 'forte']
@@ -61,6 +74,93 @@ const MORPHO_FIELDS = [
   { key: 'defautsFlagelle',    label: 'Defauts du flagelle' },
   { key: 'resteCytoplasmique', label: 'Reste cytoplasmique' },
 ]
+
+/**
+ * Sous-composant : section commentaires. Defini AU NIVEAU DU MODULE pour
+ * eviter le bug de focus React (un sous-composant defini dans le corps de
+ * la fonction parente serait recree a chaque frappe).
+ */
+function CommentairesSection({ commentaires, onChange }) {
+  const [customDraft, setCustomDraft] = useState('')
+  const isChecked = (c) => commentaires.includes(c)
+  const toggle = (c) =>
+    onChange(isChecked(c) ? commentaires.filter((x) => x !== c) : [...commentaires, c])
+  const addCustom = () => {
+    const v = customDraft.trim()
+    if (!v) return
+    if (commentaires.includes(v)) return
+    onChange([...commentaires, v])
+    setCustomDraft('')
+  }
+  const removeOne = (c) => onChange(commentaires.filter((x) => x !== c))
+
+  return (
+    <div>
+      <h4 className="font-bold mt-2">Commentaires</h4>
+      <p className="text-sm text-gray-600 mb-2">
+        Cochez les commentaires applicables ou ajoutez du texte libre.
+      </p>
+
+      <div className="grid grid-cols-2 gap-1 mb-2">
+        {COMMENTAIRES_PREDEFINIS.map((c) => (
+          <label key={c} className="cursor-pointer flex items-center gap-2">
+            <input
+              type="checkbox"
+              className="checkbox checkbox-sm"
+              checked={isChecked(c)}
+              onChange={() => toggle(c)}
+            />
+            <span className="text-sm">{c}</span>
+          </label>
+        ))}
+      </div>
+
+      <div className="flex gap-2 items-center">
+        <input
+          type="text"
+          className="input input-bordered input-sm flex-1"
+          placeholder="Ajouter un commentaire personnalisé…"
+          value={customDraft}
+          onChange={(e) => setCustomDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              addCustom()
+            }
+          }}
+        />
+        <button type="button" className="btn btn-sm btn-primary" onClick={addCustom}>
+          Ajouter
+        </button>
+      </div>
+
+      {/* Liste des commentaires actuellement selectionnes (avec retrait) */}
+      {commentaires.length > 0 && (
+        <ul className="mt-2 text-sm">
+          {commentaires.map((c) => (
+            <li key={c} className="flex items-center gap-2">
+              <span>•</span>
+              <span className="flex-1">{c}</span>
+              <button
+                type="button"
+                className="btn btn-ghost btn-xs"
+                onClick={() => removeOne(c)}
+                aria-label="Retirer"
+              >
+                ✕
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+CommentairesSection.propTypes = {
+  commentaires: PropTypes.arrayOf(PropTypes.string).isRequired,
+  onChange: PropTypes.func.isRequired,
+}
 
 /**
  * Section commune Spermogramme + Spermocytogramme.
@@ -316,8 +416,21 @@ function SpermogrammeFormSection({ excepValues, setExcepValues }) {
             value={sp.indexAnomaliesMultiples?.valeur ?? ''}
             onChange={(e) => updateMorphoField('indexAnomaliesMultiples', 'valeur', e.target.value)}
           />
+          <small className="text-gray-500">
+            Normes : {sp.indexAnomaliesMultiples?.reference || '< 1,6'}
+            <br />
+            <span className="italic">
+              (total anomalies relevées / spermatozoïdes anormaux)
+            </span>
+          </small>
         </div>
       </div>
+
+      {/* COMMENTAIRES (multi-select) */}
+      <CommentairesSection
+        commentaires={sp.commentaires || []}
+        onChange={(next) => updateScalar('commentaires', next)}
+      />
 
       {/* CONCLUSION */}
       <div>

@@ -581,9 +581,10 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
     defautsPieceInter:      { count: '', pourcentage: '' },
     defautsFlagelle:        { count: '', pourcentage: '' },
     resteCytoplasmique:     { count: '', pourcentage: '' },
-    indexAnomaliesMultiples:{ valeur: '' },
+    indexAnomaliesMultiples:{ valeur: '', reference: '< 1,6' },
     conclusionSpermogramme:     '',
     conclusionSpermocytogramme: '',
+    commentaires:               [],
   },
 },
   })
