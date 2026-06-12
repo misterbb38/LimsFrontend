@@ -1748,9 +1748,16 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
       hasText(sp.agglutinatsSpontanes) || hasText(sp.leucocytes) ||
       hasText(sp.hematies) || hasText(sp.cellulesRondes)
     if (hasAnyNum) {
+      // Formate les grandes valeurs avec separateurs d'espace par millier
+      // (ex: 1555555 -> "1 555 555") pour la lisibilite imprimee.
+      const formatThousand = (raw) => {
+        const n = parseFloat(String(raw ?? '').replace(/\s| /g, '').replace(',', '.'))
+        if (!Number.isFinite(n)) return String(raw)
+        return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+      }
       drawBanner('Numération des spermatozoïdes')
-      if (hasVal(sp.numeration))    drawLine('Numération',    sp.numeration.valeur,    fmtRef(sp.numeration))
-      if (hasVal(sp.ejaculatTotal)) drawLine('Soit/éjaculat', sp.ejaculatTotal.valeur, fmtRef(sp.ejaculatTotal))
+      if (hasVal(sp.numeration))    drawLine('Numération',    formatThousand(sp.numeration.valeur),    fmtRef(sp.numeration))
+      if (hasVal(sp.ejaculatTotal)) drawLine('Soit/éjaculat', formatThousand(sp.ejaculatTotal.valeur), fmtRef(sp.ejaculatTotal))
       if (hasText(sp.agglutinatsSpontanes)) drawLine('Agglutinats spontanés', sp.agglutinatsSpontanes, '')
       if (hasText(sp.leucocytes))     drawLine('Leucocytes',      sp.leucocytes,     '')
       if (hasText(sp.hematies))       drawLine('Hématies',        sp.hematies,       '')
@@ -1760,15 +1767,15 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     // VITALITE
     if (hasVal(sp.spermatozoidesVivants)) {
       drawBanner('Étude de la vitalité des spermatozoïdes')
-      // Mention italique du test de reference (effectue 1h apres l'emission)
+      drawLine('Spermatozoïdes vivants', sp.spermatozoidesVivants.valeur, fmtRef(sp.spermatozoidesVivants))
+      // Mention italique du test de reference, entre parentheses, taille reduite
       excepY = checkNewPage(doc, excepY, invoice)
       doc.setFont('Times', 'italic')
-      doc.setFontSize(8)
-      doc.text("Test de Williams : effectué 1 heure après l'émission", LEFT_X + 5, excepY)
+      doc.setFontSize(7)
+      doc.text("(Test de Williams : effectué 1 heure après l'émission)", LEFT_X + 5, excepY)
       doc.setFontSize(9)
       doc.setFont('Times', 'normal')
-      excepY += ROW_H
-      drawLine('Spermatozoïdes vivants', sp.spermatozoidesVivants.valeur, fmtRef(sp.spermatozoidesVivants))
+      excepY += ROW_H - 1
     }
 
     // MOBILITE
@@ -1814,17 +1821,22 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
       doc.setFontSize(9)
       doc.setFont('Times', 'normal')
 
+      // Affiche une valeur sauf si elle est null/undefined/'' (evite "null" en PDF).
+      const cellText = (v) => {
+        if (v === null || v === undefined || String(v).trim() === '' || String(v) === 'null') {
+          return ''
+        }
+        return String(v)
+      }
       // Helper : ligne morpho (label / Total / % / Normes)
       const drawMorphoRow = (label, cell, normRef) => {
         excepY = checkNewPage(doc, excepY, invoice)
         doc.setFont('Times', 'normal')
         doc.text(String(label), LEFT_X + 5, excepY)
-        if (cell?.count !== undefined && String(cell.count).trim() !== '') {
-          doc.text(String(cell.count), 100, excepY, { align: 'center' })
-        }
-        if (cell?.pourcentage !== undefined && String(cell.pourcentage).trim() !== '') {
-          doc.text(String(cell.pourcentage), 130, excepY, { align: 'center' })
-        }
+        const c = cellText(cell?.count)
+        const p = cellText(cell?.pourcentage)
+        if (c) doc.text(c, 100, excepY, { align: 'center' })
+        if (p) doc.text(p, 130, excepY, { align: 'center' })
         if (normRef) doc.text(String(normRef), 160, excepY)
         excepY += ROW_H
       }
@@ -1867,9 +1879,9 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
         doc.text('Index anomalies multiples', LEFT_X + 5, excepY)
         doc.setFont('Times', 'normal')
         doc.text(String(sp.indexAnomaliesMultiples.valeur), 100, excepY, { align: 'center' })
-        // Normes a droite
+        // Normes alignees avec la colonne Normes du tableau morphologie (x=160)
         const iamRef = sp.indexAnomaliesMultiples.reference || '< 1,6'
-        doc.text(`Normes : ${iamRef}`, 145, excepY)
+        doc.text(iamRef, 160, excepY)
         excepY += ROW_H
         // Definition en italique sur la ligne du dessous, entre parentheses
         excepY = checkNewPage(doc, excepY, invoice)
