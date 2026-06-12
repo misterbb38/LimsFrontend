@@ -41,8 +41,9 @@ function ShareResultatButton({ invoice, className = '' }) {
   const patientName = `${patient.prenom || ''} ${patient.nom || ''}`.trim()
   const dossier = invoice?.identifiant || ''
 
-  // 1) Genere le PDF, 2) l'upload sur Cloudinary, 3) renvoie l'URL publique.
-  const uploadPdf = async () => {
+  // Genere le PDF + l'upload sur Cloudinary (pour WhatsApp uniquement)
+  // et renvoie l'URL publique.
+  const uploadPdfToCloudinary = async () => {
     const blob = await pdfRef.current.generatePdfBlob()
     const formData = new FormData()
     formData.append('pdf', blob, `resultat-${dossier || 'analyse'}.pdf`)
@@ -62,6 +63,37 @@ function ShareResultatButton({ invoice, className = '' }) {
     return data.url
   }
 
+  // Genere le PDF + l'envoie directement par SMTP avec piece jointe.
+  // Renvoie une promesse qui resout quand le mail est envoye.
+  const sendPdfByEmail = async ({ to, subject, body }) => {
+    const blob = await pdfRef.current.generatePdfBlob()
+    const formData = new FormData()
+    formData.append('pdf', blob, `resultat-${dossier || 'analyse'}.pdf`)
+    formData.append('to', to)
+    formData.append('subject', subject)
+    formData.append('body', body)
+    formData.append('identifiant', dossier)
+
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+    const token = userInfo?.token
+    const resp = await fetch(`${apiUrl}/api/share-resultat/send-email`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    })
+    if (!resp.ok) {
+      const errData = await resp.json().catch(() => ({}))
+      throw new Error(errData.message || 'Envoi email a echoue')
+    }
+  }
+
+  // Toast de succes / erreur (temporaire, auto-disparait apres 4s).
+  const [toast, setToast] = useState(null)
+  const showToast = (msg, type = 'success') => {
+    setToast({ msg, type })
+    setTimeout(() => setToast(null), 4000)
+  }
+
   const wrap = async (key, fn) => {
     try {
       setBusyKey(key)
@@ -69,7 +101,7 @@ function ShareResultatButton({ invoice, className = '' }) {
       await fn()
     } catch (e) {
       console.error('[Share]', e)
-      alert(`Échec du partage : ${e.message}`)
+      showToast(`Échec : ${e.message}`, 'error')
     } finally {
       setBusy(false)
       setBusyKey('')
@@ -77,74 +109,77 @@ function ShareResultatButton({ invoice, className = '' }) {
   }
 
   // --- WHATSAPP ---
+  // Upload sur Cloudinary puis ouvre wa.me avec message pre-rempli contenant
+  // le lien. WhatsApp ne supporte pas l'attachement direct via URL, donc on
+  // partage un lien public a la place.
   const shareWhatsApp = () =>
     wrap('wa', async () => {
       if (!patientPhone) throw new Error('Numéro de téléphone du patient manquant')
-      const url = await uploadPdf()
+      const url = await uploadPdfToCloudinary()
       const msg =
         `Bonjour ${patientName},\n\n` +
         `Vos résultats d'analyses (dossier ${dossier}) sont disponibles :\n` +
         `${url}\n\n` +
         `Laboratoire Bioram`
-      // wa.me ouvre l'app WhatsApp installee OU WhatsApp Web
       window.open(
         `https://wa.me/${patientPhone}?text=${encodeURIComponent(msg)}`,
         '_blank'
       )
     })
 
-  // --- EMAIL PATIENT ---
+  // --- EMAIL PATIENT (envoi direct SMTP) ---
   const shareEmailPatient = () =>
     wrap('mail', async () => {
       if (!patientEmail) throw new Error('Email du patient manquant')
-      const url = await uploadPdf()
-      const subject = `Résultats d'analyses - Dossier ${dossier}`
-      const body =
-        `Bonjour ${patientName},\n\n` +
-        `Vos résultats d'analyses sont disponibles via le lien suivant :\n` +
-        `${url}\n\n` +
-        `Cordialement,\nLaboratoire Bioram`
-      window.location.href =
-        `mailto:${patientEmail}?subject=${encodeURIComponent(subject)}` +
-        `&body=${encodeURIComponent(body)}`
+      await sendPdfByEmail({
+        to: patientEmail,
+        subject: `Résultats d'analyses - Dossier ${dossier}`,
+        body:
+          `Bonjour ${patientName},\n\n` +
+          `Veuillez trouver en pièce jointe vos résultats d'analyses.\n\n` +
+          `Cordialement,\nLaboratoire Bioram`,
+      })
+      showToast(`Email envoyé à ${patientEmail}`)
     })
 
-  // --- EMAIL DOCTEUR (avec popup pour adresse) ---
+  // --- EMAIL DOCTEUR (avec popup pour adresse + envoi direct SMTP) ---
   const submitDoctorEmail = async () => {
-    if (!doctorEmail.trim()) {
-      alert("Veuillez saisir l'adresse email du docteur")
+    const trimmed = doctorEmail.trim()
+    if (!trimmed || !trimmed.includes('@')) {
+      showToast("Saisissez une adresse email valide", 'error')
       return
     }
     setShowDoctorModal(false)
     await wrap('doctor', async () => {
-      const url = await uploadPdf()
-      const subject = `Résultats d'analyses - Patient ${patientName} (dossier ${dossier})`
-      const body =
-        `Bonjour Docteur,\n\n` +
-        `Veuillez trouver ci-dessous le lien vers les résultats d'analyses ` +
-        `de votre patient ${patientName} :\n${url}\n\n` +
-        `Cordialement,\nLaboratoire Bioram`
-      window.location.href =
-        `mailto:${doctorEmail.trim()}?subject=${encodeURIComponent(subject)}` +
-        `&body=${encodeURIComponent(body)}`
+      await sendPdfByEmail({
+        to: trimmed,
+        subject: `Résultats d'analyses - Patient ${patientName} (dossier ${dossier})`,
+        body:
+          `Bonjour Docteur,\n\n` +
+          `Veuillez trouver en pièce jointe les résultats d'analyses ` +
+          `de votre patient ${patientName}.\n\n` +
+          `Cordialement,\nLaboratoire Bioram`,
+      })
+      showToast(`Email envoyé à ${trimmed}`)
+      setDoctorEmail('')
     })
   }
 
-  // --- EMAIL PARTENAIRE ---
+  // --- EMAIL PARTENAIRE (envoi direct SMTP) ---
   const shareEmailPartenaire = () =>
     wrap('partner', async () => {
       if (!partenaireEmail)
-        throw new Error("Email du partenaire manquant (clinique/assurance non renseignee)")
-      const url = await uploadPdf()
-      const subject = `Résultats - Patient ${patientName} (dossier ${dossier})`
-      const body =
-        `Bonjour,\n\n` +
-        `Veuillez trouver ci-dessous le lien vers les résultats d'analyses ` +
-        `de ${patientName} :\n${url}\n\n` +
-        `Cordialement,\nLaboratoire Bioram`
-      window.location.href =
-        `mailto:${partenaireEmail}?subject=${encodeURIComponent(subject)}` +
-        `&body=${encodeURIComponent(body)}`
+        throw new Error("Email du partenaire manquant (clinique/assurance non renseignée)")
+      await sendPdfByEmail({
+        to: partenaireEmail,
+        subject: `Résultats - Patient ${patientName} (dossier ${dossier})`,
+        body:
+          `Bonjour,\n\n` +
+          `Veuillez trouver en pièce jointe les résultats d'analyses ` +
+          `de ${patientName}.\n\n` +
+          `Cordialement,\nLaboratoire Bioram`,
+      })
+      showToast(`Email envoyé à ${partenaireEmail}`)
     })
 
   const isBusy = (k) => busy && busyKey === k
@@ -155,6 +190,17 @@ function ShareResultatButton({ invoice, className = '' }) {
       <span className="hidden">
         <GenerateResultatButton ref={pdfRef} invoice={invoice} />
       </span>
+
+      {/* Toast de retour utilisateur (envoi reussi / erreur) */}
+      {toast && (
+        <div className="toast toast-top toast-end z-[10001]">
+          <div
+            className={`alert ${toast.type === 'error' ? 'alert-error' : 'alert-success'}`}
+          >
+            <span>{toast.msg}</span>
+          </div>
+        </div>
+      )}
 
       <div className={`dropdown dropdown-end ${className}`}>
         <button tabIndex={0} className="btn btn-primary btn-sm gap-2" disabled={busy}>

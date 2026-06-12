@@ -1679,13 +1679,13 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     const LEFT_X       = 20     // bord gauche de la zone contenu
     const RIGHT_X      = 190    // bord droit
     const SECTION_W    = RIGHT_X - LEFT_X
-    const BANNER_H     = 7      // hauteur du bandeau gris (augmentee pour la taille 11)
-    const ROW_H        = 6      // hauteur d'une ligne de donnees (texte 10 + interligne)
-    const SECTION_GAP  = 5      // espace blanc entre deux sections
+    const BANNER_H     = 6      // hauteur du bandeau gris
+    const ROW_H        = 5      // hauteur d'une ligne de donnees
+    const SECTION_GAP  = 4      // espace blanc entre deux sections
     const VAL_X        = 110    // colonne valeur centree
     const REF_X        = 145    // colonne reference a droite
-    const BODY_FONT    = 10     // taille corps de texte (avant : 9)
-    const TITLE_FONT   = 11     // taille des titres de section (avant : 10)
+    const BODY_FONT    = 9      // taille corps de texte
+    const TITLE_FONT   = 10     // taille des titres de section
 
     // Bandeau de section : rectangle gris clair + titre gras a l'interieur
     const drawBanner = (title) => {
@@ -1728,12 +1728,12 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     // --- TITRE PRINCIPAL SPERMOGRAMME ---
     excepY += 2
     doc.setFont('Times', 'bold')
-    doc.setFontSize(14)
+    doc.setFontSize(12)
     doc.text('SPERMOGRAMME', 105, excepY, { align: 'center' })
     excepY += 2
     doc.setLineWidth(0.3)
     doc.line(LEFT_X, excepY, RIGHT_X, excepY)
-    excepY += 6
+    excepY += 5
     doc.setFontSize(BODY_FONT)
     doc.setFont('Times', 'normal')
 
@@ -1785,7 +1785,7 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
       // Mention italique du test de reference, entre parentheses, taille reduite
       excepY = checkNewPage(doc, excepY, invoice)
       doc.setFont('Times', 'italic')
-      doc.setFontSize(8)
+      doc.setFontSize(7)
       doc.text("(Test de Williams : effectué 1 heure après l'émission)", LEFT_X + 5, excepY)
       doc.setFontSize(BODY_FONT)
       doc.setFont('Times', 'normal')
@@ -1826,12 +1826,12 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
       excepY = addPageHeader(doc, invoice)
 
       doc.setFont('Times', 'bold')
-      doc.setFontSize(14)
+      doc.setFontSize(12)
       doc.text('SPERMOCYTOGRAMME', 105, excepY, { align: 'center' })
       excepY += 2
       doc.setLineWidth(0.3)
       doc.line(LEFT_X, excepY, RIGHT_X, excepY)
-      excepY += 6
+      excepY += 5
       doc.setFontSize(BODY_FONT)
       doc.setFont('Times', 'normal')
 
