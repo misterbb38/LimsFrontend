@@ -2893,10 +2893,54 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     }
   }
 
+  // Charge le profil labo (logo, couleur, nom, etc.) une fois.
+  // Si l'utilisateur clique avant la fin du fetch, on relance la requete
+  // pour eviter un PDF avec entete vide (le bug observe sur le partage
+  // WhatsApp : le composant cache de ShareResultatButton n'avait pas
+  // toujours fini de charger le profil au moment du clic).
+  const ensureUserLoaded = async () => {
+    if (user && (user.nomEntreprise || user.logo || user.nom)) return user
+    try {
+      const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+      const token = userInfo?.token
+      const response = await fetch(`${apiUrl}/api/user/profile`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      if (!response.ok) return user
+      const data = await response.json()
+      const fresh = {
+        nom: data.nom || '',
+        prenom: data.prenom || '',
+        adresse: data.adresse || '',
+        email: data.email || '',
+        telephone: data.telephone || '',
+        devise: data.devise || '',
+        logo: data.logo || '',
+        site: data.site || '',
+        Type: user.Type || '',
+        nomEntreprise: data.nomEntreprise || '',
+        couleur: data.couleur || '',
+      }
+      setUser(fresh)
+      return fresh
+    } catch (err) {
+      console.warn('[PDF] echec rechargement profil :', err)
+      return user
+    }
+  }
+
   // Construit le PDF en memoire et retourne un Blob.
   // Cette logique etait inline dans generatePDF ; on l'extrait pour
   // pouvoir la reutiliser depuis <ShareResultatButton/> via une ref.
   const buildPdfBlob = async () => {
+    // S'assure que le profil labo est charge AVANT de generer le PDF.
+    // Sinon on aurait un entete vide quand l'utilisateur clique trop tot.
+    await ensureUserLoaded()
     console.log('[PDF] Début de génération du PDF')
     const doc = new jsPDF()
     const userColor = getColorValue('gris')
