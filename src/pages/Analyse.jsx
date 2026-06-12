@@ -315,7 +315,7 @@ function Facture() {
                     </td>
 
                     <td>
-                      <div className="flex flex-col gap-1 items-center">
+                      <div className="flex flex-row flex-wrap items-center gap-1">
                         {facture.resultat.length > 0 && (
                           <GenerateResultatButton invoice={facture} />
                         )}
