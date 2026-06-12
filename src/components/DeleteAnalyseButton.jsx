@@ -29,7 +29,7 @@ function DeleteAnalyseButton({ analyseId, onAnalyseDeleted }) {
   }
 
   return (
-    <button className="btn btn-error" onClick={handleDelete}>
+    <button className="btn btn-error btn-sm" onClick={handleDelete}>
       <FontAwesomeIcon icon={faTrash} />
     </button>
   )

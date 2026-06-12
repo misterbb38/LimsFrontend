@@ -253,7 +253,7 @@ formData.append('pc2', pc2Quantity * 4000) // Calculer le montant total PC2
 
   return (
     <>
-      <button className="btn btn-secondary" onClick={() => setShowModal(true)}>
+      <button className="btn btn-secondary btn-sm" onClick={() => setShowModal(true)}>
         <FontAwesomeIcon icon={faEdit} />
       </button>
       {showModal && (

@@ -246,9 +246,8 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh, sourceFacture }) {
 
   return (
     <>
-      {/* You can open the modal using document.getElementById('ID').showModal() method */}
       <button
-        className="btn"
+        className="btn btn-sm"
         onClick={() => openDialogAtTop(`my_modal_4_${analyseId}`)}
       >
         <FontAwesomeIcon icon={faEye} />

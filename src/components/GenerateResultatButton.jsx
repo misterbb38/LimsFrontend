@@ -2997,7 +2997,7 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
   useImperativeHandle(ref, () => ({ generatePdfBlob: buildPdfBlob }))
 
   return (
-    <button className="btn btn-primary" onClick={generatePDF}>
+    <button className="btn btn-primary btn-sm" onClick={generatePDF}>
       <FontAwesomeIcon icon={faDownload} />
     </button>
   )
