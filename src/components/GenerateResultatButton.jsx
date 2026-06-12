@@ -1729,9 +1729,11 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     doc.setFontSize(BODY_FONT)
     doc.setFont('Times', 'normal')
 
-    // Pre-analytique (sans bandeau, ligne libre)
+    // Pre-analytique (sans bandeau, ligne libre).
+    // Pour la duree d'abstinence on force "jours" peu importe ce qui est
+    // stocke en base (anciens enregistrements peuvent contenir "2 - 7").
     if (hasVal(sp.dureeAbstinence)) {
-      drawLine("Durée d'abstinence", sp.dureeAbstinence.valeur, fmtRef(sp.dureeAbstinence))
+      drawLine("Durée d'abstinence", sp.dureeAbstinence.valeur, 'jours')
     }
     if (hasText(sp.modePrelevement)) {
       drawLine('Mode de prélèvement', sp.modePrelevement, '')
