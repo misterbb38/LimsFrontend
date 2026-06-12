@@ -10,7 +10,6 @@ import DeleteAnalyseButton from '../components/DeleteAnalyseButton'
 import NavigationBreadcrumb from '../components/NavigationBreadcrumb'
 import Chatbot from '../components/Chatbot'
 import { Card, SectionHeader, StatusBadge } from '../components/ui'
-import ShareResultatButton from '../components/ShareResultatButton'
 import { faDownload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
@@ -318,10 +317,7 @@ function Facture() {
                     <td>
                       <div className="flex justify-around items-center gap-1 flex-wrap">
                         {facture.resultat.length > 0 && (
-                          <>
-                            <GenerateResultatButton invoice={facture} />
-                            <ShareResultatButton invoice={facture} />
-                          </>
+                          <GenerateResultatButton invoice={facture} />
                         )}
 
                         {facture.fileResultat &&
