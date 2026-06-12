@@ -63,30 +63,6 @@ function ShareResultatButton({ invoice, className = '' }) {
     return data.url
   }
 
-  // Genere le PDF + l'envoie directement par SMTP avec piece jointe.
-  // Renvoie une promesse qui resout quand le mail est envoye.
-  const sendPdfByEmail = async ({ to, subject, body }) => {
-    const blob = await pdfRef.current.generatePdfBlob()
-    const formData = new FormData()
-    formData.append('pdf', blob, `resultat-${dossier || 'analyse'}.pdf`)
-    formData.append('to', to)
-    formData.append('subject', subject)
-    formData.append('body', body)
-    formData.append('identifiant', dossier)
-
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-    const token = userInfo?.token
-    const resp = await fetch(`${apiUrl}/api/share-resultat/send-email`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    })
-    if (!resp.ok) {
-      const errData = await resp.json().catch(() => ({}))
-      throw new Error(errData.message || 'Envoi email a echoue')
-    }
-  }
-
   // Toast de succes / erreur (temporaire, auto-disparait apres 4s).
   const [toast, setToast] = useState(null)
   const showToast = (msg, type = 'success') => {
@@ -127,22 +103,31 @@ function ShareResultatButton({ invoice, className = '' }) {
       )
     })
 
-  // --- EMAIL PATIENT (envoi direct SMTP) ---
+  // Helper : ouvre le client mail par defaut avec un brouillon pre-rempli.
+  // Le lien Cloudinary est inclus dans le corps : le destinataire clique
+  // pour telecharger le PDF (pas d'attachement direct possible via mailto).
+  const openMailDraft = ({ to, subject, body }) => {
+    window.location.href =
+      `mailto:${to}?subject=${encodeURIComponent(subject)}` +
+      `&body=${encodeURIComponent(body)}`
+  }
+
+  // --- EMAIL PATIENT (mailto + lien Cloudinary) ---
   const shareEmailPatient = () =>
     wrap('mail', async () => {
       if (!patientEmail) throw new Error('Email du patient manquant')
-      await sendPdfByEmail({
+      const url = await uploadPdfToCloudinary()
+      openMailDraft({
         to: patientEmail,
         subject: `Résultats d'analyses - Dossier ${dossier}`,
         body:
           `Bonjour ${patientName},\n\n` +
-          `Veuillez trouver en pièce jointe vos résultats d'analyses.\n\n` +
+          `Vos résultats d'analyses sont disponibles via ce lien :\n${url}\n\n` +
           `Cordialement,\nLaboratoire Bioram`,
       })
-      showToast(`Email envoyé à ${patientEmail}`)
     })
 
-  // --- EMAIL DOCTEUR (avec popup pour adresse + envoi direct SMTP) ---
+  // --- EMAIL DOCTEUR (popup pour adresse + mailto) ---
   const submitDoctorEmail = async () => {
     const trimmed = doctorEmail.trim()
     if (!trimmed || !trimmed.includes('@')) {
@@ -151,35 +136,35 @@ function ShareResultatButton({ invoice, className = '' }) {
     }
     setShowDoctorModal(false)
     await wrap('doctor', async () => {
-      await sendPdfByEmail({
+      const url = await uploadPdfToCloudinary()
+      openMailDraft({
         to: trimmed,
         subject: `Résultats d'analyses - Patient ${patientName} (dossier ${dossier})`,
         body:
           `Bonjour Docteur,\n\n` +
-          `Veuillez trouver en pièce jointe les résultats d'analyses ` +
-          `de votre patient ${patientName}.\n\n` +
+          `Veuillez trouver le lien vers les résultats d'analyses ` +
+          `de votre patient ${patientName} :\n${url}\n\n` +
           `Cordialement,\nLaboratoire Bioram`,
       })
-      showToast(`Email envoyé à ${trimmed}`)
       setDoctorEmail('')
     })
   }
 
-  // --- EMAIL PARTENAIRE (envoi direct SMTP) ---
+  // --- EMAIL PARTENAIRE (mailto + lien Cloudinary) ---
   const shareEmailPartenaire = () =>
     wrap('partner', async () => {
       if (!partenaireEmail)
         throw new Error("Email du partenaire manquant (clinique/assurance non renseignée)")
-      await sendPdfByEmail({
+      const url = await uploadPdfToCloudinary()
+      openMailDraft({
         to: partenaireEmail,
         subject: `Résultats - Patient ${patientName} (dossier ${dossier})`,
         body:
           `Bonjour,\n\n` +
-          `Veuillez trouver en pièce jointe les résultats d'analyses ` +
-          `de ${patientName}.\n\n` +
+          `Veuillez trouver le lien vers les résultats d'analyses ` +
+          `de ${patientName} :\n${url}\n\n` +
           `Cordialement,\nLaboratoire Bioram`,
       })
-      showToast(`Email envoyé à ${partenaireEmail}`)
     })
 
   const isBusy = (k) => busy && busyKey === k
