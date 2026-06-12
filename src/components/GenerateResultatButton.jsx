@@ -1,6 +1,6 @@
 
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faDownload } from '@fortawesome/free-solid-svg-icons'
 import jsPDF from 'jspdf'
@@ -9,10 +9,18 @@ import logoLeft from '../images/bioramlogo.png'
 import logoRight from '../images/logo2.png'
 
 /**
- * Composant pour générer un PDF de résultat d'analyse médicale
- * VERSION FINALE CORRIGÉE - Sans interprétations doublées et avec Compte d'Addis fonctionnel
+ * Composant pour générer un PDF de résultat d'analyse médicale.
+ *
+ * Modes d'utilisation :
+ *  1. Standard (par defaut) : affiche un bouton, clic = ouvre le PDF dans un onglet.
+ *  2. Programmatique : passer une ref, appeler `ref.current.generatePdfBlob()`
+ *     pour recuperer un Blob et le partager (WhatsApp, email...).
+ *     Utilise par <ShareResultatButton/>. Le bouton reste visible quand meme.
  */
-function GenerateResultatButton({ invoice }) {
+const GenerateResultatButton = forwardRef(function GenerateResultatButton(
+  { invoice },
+  ref
+) {
   const [user, setUser] = useState({
     nom: '',
     prenom: '',
@@ -2885,50 +2893,54 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     }
   }
 
+  // Construit le PDF en memoire et retourne un Blob.
+  // Cette logique etait inline dans generatePDF ; on l'extrait pour
+  // pouvoir la reutiliser depuis <ShareResultatButton/> via une ref.
+  const buildPdfBlob = async () => {
+    console.log('[PDF] Début de génération du PDF')
+    const doc = new jsPDF()
+    const userColor = getColorValue('gris')
+
+    // Sanitization PDF :
+    //  1. Decimaux a la francaise : "2.4" -> "2,4"
+    //  2. Symboles Unicode non rendus par Times/Helvetica WinAnsi :
+    //     ≥ (U+2265) -> ">=", ≤ (U+2264) -> "<=". Cela couvre les
+    //     references stockees AVANT le passage en mode ">=" texte,
+    //     pour qu'elles s'affichent correctement sans re-save.
+    const sanitizeForPdf = (val) => {
+      if (typeof val === 'string') {
+        return val
+          .replace(/≥/g, '>=')
+          .replace(/≤/g, '<=')
+          .replace(/(\d)\.(\d)/g, '$1,$2')
+      }
+      if (Array.isArray(val)) return val.map(sanitizeForPdf)
+      return val
+    }
+    const originalDocText = doc.text.bind(doc)
+    doc.text = (text, x, y, options) =>
+      originalDocText(sanitizeForPdf(text), x, y, options)
+
+    const [imgLeft] = await Promise.all([
+      loadImage(logoLeft),
+      loadImage(logoRight),
+    ])
+
+    await setupDocumentHeader(doc, imgLeft, userColor)
+    await addPatientInformation(doc, invoice)
+    await addTestResults(doc, invoice)
+    await addValidationInfo(doc, invoice)
+
+    addPageNumbers(doc)
+
+    console.log('[PDF] Génération terminée')
+    return doc.output('blob')
+  }
+
+  // Comportement standard du bouton : ouvrir le PDF dans un onglet.
   const generatePDF = async () => {
     try {
-      console.log('[PDF] Début de génération du PDF')
-      const doc = new jsPDF()
-      const userColor = getColorValue('gris')
-
-      // Notation francaise : convertit tous les separateurs decimaux "." en ","
-      // dans le texte affiche par doc.text (ex: "2.4" -> "2,4", "70.5 mmol/l"
-      // -> "70,5 mmol/l"). Le regex ne touche que les points encadres par des
-      // chiffres : libelles, dates, abreviations restent intacts.
-      // Sanitization PDF :
-      //  1. Decimaux a la francaise : "2.4" -> "2,4"
-      //  2. Symboles Unicode non rendus par Times/Helvetica WinAnsi :
-      //     ≥ (U+2265) -> ">=", ≤ (U+2264) -> "<=". Cela couvre les
-      //     references stockees AVANT le passage en mode ">=" texte,
-      //     pour qu'elles s'affichent correctement sans re-save.
-      const sanitizeForPdf = (val) => {
-        if (typeof val === 'string') {
-          return val
-            .replace(/≥/g, '>=') // ≥
-            .replace(/≤/g, '<=') // ≤
-            .replace(/(\d)\.(\d)/g, '$1,$2')
-        }
-        if (Array.isArray(val)) return val.map(sanitizeForPdf)
-        return val
-      }
-      const originalDocText = doc.text.bind(doc)
-      doc.text = (text, x, y, options) =>
-        originalDocText(sanitizeForPdf(text), x, y, options)
-
-      const [imgLeft] = await Promise.all([
-        loadImage(logoLeft),
-        loadImage(logoRight),
-      ])
-
-      await setupDocumentHeader(doc, imgLeft, userColor)
-      await addPatientInformation(doc, invoice)
-      await addTestResults(doc, invoice)
-      await addValidationInfo(doc, invoice)
-
-      addPageNumbers(doc)
-
-      console.log('[PDF] Génération terminée')
-      const blob = doc.output('blob')
+      const blob = await buildPdfBlob()
       const url = URL.createObjectURL(blob)
       window.open(`/pdf-viewer?pdfBlobUrl=${encodeURIComponent(url)}`, '_blank')
     } catch (error) {
@@ -2937,12 +2949,15 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     }
   }
 
+  // API imperative pour les composants externes (ShareResultatButton).
+  useImperativeHandle(ref, () => ({ generatePdfBlob: buildPdfBlob }))
+
   return (
     <button className="btn btn-primary" onClick={generatePDF}>
       <FontAwesomeIcon icon={faDownload} />
     </button>
   )
-}
+})
 
 GenerateResultatButton.propTypes = {
   invoice: PropTypes.object.isRequired,

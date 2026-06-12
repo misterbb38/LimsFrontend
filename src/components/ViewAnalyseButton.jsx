@@ -10,6 +10,7 @@ import AddHistoriqueForm from './AddHistoriqueForm'
 import AddResultatForm from './AddResultatForm'
 import EditPatientButton from './EditPatientButton'
 import AddExterneResultat from './AddExterneResultat'
+import ShareResultatButton from './ShareResultatButton'
 // import GenerateBarcodeButton from './GenerateBarcodeButton'
 
 function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
@@ -254,19 +255,20 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
       </button>
       <dialog id={`my_modal_4_${analyseId}`} className="modal">
         <div className="modal-box modal-xl max-h-[90vh] overflow-y-auto">
-          <div className="">
+          <div className="flex flex-wrap items-center gap-2">
             <button
-              className="btn btn-primary"
+              className="btn btn-primary btn-sm"
               onClick={sendSMS}
               disabled={isLoadingSMS}
             >
               {isLoadingSMS ? (
-                <span className="loading loading-spinner"></span>
+                <span className="loading loading-spinner loading-xs"></span>
               ) : (
                 'Envoyer SMS'
               )}
             </button>
-            <span className="ml-1">
+            {analyseData && <ShareResultatButton invoice={analyseData} />}
+            <span className="ml-1 text-sm text-base-content/60">
               {analyseData?.smsCount === 0
                 ? "Aucun SMS n'a encore été envoyé"
                 : `${analyseData?.smsCount} SMS ${analyseData?.smsCount === 1 ? 'a déjà été envoyé' : 'ont déjà été envoyés'}, renvoyez si nécessaire`}

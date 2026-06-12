@@ -10,6 +10,7 @@ import DeleteAnalyseButton from '../components/DeleteAnalyseButton'
 import NavigationBreadcrumb from '../components/NavigationBreadcrumb'
 import Chatbot from '../components/Chatbot'
 import { Card, SectionHeader, StatusBadge } from '../components/ui'
+import ShareResultatButton from '../components/ShareResultatButton'
 import { faDownload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
@@ -315,9 +316,12 @@ function Facture() {
                     </td>
 
                     <td>
-                      <div className="flex justify-around space-x-1">
+                      <div className="flex justify-around items-center gap-1 flex-wrap">
                         {facture.resultat.length > 0 && (
-                          <GenerateResultatButton invoice={facture} />
+                          <>
+                            <GenerateResultatButton invoice={facture} />
+                            <ShareResultatButton invoice={facture} />
+                          </>
                         )}
 
                         {facture.fileResultat &&
@@ -326,7 +330,7 @@ function Facture() {
                               href={facture.fileResultat[0].path} // Utiliser directement l'URL Cloudinary
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="btn btn-primary"
+                              className="btn btn-primary btn-sm"
                             >
                               <FontAwesomeIcon icon={faDownload} />
                             </a>
