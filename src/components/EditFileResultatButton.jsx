@@ -105,8 +105,8 @@ function EditFileResultatButton({
         <FontAwesomeIcon icon={faEdit} />
       </button>
       {showModal && (
-        <div className="modal modal-open">
-          <div className="modal-box w-11/12 max-w-5xl">
+        <div className="modal modal-open" style={{ zIndex: 9999 }}>
+          <div className="modal-box modal-md max-h-[90vh] overflow-y-auto">
             <div className="modal-header flex justify-between items-center">
               <h3 className="font-bold text-lg">
                 Modifier le Fichier de Résultat

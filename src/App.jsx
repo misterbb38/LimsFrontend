@@ -34,7 +34,7 @@ function AppLayout() {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen)
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-base-200">
       {isSidebarOpen && <Sidebar />}
       <div className="flex flex-col flex-1 overflow-hidden">
         <TopBar toggleSidebar={toggleSidebar} />
@@ -51,17 +51,12 @@ function PatientDashboardLayout() {
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen)
   return (
-    <div className="flex h-screen bg-blue-100">
-      {' '}
-      {/* Changez le style comme vous le souhaitez */}
-      <SidebarPatient toggleSidebar={toggleSidebar} />{' '}
-      {/* Supposons que vous voulez garder la sidebar, sinon créez une nouvelle */}
+    <div className="flex h-screen bg-base-200">
+      <SidebarPatient toggleSidebar={toggleSidebar} />
       <div className="flex flex-col flex-1 overflow-hidden">
-        <TopBar />{' '}
-        {/* Vous pourriez vouloir personnaliser cette barre pour les patients */}
+        <TopBar />
         <div className="flex-1 overflow-y-auto">
-          <Outlet />{' '}
-          {/* Ici, les composants enfants spécifiques aux patients seront rendus */}
+          <Outlet />
         </div>
       </div>
     </div>
@@ -73,17 +68,12 @@ function PartenaireDashboardLayout() {
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen)
   return (
-    <div className="flex h-screen bg-blue-100">
-      {' '}
-      {/* Changez le style comme vous le souhaitez */}
-      <SidebarPartenaire toggleSidebar={toggleSidebar} />{' '}
-      {/* Supposons que vous voulez garder la sidebar, sinon créez une nouvelle */}
+    <div className="flex h-screen bg-base-200">
+      <SidebarPartenaire toggleSidebar={toggleSidebar} />
       <div className="flex flex-col flex-1 overflow-hidden">
-        <TopBar />{' '}
-        {/* Vous pourriez vouloir personnaliser cette barre pour les patients */}
+        <TopBar />
         <div className="flex-1 overflow-y-auto">
-          <Outlet />{' '}
-          {/* Ici, les composants enfants spécifiques aux patients seront rendus */}
+          <Outlet />
         </div>
       </div>
     </div>

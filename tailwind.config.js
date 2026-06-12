@@ -33,7 +33,18 @@ export default {
       ...defaultTheme.screens,
     },
     extend: {
+      fontFamily: {
+        // Inter en first, fallback systemes pour zero chargement reseau
+        sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
+      },
       fontSize: {
+        // Echelle Bioram (nommage semantique pour le design system)
+        h1: ['28px', { lineHeight: '36px', fontWeight: '600' }],
+        h2: ['22px', { lineHeight: '30px', fontWeight: '600' }],
+        h3: ['16px', { lineHeight: '24px', fontWeight: '600' }],
+        body: ['14px', { lineHeight: '20px' }],
+        // Anciens tokens conserves pour compat retro (utilises ailleurs)
         'title-xxl': ['44px', '55px'],
         'title-xl': ['36px', '45px'],
         'title-xl2': ['33px', '45px'],
@@ -237,13 +248,50 @@ export default {
     // autres plugins
   ],
   daisyui: {
-    themes: true, // false: only light + dark | true: all themes | array: specific themes like this ["light", "dark", "cupcake"]
-    darkTheme: 'dark', // name of one of the included themes for dark mode
-    base: true, // applies background color and foreground color for root element by default
-    styled: true, // include daisyUI colors and design decisions for all components
-    utils: true, // adds responsive and modifier utility classes
-    prefix: '', // prefix for daisyUI classnames (components, modifiers and responsive class names. Not colors)
-    logs: true, // Shows info about daisyUI version and used config in the console when building your CSS
-    themeRoot: ':root', // The element that receives theme color CSS variables
+    // Theme custom Bioram en premier (sera donc le defaut). On conserve
+    // light + dark en repli pour le theme-switcher existant.
+    themes: [
+      {
+        bioram: {
+          // Palette clinique : cyan + ambre + slate, remplace le violet
+          // DaisyUI par defaut. Couleurs choisies pour le contraste AA.
+          'primary':           '#0E7490', // cyan-700  — CTAs, liens, sidebar active
+          'primary-content':   '#FFFFFF',
+          'secondary':         '#475569', // slate-600 — boutons neutres
+          'secondary-content': '#FFFFFF',
+          'accent':            '#F59E0B', // amber-500 — highlights, focus
+          'accent-content':    '#1E293B',
+          'neutral':           '#1E293B', // slate-800 — texte principal
+          'neutral-content':   '#F8FAFC',
+          'base-100':          '#FFFFFF', // fond cartes
+          'base-200':          '#F8FAFC', // fond page (remplace bg-gray-100)
+          'base-300':          '#E2E8F0', // bordures, dividers
+          'base-content':      '#1E293B',
+          'info':              '#0284C7', // sky-600 — Creation, infos
+          'info-content':      '#FFFFFF',
+          'success':           '#16A34A', // green-600 — Valide, Payee, Fait
+          'success-content':   '#FFFFFF',
+          'warning':           '#D97706', // amber-600 — Reliquat, En attente
+          'warning-content':   '#FFFFFF',
+          'error':             '#DC2626', // red-600 — Annule, Impayee
+          'error-content':     '#FFFFFF',
+
+          '--rounded-box':    '0.75rem', // cartes, modales
+          '--rounded-btn':    '0.5rem',
+          '--rounded-badge':  '0.375rem',
+          '--animation-btn':  '0.2s',
+          '--btn-text-case':  'none', // pas de uppercase forcee
+        },
+      },
+      'light',
+      'dark',
+    ],
+    darkTheme: 'dark',
+    base: true,
+    styled: true,
+    utils: true,
+    prefix: '',
+    logs: true,
+    themeRoot: ':root',
   },
 }

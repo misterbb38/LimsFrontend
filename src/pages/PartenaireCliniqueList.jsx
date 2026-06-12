@@ -149,7 +149,7 @@ function Personnel() {
       />
 
       <dialog id="my_modal_4" className="modal">
-        <div className="modal-box w-11/12 max-w-5xl">
+        <div className="modal-box modal-xl max-h-[90vh] overflow-y-auto">
           <SignUp onUser={refreshpersonnel} />
           <div className="modal-action">
             <form method="dialog">

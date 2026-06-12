@@ -1,9 +1,54 @@
-/* src/styles/index.css */
+/* src/index.css — Bioram design tokens */
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
-/* Ajoutez votre propre style ici si nécessaire */
+/* ============================================================================
+ * BIORAM DESIGN SYSTEM — couches utilitaires
+ * Ces classes documentent les conventions partagees entre les composants UI
+ * (Card, Modal, FormField...) et restent disponibles en classe brute si on
+ * en a besoin ponctuellement dans une page existante non encore migree.
+ * ============================================================================ */
+@layer components {
+  /* Typographie semantique */
+  .text-h1 { @apply text-h1 text-base-content; }
+  .text-h2 { @apply text-h2 text-base-content; }
+  .text-h3 { @apply text-h3 text-base-content; }
+  .text-body { @apply text-body text-base-content; }
+
+  /* Valeurs numeriques (resultats labo, montants) : police mono avec
+     chiffres tabulaires pour qu'ils s'alignent verticalement. */
+  .numeric { @apply font-mono tabular-nums; }
+
+  /* Labels de formulaire coherents */
+  .field-label {
+    @apply block text-sm font-medium text-base-content mb-1.5;
+  }
+  .field-hint {
+    @apply block text-xs text-base-content/60 mt-1;
+  }
+  .field-error {
+    @apply block text-xs text-error mt-1;
+  }
+
+  /* Tailles de modales standardisees (3 et seulement 3) */
+  .modal-md  { @apply w-11/12 max-w-2xl;  } /* confirmations, formulaires courts */
+  .modal-lg  { @apply w-11/12 max-w-4xl;  } /* defaut : Create/Edit Patient/Analyse */
+  .modal-xl  { @apply max-w-6xl w-[95vw]; } /* resultats, vues complexes */
+
+  /* Header sticky pour les modales longues (pattern adopte en standard) */
+  .modal-header {
+    @apply sticky top-0 z-10 bg-base-100 flex justify-between items-center
+           pb-3 mb-3 border-b border-base-300;
+  }
+
+  /* Footer sticky pour les modales avec actions principales */
+  .modal-footer {
+    @apply sticky bottom-0 bg-base-100 pt-3 mt-4 border-t border-base-300
+           flex justify-end gap-2;
+  }
+}
+
 :root {
   --background-light: #ffffff;
   --background-dark: #121212;

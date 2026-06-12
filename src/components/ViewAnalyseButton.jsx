@@ -253,7 +253,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
         <FontAwesomeIcon icon={faEye} />
       </button>
       <dialog id={`my_modal_4_${analyseId}`} className="modal">
-        <div className="modal-box w-11/12 max-w-7xl">
+        <div className="modal-box modal-xl max-h-[90vh] overflow-y-auto">
           <div className="">
             <button
               className="btn btn-primary"
@@ -318,7 +318,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
           </dialog>
 
           <dialog id={`my_modal_6_${analyseId}`} className="modal modal-middle">
-            <div className="modal-box  w-11/12 max-w-5xl">
+            <div className="modal-box modal-xl max-h-[90vh] overflow-y-auto">
               <AddResultatForm
                 analyseId={analyseId}
                 patientId={analyseData.userId?._id}
@@ -345,7 +345,7 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
           </button>
 
           <dialog id={`my_modal_7_${analyseId}`} className="modal modal-middle">
-            <div className="modal-box w-11/12 max-w-5xl">
+            <div className="modal-box modal-lg max-h-[90vh] overflow-y-auto">
               <AddExterneResultat
                 analyseId={analyseId}
                 patientId={analyseData.userId?._id}

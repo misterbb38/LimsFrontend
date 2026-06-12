@@ -9,6 +9,7 @@ import FiltreAnalyse from '../components/AnalyseFilter'
 import DeleteAnalyseButton from '../components/DeleteAnalyseButton'
 import NavigationBreadcrumb from '../components/NavigationBreadcrumb'
 import Chatbot from '../components/Chatbot'
+import { Card, SectionHeader, StatusBadge } from '../components/ui'
 import { faDownload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
@@ -17,38 +18,6 @@ function Facture() {
   const [displayedFactures, setDisplayedFactures] = useState([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
-
-  // // Mapping des statuts aux classes de couleur de DaisyUI
-  // const statusBadgeClasses = {
-  //   Création: 'badge badge-info text-white font-bold', // Bleu pour "Création"
-  //   'En attente': 'badge badge-warning text-white font-bold', // Jaune pour "En attente"
-  //   Approuvé: 'badge badge-success text-white font-bold', // Vert pour "Approuvé"
-  //   'Échantillon collecté': 'badge badge-primary text-white font-bold', // Bleu foncé pour "Échantillon collecté"
-  //   'Livré au laboratoire': 'badge badge-accent text-white font-bold', // Cyan ou une couleur spécifique pour "Livré au laboratoire"
-  //   Fait: 'badge badge-success text-white font-bold', // Vert pour "Fait"
-  //   Annulé: 'badge badge-error text-white font-bold', // Rouge pour "Annulé"
-  // }
-
-  // Mapping des statuts aux classes de couleur de DaisyUI
-  const statusBadgeClasses = {
-    Création: 'badge badge-info text-white font-bold px-2 py-1', // Bleu pour "Création"
-    'En attente': 'badge badge-warning text-white font-bold px-4 py-5', // Jaune pour "En attente"
-    Approuvé: 'badge badge-success text-white font-bold px-2 py-1', // Vert pour "Approuvé"
-    'Échantillon collecté':
-      'badge badge-primary text-white font-bold px-2 py-1', // Bleu foncé pour "Échantillon collecté"
-    'Livré au laboratoire': 'badge badge-accent text-white font-bold px-2 py-1', // Cyan pour "Livré au laboratoire"
-    'Validation technique': 'badge badge-accent text-white font-bold px-2 py-1',
-    Fait: 'badge badge-success text-white font-bold px-2 py-1', // Vert pour "Fait"
-    Annulé: 'badge badge-error text-white font-bold px-2 py-1', // Rouge pour "Annulé"
-    Validé: 'badge badge-success text-white font-bold px-2 py-1', // Vert pour "Validé"
-    Modification: 'badge badge-secondary text-white font-bold px-2 py-1', // Gris foncé pour "Modification"
-  }
-
-  const paymentStatusClasses = {
-    Payée: 'badge badge-success text-white font-bold px-2 py-1',
-    Impayée: 'badge badge-error text-white font-bold px-2 py-1',
-    Reliquat: 'badge badge-warning text-white font-bold px-2 py-1',
-  }
 
   const facturesPerPage = 8
 
@@ -231,21 +200,26 @@ function Facture() {
   }
 
   return (
-    <div className="base-content bg-base-100 mx-auto p-4 min-h-[800px]">
+    <div className="max-w-screen-2xl mx-auto px-6 py-6">
       <Chatbot />
       <NavigationBreadcrumb pageName="Analyse" />
-      <div className="divider"></div>
-      {/* You can open the modal using document.getElementById('ID').showModal() method */}
-      <button
-        className="btn"
-        onClick={() => document.getElementById('my_modal_3').showModal()}
-      >
-        Ajouter une Analyse
-      </button>
+
+      <SectionHeader
+        title="Analyses"
+        subtitle="Suivi des analyses, factures et résultats"
+        action={
+          <button
+            className="btn btn-primary"
+            onClick={() => document.getElementById('my_modal_3').showModal()}
+          >
+            + Ajouter une analyse
+          </button>
+        }
+      />
+
       <dialog id="my_modal_3" className="modal">
-        <div className="modal-box">
+        <div className="modal-box modal-lg max-h-[90vh] overflow-y-auto">
           <form method="dialog">
-            {/* if there is a button in form, it will close the modal */}
             <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
               ✕
             </button>
@@ -254,47 +228,47 @@ function Facture() {
           <CreateAnalyseForm
             onAnalyseChange={() => {
               refreshFactures()
-              document.getElementById('my_modal_3').close() // Ferme le modal
+              document.getElementById('my_modal_3').close()
             }}
           />
         </div>
       </dialog>
-      <div className="divider"></div>
-      {/* <h2 className="text-2xl font-bold mb-4">Factures</h2> */}
-      <FiltreAnalyse onFilter={handleFilter} />
-      {/* // Ajout dans le rendu JSX de Facture, là où vous souhaitez que le sélecteur apparaisse */}
 
-      <div className="divider"></div>
+      <Card className="mb-4">
+        <FiltreAnalyse onFilter={handleFilter} />
+      </Card>
+
       {loading ? (
-        <div className="loading loading-spinner text-primary">
-          Chargement...
+        <div className="flex items-center justify-center py-12">
+          <span className="loading loading-spinner text-primary"></span>
+          <span className="ml-3 text-sm text-base-content/60">Chargement…</span>
         </div>
       ) : (
-        <>
+        <Card padding="sm">
           <div className="overflow-x-auto">
             <table className="table w-full">
               <thead>
                 <tr>
-                  <th className="font-bold text-lg text-base-content">Date</th>
-                  <th className="font-bold text-lg text-base-content">
+                  <th className="text-xs uppercase tracking-wide text-base-content/60">Date</th>
+                  <th className="text-xs uppercase tracking-wide text-base-content/60">
                     Dossier
                   </th>
-                  <th className="font-bold text-lg text-base-content">
+                  <th className="text-xs uppercase tracking-wide text-base-content/60">
                     Patient
                   </th>
-                  <th className="font-bold text-lg text-base-content">NIP</th>
-                  <th className="font-bold text-lg text-base-content">
+                  <th className="text-xs uppercase tracking-wide text-base-content/60">NIP</th>
+                  <th className="text-xs uppercase tracking-wide text-base-content/60">
                     Paramettre
                   </th>
-                  <th className="font-bold text-lg text-base-content">
+                  <th className="text-xs uppercase tracking-wide text-base-content/60">
                     Facture
                   </th>
-                  <th className="font-bold text-lg text-base-content">
+                  <th className="text-xs uppercase tracking-wide text-base-content/60">
                     {' '}
                     Status
                   </th>
 
-                  <th className="font-bold text-lg text-base-content">
+                  <th className="text-xs uppercase tracking-wide text-base-content/60">
                     Actions
                   </th>
                 </tr>
@@ -318,44 +292,26 @@ function Facture() {
                     </td>
                     <td>{facture.tests.map((test) => test.nom).join(', ')}</td>
                     <td>
-                      <GeneratePDFButton invoice={facture} />
-                      <span
-                        className={paymentStatusClasses[facture.statusPayement]}
-                      >
-                        {facture.statusPayement}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <GeneratePDFButton invoice={facture} />
+                        <StatusBadge
+                          value={facture.statusPayement}
+                          type="payment"
+                        />
+                      </div>
                     </td>
-                    {/* <td>{facture.status}</td> */}
 
                     <td>
-                      <span
-                        className={
-                          statusBadgeClasses[
-                            facture.historiques.length > 0
-                              ? facture.historiques[
-                                  facture.historiques.length - 1
-                                ].status
-                              : ''
-                          ]
+                      <StatusBadge
+                        value={
+                          facture.historiques.length > 0
+                            ? facture.historiques[
+                                facture.historiques.length - 1
+                              ].status
+                            : 'Non défini'
                         }
-                      >
-                        {facture.historiques.length > 0
-                          ? facture.historiques[facture.historiques.length - 1]
-                              .status === 'Échantillon collecté'
-                            ? 'Collecté'
-                            : facture.historiques[
-                                  facture.historiques.length - 1
-                                ].status === 'Livré au laboratoire'
-                              ? 'Livré'
-                              : facture.historiques[
-                                    facture.historiques.length - 1
-                                  ].status === 'Validation technique'
-                                ? 'Technique'
-                                : facture.historiques[
-                                    facture.historiques.length - 1
-                                  ].status
-                          : 'Non défini'}
-                      </span>
+                        compact
+                      />
                     </td>
 
                     <td>
@@ -397,24 +353,20 @@ function Facture() {
           </div>
           {totalPageCount > 1 && (
             <nav className="flex justify-center mt-4">
-              <ul className="flex list-none">
+              <div className="join">
                 {Array.from({ length: totalPageCount }).map((_, i) => (
-                  <li
+                  <button
                     key={i}
-                    className={`page-item ${currentPage === i + 1 ? 'active' : ''} mr-2`}
+                    onClick={() => paginate(i + 1)}
+                    className={`join-item btn btn-sm ${currentPage === i + 1 ? 'btn-primary' : 'btn-ghost'}`}
                   >
-                    <a
-                      onClick={() => paginate(i + 1)}
-                      className="page-link btn btn-secondary hover:bg-primary text-base-content rounded"
-                    >
-                      {i + 1}
-                    </a>
-                  </li>
+                    {i + 1}
+                  </button>
                 ))}
-              </ul>
+              </div>
             </nav>
           )}
-        </>
+        </Card>
       )}
     </div>
   )

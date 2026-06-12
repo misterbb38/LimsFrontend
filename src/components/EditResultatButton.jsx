@@ -1687,7 +1687,7 @@ if (data.data.exceptions) {
         >
           <div
             ref={modalBoxRef}
-            className="modal-box w-11/12 max-w-5xl max-h-[90vh] overflow-y-auto"
+            className="modal-box modal-xl max-h-[90vh] overflow-y-auto"
           >
             {/* Header sticky : titre + bouton fermer toujours visibles */}
             <div className="sticky top-0 z-10 bg-base-100 flex justify-between items-center pb-3 mb-3 border-b border-base-300">

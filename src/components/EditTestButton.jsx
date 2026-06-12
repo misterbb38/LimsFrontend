@@ -293,8 +293,8 @@ function EditTestButton({ testId, ontestUpdated }) {
         <FontAwesomeIcon icon={faEdit} />
       </button>
       {showModal && (
-        <div className="modal modal-open">
-          <div className="modal-box w-11/12 max-w-5xl">
+        <div className="modal modal-open" style={{ zIndex: 9999 }}>
+          <div className="modal-box modal-lg max-h-[90vh] overflow-y-auto">
             <form onSubmit={handleSubmit}>
               <div className="form-control">
                 <label className="label">Nom</label>
