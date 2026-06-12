@@ -281,6 +281,7 @@ function EditPatientButton({ userId, onuserUpdated }) {
     telephone: '',
     prenom: '',
     nom: '',
+    email: '',
     adresse: '',
     password: '',
     userType: '',
@@ -312,6 +313,7 @@ function EditPatientButton({ userId, onuserUpdated }) {
           telephone: formatPhoneNumber(data.data.telephone),
           prenom: data.data.prenom,
           nom: data.data.nom,
+          email: data.data.email || '',
           adresse: data.data.adresse,
           password: '', // Ne pas remplir pour des raisons de sécurité
           userType: data.data.userType,
@@ -352,6 +354,10 @@ function EditPatientButton({ userId, onuserUpdated }) {
     if (!formData.adresse.trim()) errors.adresse = "L'adresse est obligatoire."
     if (!formData.telephone.trim())
       errors.telephone = 'Le numéro de téléphone est obligatoire.'
+    // Email optionnel mais doit etre valide si saisi
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      errors.email = "Format d'email invalide."
+    }
     return errors
   }
 
@@ -456,6 +462,18 @@ function EditPatientButton({ userId, onuserUpdated }) {
                   onChange={handleChange}
                 />
                 {renderError('telephone')}
+              </div>
+              <div className="form-control">
+                <label className="label">Email</label>
+                <input
+                  className="input input-bordered"
+                  type="email"
+                  name="email"
+                  placeholder="patient@example.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+                {renderError('email')}
               </div>
               <div className="form-control">
                 <label className="label">Adresse</label>
