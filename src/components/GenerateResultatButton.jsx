@@ -1671,11 +1671,13 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     const LEFT_X       = 20     // bord gauche de la zone contenu
     const RIGHT_X      = 190    // bord droit
     const SECTION_W    = RIGHT_X - LEFT_X
-    const BANNER_H     = 6      // hauteur du bandeau gris d'un titre de section
-    const ROW_H        = 5      // hauteur d'une ligne de donnees
-    const SECTION_GAP  = 4      // espace blanc entre deux sections
+    const BANNER_H     = 7      // hauteur du bandeau gris (augmentee pour la taille 11)
+    const ROW_H        = 6      // hauteur d'une ligne de donnees (texte 10 + interligne)
+    const SECTION_GAP  = 5      // espace blanc entre deux sections
     const VAL_X        = 110    // colonne valeur centree
     const REF_X        = 145    // colonne reference a droite
+    const BODY_FONT    = 10     // taille corps de texte (avant : 9)
+    const TITLE_FONT   = 11     // taille des titres de section (avant : 10)
 
     // Bandeau de section : rectangle gris clair + titre gras a l'interieur
     const drawBanner = (title) => {
@@ -1684,12 +1686,12 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
       doc.setFillColor(220, 220, 220) // gris clair
       doc.rect(LEFT_X, excepY - 4, SECTION_W, BANNER_H, 'F')
       doc.setFont('Times', 'bold')
-      doc.setFontSize(10)
+      doc.setFontSize(TITLE_FONT)
       doc.setTextColor(0, 0, 0)
-      doc.text(String(title), LEFT_X + 3, excepY)
+      doc.text(String(title), LEFT_X + 3, excepY + 1)
       excepY += BANNER_H
       doc.setFont('Times', 'normal')
-      doc.setFontSize(9)
+      doc.setFontSize(BODY_FONT)
     }
 
     // Ligne label / valeur centree / reference a droite
@@ -1716,13 +1718,13 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     // --- TITRE PRINCIPAL SPERMOGRAMME ---
     excepY += 2
     doc.setFont('Times', 'bold')
-    doc.setFontSize(12)
+    doc.setFontSize(14)
     doc.text('SPERMOGRAMME', 105, excepY, { align: 'center' })
     excepY += 2
     doc.setLineWidth(0.3)
     doc.line(LEFT_X, excepY, RIGHT_X, excepY)
-    excepY += 5
-    doc.setFontSize(9)
+    excepY += 6
+    doc.setFontSize(BODY_FONT)
     doc.setFont('Times', 'normal')
 
     // Pre-analytique (sans bandeau, ligne libre)
@@ -1771,9 +1773,9 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
       // Mention italique du test de reference, entre parentheses, taille reduite
       excepY = checkNewPage(doc, excepY, invoice)
       doc.setFont('Times', 'italic')
-      doc.setFontSize(7)
+      doc.setFontSize(8)
       doc.text("(Test de Williams : effectué 1 heure après l'émission)", LEFT_X + 5, excepY)
-      doc.setFontSize(9)
+      doc.setFontSize(BODY_FONT)
       doc.setFont('Times', 'normal')
       excepY += ROW_H - 1
     }
@@ -1812,13 +1814,13 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
       excepY = addPageHeader(doc, invoice)
 
       doc.setFont('Times', 'bold')
-      doc.setFontSize(12)
+      doc.setFontSize(14)
       doc.text('SPERMOCYTOGRAMME', 105, excepY, { align: 'center' })
       excepY += 2
       doc.setLineWidth(0.3)
       doc.line(LEFT_X, excepY, RIGHT_X, excepY)
-      excepY += 5
-      doc.setFontSize(9)
+      excepY += 6
+      doc.setFontSize(BODY_FONT)
       doc.setFont('Times', 'normal')
 
       // Affiche une valeur sauf si elle est null/undefined/'' (evite "null" en PDF).
@@ -1856,7 +1858,7 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
         drawMorphoHeader(true)
         morphoRows.forEach((r) => {
           if (!hasVal(sp[r.key])) return
-          const ref = r.key === 'morphoNormal' ? (sp.morphoNormal?.reference || '≥ 4') : ''
+          const ref = r.key === 'morphoNormal' ? (sp.morphoNormal?.reference || '>= 4') : ''
           drawMorphoRow(r.label, sp[r.key], ref)
         })
       }
