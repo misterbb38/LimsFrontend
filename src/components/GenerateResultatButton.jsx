@@ -2891,14 +2891,25 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
       // dans le texte affiche par doc.text (ex: "2.4" -> "2,4", "70.5 mmol/l"
       // -> "70,5 mmol/l"). Le regex ne touche que les points encadres par des
       // chiffres : libelles, dates, abreviations restent intacts.
-      const decimalToComma = (val) => {
-        if (typeof val === 'string') return val.replace(/(\d)\.(\d)/g, '$1,$2')
-        if (Array.isArray(val)) return val.map(decimalToComma)
+      // Sanitization PDF :
+      //  1. Decimaux a la francaise : "2.4" -> "2,4"
+      //  2. Symboles Unicode non rendus par Times/Helvetica WinAnsi :
+      //     ≥ (U+2265) -> ">=", ≤ (U+2264) -> "<=". Cela couvre les
+      //     references stockees AVANT le passage en mode ">=" texte,
+      //     pour qu'elles s'affichent correctement sans re-save.
+      const sanitizeForPdf = (val) => {
+        if (typeof val === 'string') {
+          return val
+            .replace(/≥/g, '>=') // ≥
+            .replace(/≤/g, '<=') // ≤
+            .replace(/(\d)\.(\d)/g, '$1,$2')
+        }
+        if (Array.isArray(val)) return val.map(sanitizeForPdf)
         return val
       }
       const originalDocText = doc.text.bind(doc)
       doc.text = (text, x, y, options) =>
-        originalDocText(decimalToComma(text), x, y, options)
+        originalDocText(sanitizeForPdf(text), x, y, options)
 
       const [imgLeft] = await Promise.all([
         loadImage(logoLeft),

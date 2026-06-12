@@ -559,7 +559,7 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
     inr: { valeur: '', unite: '',  reference: '0,9 - 1,2' },
   },
   spermogramme: {
-    dureeAbstinence:        { valeur: '', unite: 'jour', reference: '2 - 7' },
+    dureeAbstinence:        { valeur: '', unite: 'jours', reference: '2 - 7' },
     modePrelevement:        '',
     volume:                 { valeur: '', unite: 'ml',    reference: '> 1,5' },
     ph:                     { valeur: '', unite: '',      reference: '> 7,2' },
