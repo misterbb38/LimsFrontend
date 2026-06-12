@@ -315,22 +315,29 @@ function Facture() {
                     </td>
 
                     <td>
+                      {/* Largeur d'un bouton btn-sm carre (icone) :
+                          ~36px = w-9. On reserve cet emplacement meme
+                          quand le bouton est absent pour que Vue / Edit /
+                          Delete restent toujours alignes verticalement
+                          entre les lignes du tableau. */}
                       <div className="flex flex-row items-center gap-1">
-                        {facture.resultat.length > 0 && (
+                        {facture.resultat.length > 0 ? (
                           <GenerateResultatButton invoice={facture} />
+                        ) : (
+                          <span className="w-9 h-8 inline-block" aria-hidden="true" />
                         )}
 
                         {facture.fileResultat &&
-                          facture.fileResultat.length > 0 && (
-                            <a
-                              href={facture.fileResultat[0].path}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="btn btn-primary btn-sm"
-                            >
-                              <FontAwesomeIcon icon={faDownload} />
-                            </a>
-                          )}
+                        facture.fileResultat.length > 0 ? (
+                          <a
+                            href={facture.fileResultat[0].path}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-primary btn-sm"
+                          >
+                            <FontAwesomeIcon icon={faDownload} />
+                          </a>
+                        ) : null}
 
                         <ViewAnalyseButton
                           analyseId={facture._id}
