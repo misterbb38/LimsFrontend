@@ -10,11 +10,10 @@
  * en a besoin ponctuellement dans une page existante non encore migree.
  * ============================================================================ */
 @layer components {
-  /* Typographie semantique */
-  .text-h1 { @apply text-h1 text-base-content; }
-  .text-h2 { @apply text-h2 text-base-content; }
-  .text-h3 { @apply text-h3 text-base-content; }
-  .text-body { @apply text-body text-base-content; }
+  /* NB : .text-h1 / .text-h2 / .text-h3 sont deja disponibles comme
+     utilities Tailwind grace au fontSize token defini dans
+     tailwind.config.js — on ne les redeclare pas ici (cela creerait
+     une reference circulaire au @apply). */
 
   /* Valeurs numeriques (resultats labo, montants) : police mono avec
      chiffres tabulaires pour qu'ils s'alignent verticalement. */
