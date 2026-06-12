@@ -1707,11 +1707,13 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     }
 
     // Formate la reference avec l'unite : "70 mmol/l".
+    // Si pas de reference, on affiche quand meme l'unite seule (ex: "jours").
     const fmtRef = (cell) => {
       if (!cell) return ''
       const ref = String(cell.reference ?? '')
       const unite = String(cell.unite ?? '')
       if (unite && ref && !ref.includes(unite)) return `${ref} ${unite}`
+      if (!ref && unite) return unite
       return ref
     }
 

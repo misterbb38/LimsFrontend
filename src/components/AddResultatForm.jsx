@@ -187,7 +187,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
 
     // Spermogramme + Spermocytogramme (normes OMS)
     spermogramme: {
-      dureeAbstinence:        { valeur: '', unite: 'jours', reference: '2 - 7' },
+      dureeAbstinence:        { valeur: '', unite: 'jours', reference: '' },
       modePrelevement:        '',
       volume:                 { valeur: '', unite: 'ml',    reference: '> 1,5' },
       ph:                     { valeur: '', unite: '',      reference: '> 7,2' },
@@ -1062,7 +1062,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
         inr: { valeur: '', unite: '',  reference: '0,9 - 1,2' },
       },
       spermogramme: {
-        dureeAbstinence:        { valeur: '', unite: 'jours', reference: '2 - 7' },
+        dureeAbstinence:        { valeur: '', unite: 'jours', reference: '' },
         modePrelevement:        '',
         volume:                 { valeur: '', unite: 'ml',    reference: '> 1,5' },
         ph:                     { valeur: '', unite: '',      reference: '> 7,2' },
