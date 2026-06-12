@@ -13,7 +13,7 @@ import AddExterneResultat from './AddExterneResultat'
 import ShareResultatButton from './ShareResultatButton'
 // import GenerateBarcodeButton from './GenerateBarcodeButton'
 
-function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
+function ViewAnalyseButton({ analyseId, onAnalyseRefresh, sourceFacture }) {
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingSMS, setIsLoadingSMS] = useState(false)
 
@@ -267,7 +267,13 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
                 'Envoyer SMS'
               )}
             </button>
-            {analyseData && <ShareResultatButton invoice={analyseData} />}
+            {/* Pour le partage, on prefere la donnee facture passee par la
+                table (meme structure que celle utilisee par le bouton
+                "telecharger PDF" visible) plutot que analyseData refetche
+                a part : garantit un PDF identique a celui du download. */}
+            {(sourceFacture || analyseData) && (
+              <ShareResultatButton invoice={sourceFacture || analyseData} />
+            )}
             <span className="ml-1 text-sm text-base-content/60">
               {analyseData?.smsCount === 0
                 ? "Aucun SMS n'a encore été envoyé"
@@ -708,6 +714,10 @@ function ViewAnalyseButton({ analyseId, onAnalyseRefresh }) {
 ViewAnalyseButton.propTypes = {
   analyseId: PropTypes.string.isRequired,
   onAnalyseRefresh: PropTypes.func.isRequired,
+  // Optionnel : permet a la page parente de fournir directement la facture
+  // utilisee dans son tableau pour que le partage genere un PDF identique
+  // au download du tableau (meme structure de donnees).
+  sourceFacture: PropTypes.object,
 }
 
 export default ViewAnalyseButton

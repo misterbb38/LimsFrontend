@@ -315,7 +315,7 @@ function Facture() {
                     </td>
 
                     <td>
-                      <div className="flex justify-around items-center gap-1 flex-wrap">
+                      <div className="flex flex-col gap-1 items-center">
                         {facture.resultat.length > 0 && (
                           <GenerateResultatButton invoice={facture} />
                         )}
@@ -323,7 +323,7 @@ function Facture() {
                         {facture.fileResultat &&
                           facture.fileResultat.length > 0 && (
                             <a
-                              href={facture.fileResultat[0].path} // Utiliser directement l'URL Cloudinary
+                              href={facture.fileResultat[0].path}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="btn btn-primary btn-sm"
@@ -335,6 +335,7 @@ function Facture() {
                         <ViewAnalyseButton
                           analyseId={facture._id}
                           onAnalyseRefresh={refreshFactures}
+                          sourceFacture={facture}
                         />
                         <EditAnalyseButton
                           analyseId={facture._id}
