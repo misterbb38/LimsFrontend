@@ -2873,10 +2873,11 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     const header = isTechnical ? 'Validation technique' : 'Le Biologiste'
 
     // Bloc validateur dans la colonne droite, centre autour de X_CENTER.
-    // On part de Y plus haut (235) pour eviter de toucher le footer
-    // (qui debute autour de Y=280).
+    // Ordre d'affichage : en-tete -> nom -> titres -> signature en BAS.
+    // On part de Y=235 pour que la signature reste au-dessus du footer
+    // (qui commence vers Y=280).
     const X_CENTER = 145
-    const SIG_W = 40 // largeur signature reduite a 40mm
+    const SIG_W = 40 // largeur signature
     let currentY = 235
 
     // 1) En-tete : "Le Biologiste" ou "Validation technique" en gras
@@ -2884,7 +2885,6 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     doc.setFontSize(11)
     doc.setFont('Times', 'bold')
     doc.text(header, X_CENTER, currentY, { align: 'center' })
-    // Trait de soulignement sous l'en-tete
     const headerWidth = doc.getTextWidth(header)
     doc.setLineWidth(0.3)
     doc.line(
@@ -2895,38 +2895,14 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     )
     currentY += 6
 
-    // 2) Signature / cachet en image, centree dans le bloc.
-    //    Hauteur calculee selon le ratio pour ne pas deformer.
-    if (validator.logo) {
-      try {
-        const rawPath = String(validator.logo).replace(/\\/g, '/')
-        const fullLogoPath = rawPath.startsWith('http')
-          ? rawPath
-          : `${import.meta.env.VITE_APP_API_BASE_URL}/${rawPath}`
-        const doctorLogo = await loadImage(fullLogoPath)
-        const sigH = SIG_W * (doctorLogo.height / doctorLogo.width)
-        doc.addImage(
-          doctorLogo,
-          'PNG',
-          X_CENTER - SIG_W / 2,
-          currentY,
-          SIG_W,
-          sigH
-        )
-        currentY += sigH + 2
-      } catch (error) {
-        console.error('Erreur lors du chargement de la signature :', error)
-      }
-    }
-
-    // 3) Nom du docteur, gras, centre sous la signature.
+    // 2) Nom du docteur, gras, centre.
     doc.setFontSize(10)
     doc.setFont('Times', 'bold')
     doc.text(fullName, X_CENTER, currentY, { align: 'center' })
     currentY += 5
 
-    // 4) Titres / qualifications (profil) : une ligne par entree separee
-    //    par \n. Affiches en italique 9pt, centres sous le nom.
+    // 3) Titres / qualifications (profil) : une ligne par entree separee
+    //    par \n. Italique 9pt, centres sous le nom.
     const profil = String(validator.profil || '').trim()
     if (profil) {
       doc.setFontSize(9)
@@ -2937,6 +2913,30 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
         currentY += 4
       })
       doc.setFont('Times', 'normal')
+    }
+
+    // 4) Signature / cachet (image) en BAS du bloc, centree.
+    //    Petit espace avant la signature pour la separer des titres.
+    if (validator.logo) {
+      try {
+        const rawPath = String(validator.logo).replace(/\\/g, '/')
+        const fullLogoPath = rawPath.startsWith('http')
+          ? rawPath
+          : `${import.meta.env.VITE_APP_API_BASE_URL}/${rawPath}`
+        const doctorLogo = await loadImage(fullLogoPath)
+        const sigH = SIG_W * (doctorLogo.height / doctorLogo.width)
+        currentY += 2
+        doc.addImage(
+          doctorLogo,
+          'PNG',
+          X_CENTER - SIG_W / 2,
+          currentY,
+          SIG_W,
+          sigH
+        )
+      } catch (error) {
+        console.error('Erreur lors du chargement de la signature :', error)
+      }
     }
   }
 
