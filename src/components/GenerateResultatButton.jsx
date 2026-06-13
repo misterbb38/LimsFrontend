@@ -192,6 +192,104 @@ const GenerateResultatButton = forwardRef(function GenerateResultatButton(
     return currentY
   }
 
+  // ============================================================
+  // PDF_LAYOUT : SYSTEME UNIFIE DE RENDU DES PARAMETRES
+  // ============================================================
+  // Toutes les positions X figees ici, partagees par tous les renderers
+  // (HGPO, Ionogramme, Gaz du sang, TP/INR, Spermogramme, ...). Cela
+  // garantit que la colonne Reference reste alignee verticalement du
+  // debut a la fin du PDF, comme dans un vrai compte-rendu de labo.
+  const PDF_LAYOUT = {
+    LABEL_X: 25,      // Nom du parametre, aligne a gauche
+    VALUE_X: 100,     // Valeur centree
+    UNIT_X: 135,      // Unite (mg/L, mmol/L, ...) si separee
+    REF_X: 155,       // Reference (intervalle ou seuil)
+    ROW_H: 5,         // Hauteur d'une ligne standard
+  }
+
+  /**
+   * Normalise une reference + unite pour l'affichage PDF.
+   *
+   * Source possibles :
+   *  - cell : { reference, unite } (depuis la DB)
+   *  - fallback : objet { reference, unite } hardcode (HGPO, etc.)
+   *
+   * Strategie :
+   *  1. Prendre les valeurs DB en priorite
+   *  2. Sinon fallback hardcode (refs OMS figees)
+   *  3. Concatener "unite" dans la reference si elle n'y est pas
+   *     (gere le format "70 mmHg" en une seule colonne Ref)
+   *  4. Sanitize les symboles Unicode non supportes par WinAnsi
+   *     (>= au lieu de ≥, <= au lieu de ≤)
+   *
+   * Retourne une string prete a etre affichee, ou '' si aucune ref.
+   */
+  const getReference = (cell, fallback = {}) => {
+    let ref =
+      (cell && cell.reference != null && cell.reference !== ''
+        ? String(cell.reference)
+        : '') || String(fallback.reference || '')
+    let unite =
+      (cell && cell.unite != null && cell.unite !== ''
+        ? String(cell.unite)
+        : '') || String(fallback.unite || '')
+
+    // Concatenation unite + ref pour une seule colonne lisible
+    let out
+    if (unite && ref && !ref.includes(unite)) {
+      out = `${ref} ${unite}`
+    } else if (!ref && unite) {
+      out = unite
+    } else {
+      out = ref
+    }
+
+    // Sanitization Unicode (la sanitization globale du doc.text le couvre
+    // deja, mais on le fait ici aussi pour rester robuste si jamais le
+    // wrapper est manquant ou si on inspecte la valeur).
+    return out.replace(/≥/g, '>=').replace(/≤/g, '<=')
+  }
+
+  /**
+   * Affiche une ligne de parametre standard : Label | Valeur | Reference.
+   * Toutes les positions X sont prises de PDF_LAYOUT pour garantir
+   * l'alignement vertical de la colonne Reference sur tout le PDF.
+   *
+   * - checkNewPage est appele systematiquement AVANT l'affichage,
+   *   pour empecher les chevauchements (debordement en fin de page).
+   * - La valeur est centree sur VALUE_X.
+   * - La reference est alignee a gauche sur REF_X (col commune).
+   * - Si valeur ou ref est vide/null/'null', rien n'est affiche pour
+   *   cette cellule (mais l'espace vertical est conserve).
+   *
+   * Retourne la nouvelle position Y apres la ligne.
+   */
+  const drawParamRow = (doc, currentY, invoice, label, valeur, reference, opts = {}) => {
+    const y = checkNewPage(doc, currentY, invoice)
+
+    const safeStr = (v) => {
+      if (v === null || v === undefined) return ''
+      const s = String(v).trim()
+      if (s === '' || s === 'null' || s === 'undefined') return ''
+      return s
+    }
+    const lbl = safeStr(label)
+    const val = safeStr(valeur)
+    const ref = safeStr(reference)
+
+    doc.setFont('Times', opts.labelBold ? 'bold' : 'normal')
+    doc.setFontSize(opts.fontSize || 9)
+    if (lbl) doc.text(lbl, PDF_LAYOUT.LABEL_X, y)
+
+    doc.setFont('Times', opts.valueBold ? 'bold' : 'normal')
+    if (val) doc.text(val, PDF_LAYOUT.VALUE_X, y, { align: 'center' })
+
+    doc.setFont('Times', 'normal')
+    if (ref) doc.text(ref, PDF_LAYOUT.REF_X, y)
+
+    return y + PDF_LAYOUT.ROW_H
+  }
+
   // const printHematiesLine = (doc, posY, label, value, unit, ref) => {
   //   doc.text(label, 25, posY)
   //   doc.text(value, 85, posY)
@@ -692,67 +790,49 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
   }
 
   const renderHgpoException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
-
     const hgpo = test.exceptions.hgpo || {}
 
-    // HGPO est stocke comme des strings simples (t0, t60, t120).
-    // Unites et references sont figees (standards HGPO).
+    // HGPO est stocke comme strings simples (t0, t60, t120). Les unites
+    // et references sont des standards OMS figes : si jamais le labo
+    // doit les ajuster, deplacer ce tableau cote DB (modele Test).
     const rows = [
-      { label: 'Glycémie à jeun',        value: hgpo.t0,   unite: 'g/L', reference: '< 0,92' },
-      { label: 'Glycémie après 1 heure', value: hgpo.t60,  unite: 'g/L', reference: '< 1,80' },
-      { label: 'Glycémie après 2 heures',value: hgpo.t120, unite: 'g/L', reference: '< 1,53' },
+      { label: 'Glycémie à jeun',         value: hgpo.t0,   unite: 'g/L', reference: '< 0,92' },
+      { label: 'Glycémie après 1 heure',  value: hgpo.t60,  unite: 'g/L', reference: '< 1,80' },
+      { label: 'Glycémie après 2 heures', value: hgpo.t120, unite: 'g/L', reference: '< 1,53' },
     ]
 
-    // Seules les lignes renseignees sont affichees (String non vide).
     const visibleRows = rows.filter(r => r.value && String(r.value).trim() !== '')
     if (visibleRows.length === 0) return excepY
 
-    doc.setFont('Times', 'normal')
-    doc.setFontSize(9)
     visibleRows.forEach((r) => {
-      excepY = checkNewPage(doc, excepY, invoice)
-      doc.text(String(r.label),     25,  excepY)
-      doc.text(String(r.value),      95, excepY)
-      doc.text(String(r.unite),     120, excepY)
-      doc.text(String(r.reference), 140, excepY)
-      excepY += 5
+      const ref = getReference(null, { reference: r.reference, unite: r.unite })
+      excepY = drawParamRow(doc, excepY, invoice, r.label, r.value, ref)
     })
 
     return excepY + 5
   }
 
   const renderIonogrammeException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
-    doc.setFont('Times', 'normal')
-    doc.setFontSize(9)
+    const iono = test.exceptions.ionogramme || {}
 
-    if (test.exceptions.ionogramme.na?.valeur) {
-      doc.text(`Sodium (Na+) : ${test.exceptions.ionogramme.na.valeur} ${test.exceptions.ionogramme.na.unite}`, 25, excepY)
-      excepY += 5
-    }
+    // Fallbacks de reference standards (intervalles cliniques classiques).
+    // Si la DB contient cell.reference, c'est elle qui prime via getReference().
+    const rows = [
+      { key: 'na', label: 'Sodium (Na+)',    fb: { reference: '135 - 145', unite: 'mmol/L' } },
+      { key: 'k',  label: 'Potassium (K+)',  fb: { reference: '3,5 - 5,0', unite: 'mmol/L' } },
+      { key: 'cl', label: 'Chlore (Cl-)',    fb: { reference: '95 - 105',  unite: 'mmol/L' } },
+      { key: 'ca', label: 'Calcium (Ca++)',  fb: { reference: '2,15 - 2,55', unite: 'mmol/L' } },
+      { key: 'mg', label: 'Magnésium (Mg++)',fb: { reference: '0,7 - 1,1', unite: 'mmol/L' } },
+    ]
 
-    if (test.exceptions.ionogramme.k?.valeur) {
-      doc.text(`Potassium (K+) : ${test.exceptions.ionogramme.k.valeur} ${test.exceptions.ionogramme.k.unite}`, 25, excepY)
-      excepY += 5
-    }
+    rows.forEach((r) => {
+      const cell = iono[r.key]
+      if (!cell?.valeur) return
+      const ref = getReference(cell, r.fb)
+      excepY = drawParamRow(doc, excepY, invoice, r.label, cell.valeur, ref)
+    })
 
-    if (test.exceptions.ionogramme.cl?.valeur) {
-      doc.text(`Chlore (Cl-) : ${test.exceptions.ionogramme.cl.valeur} ${test.exceptions.ionogramme.cl.unite}`, 25, excepY)
-      excepY += 5
-    }
-
-    if (test.exceptions.ionogramme.ca?.valeur) {
-      doc.text(`Calcium (Ca++) : ${test.exceptions.ionogramme.ca.valeur} ${test.exceptions.ionogramme.ca.unite}`, 25, excepY)
-      excepY += 5
-    }
-
-    if (test.exceptions.ionogramme.mg?.valeur) {
-      doc.text(`Magnésium (Mg++) : ${test.exceptions.ionogramme.mg.valeur} ${test.exceptions.ionogramme.mg.unite}`, 25, excepY)
-      excepY += 10
-    }
-
-    return excepY
+    return excepY + 5
   }
 
   const renderNfsException = (doc, test, excepY, invoice) => {
@@ -1599,45 +1679,24 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     })
     if (visibleRows.length === 0) return excepY
 
-    excepY = checkNewPage(doc, excepY, invoice)
-    doc.setFontSize(9)
-
     visibleRows.forEach((r) => {
-      excepY = checkNewPage(doc, excepY, invoice)
       const cell = tp[r.key] || {}
       let valeur = String(cell.valeur ?? '')
-      let ref      = String(cell.reference ?? '')
-      const unite  = String(cell.unite ?? '')
 
       // Convention clinique : seuils de detection de l'analyseur.
-      // TP < 5 % et INR > 10 sortent au-dela des bornes fiables : on remplace
-      // la valeur brute par le seuil prefixe du signe approprie.
+      // TP < 5 % et INR > 10 sortent au-dela des bornes fiables : on
+      // remplace la valeur brute par le seuil prefixe du signe approprie.
       const numericValeur = Number(String(cell.valeur ?? '').replace(',', '.'))
       if (Number.isFinite(numericValeur)) {
         if (r.key === 'tp' && numericValeur < 5) valeur = '< 5'
         if (r.key === 'inr' && numericValeur > 10) valeur = '> 10'
       }
 
-      // Robustesse : si l'unite est definie (ex: "%") mais que la reference ne
-      // la contient pas, on l'ajoute a la fin. Ex: "> 70" + unite "%" => "> 70 %".
-      // Utile pour les anciens enregistrements sauves avant la normalisation.
-      if (unite && ref && !ref.includes(unite)) {
-        ref = `${ref} ${unite}`
-      }
-
-      // Libelle a gauche (gras)
-      doc.setFont('Times', 'bold')
-      doc.text(r.label, 25, excepY)
-
-      // Valeur centree au milieu (gras, sans unite : l'unite apparait
-      // uniquement dans la reference, ex: "> 70 %")
-      if (valeur) doc.text(valeur, 105, excepY, { align: 'center' })
-
-      // Reference alignee a droite (normal)
-      doc.setFont('Times', 'normal')
-      if (ref) doc.text(ref, 150, excepY)
-
-      excepY += 5
+      const ref = getReference(cell)
+      excepY = drawParamRow(doc, excepY, invoice, r.label, valeur, ref, {
+        labelBold: true,
+        valueBold: true,
+      })
     })
 
     return excepY + 5
@@ -1702,28 +1761,18 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
       doc.setFontSize(BODY_FONT)
     }
 
-    // Ligne label / valeur centree / reference a droite
+    // Ligne label / valeur / reference : delegue au systeme unifie
+    // drawParamRow pour que la colonne Reference reste alignee avec
+    // les autres sections du PDF (HGPO, Ionogramme, Gaz du sang, ...).
+    // Les anciennes positions VAL_X=110 / REF_X=145 sont remplacees
+    // par les colonnes PDF_LAYOUT (VALUE_X=100 / REF_X=155).
     const drawLine = (label, valeur, ref) => {
-      excepY = checkNewPage(doc, excepY, invoice)
-      doc.setFont('Times', 'normal')
-      doc.text(String(label), LEFT_X + 5, excepY)
-      if (valeur !== undefined && valeur !== null && String(valeur).trim() !== '') {
-        doc.text(String(valeur), VAL_X, excepY, { align: 'center' })
-      }
-      if (ref) doc.text(String(ref), REF_X, excepY)
-      excepY += ROW_H
+      excepY = drawParamRow(doc, excepY, invoice, label, valeur, ref)
     }
 
-    // Formate la reference avec l'unite : "70 mmol/l".
-    // Si pas de reference, on affiche quand meme l'unite seule (ex: "jours").
-    const fmtRef = (cell) => {
-      if (!cell) return ''
-      const ref = String(cell.reference ?? '')
-      const unite = String(cell.unite ?? '')
-      if (unite && ref && !ref.includes(unite)) return `${ref} ${unite}`
-      if (!ref && unite) return unite
-      return ref
-    }
+    // Formate la reference avec l'unite : delegue au helper unifie
+    // getReference qui sanitize aussi les symboles >= et <=.
+    const fmtRef = (cell) => getReference(cell)
 
     // --- TITRE PRINCIPAL SPERMOGRAMME ---
     excepY += 2
@@ -1842,25 +1891,28 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
         }
         return String(v)
       }
-      // Helper : ligne morpho (label / Total / % / Normes)
+      // Helper : ligne morpho (label / Total / % / Normes).
+      // La colonne Normes est alignee sur PDF_LAYOUT.REF_X (155) pour
+      // rester verticalement coherente avec les colonnes Reference
+      // des autres sections (HGPO, Ionogramme, Gaz du sang, etc.).
       const drawMorphoRow = (label, cell, normRef) => {
         excepY = checkNewPage(doc, excepY, invoice)
         doc.setFont('Times', 'normal')
-        doc.text(String(label), LEFT_X + 5, excepY)
+        doc.text(String(label), PDF_LAYOUT.LABEL_X, excepY)
         const c = cellText(cell?.count)
         const p = cellText(cell?.pourcentage)
         if (c) doc.text(c, 100, excepY, { align: 'center' })
         if (p) doc.text(p, 130, excepY, { align: 'center' })
-        if (normRef) doc.text(String(normRef), 160, excepY)
-        excepY += ROW_H
+        if (normRef) doc.text(getReference(null, { reference: normRef }), PDF_LAYOUT.REF_X, excepY)
+        excepY += PDF_LAYOUT.ROW_H
       }
       const drawMorphoHeader = (withNormes) => {
         excepY = checkNewPage(doc, excepY, invoice)
         doc.setFont('Times', 'bold')
         doc.text('Total', 100, excepY, { align: 'center' })
         doc.text('%',     130, excepY, { align: 'center' })
-        if (withNormes) doc.text('Normes', 160, excepY)
-        excepY += ROW_H
+        if (withNormes) doc.text('Normes', PDF_LAYOUT.REF_X, excepY)
+        excepY += PDF_LAYOUT.ROW_H
         doc.setFont('Times', 'normal')
       }
 
@@ -1890,12 +1942,12 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
         excepY += 2
         excepY = checkNewPage(doc, excepY, invoice)
         doc.setFont('Times', 'bold')
-        doc.text('Index anomalies multiples', LEFT_X + 5, excepY)
+        doc.text('Index anomalies multiples', PDF_LAYOUT.LABEL_X, excepY)
         doc.setFont('Times', 'normal')
         doc.text(String(sp.indexAnomaliesMultiples.valeur), 100, excepY, { align: 'center' })
-        // Normes alignees avec la colonne Normes du tableau morphologie (x=160)
-        const iamRef = sp.indexAnomaliesMultiples.reference || '< 1,6'
-        doc.text(iamRef, 160, excepY)
+        // Normes alignees sur PDF_LAYOUT.REF_X (col commune avec autres sections)
+        const iamRef = getReference(sp.indexAnomaliesMultiples, { reference: '< 1,6' })
+        doc.text(iamRef, PDF_LAYOUT.REF_X, excepY)
         excepY += ROW_H
         // Definition en italique sur la ligne du dessous, entre parentheses
         excepY = checkNewPage(doc, excepY, invoice)
@@ -1962,37 +2014,24 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
       { key: 'sao2',        label: 'Saturation en O2 (SaO2)' },
     ]
 
-    // Seules les lignes avec une valeur renseignee (0 inclus si valide)
     const visibleRows = rows.filter((r) => {
       const v = gaz[r.key]?.valeur
       return v !== undefined && v !== null && String(v).trim() !== ''
     })
     if (visibleRows.length === 0) return excepY
 
+    // Titre de section (la 1ere ligne se chargera du checkNewPage)
     excepY = checkNewPage(doc, excepY, invoice)
-
-    // Titre de section
     doc.setFont('Times', 'bold')
     doc.setFontSize(10)
-    doc.text('GAZ DU SANG', 25, excepY)
-    excepY += 5
+    doc.text('GAZ DU SANG', PDF_LAYOUT.LABEL_X, excepY)
+    excepY += PDF_LAYOUT.ROW_H
 
-    doc.setFont('Times', 'normal')
-    doc.setFontSize(9)
+    // Lignes alignees sur la colonne Ref unifiee (PDF_LAYOUT.REF_X = 155)
     visibleRows.forEach((r) => {
-      excepY = checkNewPage(doc, excepY, invoice)
       const cell = gaz[r.key] || {}
-      const ref = String(cell.reference ?? '')
-      const unite = String(cell.unite ?? '')
-      // L'unite est concatenee a la fin de la reference (ex: "35 - 45 mmHg")
-      // au lieu d'occuper sa propre colonne au milieu.
-      const refWithUnite = unite && ref && !ref.includes(unite)
-        ? `${ref} ${unite}`
-        : ref
-      doc.text(String(r.label),           25, excepY)
-      doc.text(String(cell.valeur ?? ''), 95, excepY)
-      doc.text(refWithUnite,             150, excepY)
-      excepY += 5
+      const ref = getReference(cell)
+      excepY = drawParamRow(doc, excepY, invoice, r.label, cell.valeur, ref)
     })
 
     return excepY + 5
