@@ -6,6 +6,13 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3001,
+    // host: true ecoute sur toutes les interfaces (0.0.0.0 + ::1 + IP LAN).
+    // Necessaire quand un VPN comme Happ/Hiddify intercepte le loopback,
+    // l'app reste accessible via l'IP de l'interface VPN ou l'IP LAN.
+    host: true,
+    // strictPort evite que Vite saute sur 3002 si 3001 est pris ; on
+    // veut savoir tout de suite si y'a un conflit.
+    strictPort: true,
     // proxy: {
     //   '/api':{
     //     target: 'localhost:5000',

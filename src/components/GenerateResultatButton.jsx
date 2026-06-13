@@ -523,15 +523,19 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
 
     let anterioriteHeight = 0
 
-    // Antériorités (colonne droite) - seulement si pas d'observations macroscopiques
+    // Antériorités (colonne droite, alignee au bord droit pour eviter
+    // le chevauchement avec la colonne Reference (PDF_LAYOUT.REF_X = 155)
+    // qui peut contenir des textes longs type "Réf: Négative : < 2
+    // Douteuse : 2 - 2,6 Positive : >= 2,6 AU/mL"). On ancre le bloc
+    // a x=190 (bord droit du contenu) avec align: 'right'.
     if (test?.observations?.macroscopique?.length === 0 && test?.dernierResultatAnterieur) {
       const valeurAnterieure = test.dernierResultatAnterieur.valeur ?? ''
       const dateAnterieure = formattedDateAnterieur ?? ''
-      
-      doc.text('Antériorités', 160, currentY)
-      doc.text(valeurAnterieure, 160, currentY + 5)
-      doc.text(dateAnterieure, 160, currentY + 10)
-      
+
+      doc.text('Antériorités', 190, currentY, { align: 'right' })
+      doc.text(String(valeurAnterieure), 190, currentY + 5, { align: 'right' })
+      doc.text(String(dateAnterieure), 190, currentY + 10, { align: 'right' })
+
       anterioriteHeight = 15
     }
 
@@ -1104,147 +1108,101 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
 // }
 
 const renderPsaRapportException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
-    doc.setFont('Times', 'normal')
-    doc.setFontSize(9)
-
-    if (test.exceptions.psaRapport.psaLibre?.valeur) {
-      doc.text(`PSA libre : ${test.exceptions.psaRapport.psaLibre.valeur} ${test.exceptions.psaRapport.psaLibre.unite}`, 25, excepY)
-      excepY += 5
+    const psa = test.exceptions.psaRapport || {}
+    if (psa.psaLibre?.valeur) {
+      excepY = drawParamRow(doc, excepY, invoice, 'PSA libre',
+        psa.psaLibre.valeur, getReference(psa.psaLibre))
     }
-
-    if (test.exceptions.psaRapport.psaTotal?.valeur) {
-      doc.text(`PSA total : ${test.exceptions.psaRapport.psaTotal.valeur} ${test.exceptions.psaRapport.psaTotal.unite}`, 25, excepY)
-      excepY += 5
+    if (psa.psaTotal?.valeur) {
+      excepY = drawParamRow(doc, excepY, invoice, 'PSA total',
+        psa.psaTotal.valeur, getReference(psa.psaTotal))
     }
-
-    if (test.exceptions.psaRapport.rapport?.valeur) {
-      doc.setFont('Times', 'bold')
-      doc.text(`Rapport : ${test.exceptions.psaRapport.rapport.valeur} `, 105, excepY, { align: 'center' })
-
-      // ✅ Valeur de référence sur la même ligne à droite
-      doc.setFont('Times', 'normal')
-      doc.text('Réf: N : >15 %', 130, excepY)
-
-      excepY += 10
+    if (psa.rapport?.valeur) {
+      excepY = drawParamRow(doc, excepY, invoice, 'Rapport',
+        psa.rapport.valeur,
+        getReference(psa.rapport, { reference: 'N : > 15 %' }),
+        { labelBold: true, valueBold: true })
     }
-
-    return excepY
+    return excepY + 2
   }
-const renderReticulocytesException = (doc, test, excepY, invoice) => {
-  excepY = checkNewPage(doc, excepY, invoice)
-  doc.setFont('Times', 'normal')
-  doc.setFontSize(9)
 
-  const pourcentage = test.exceptions.reticulocytes.pourcentage || test.exceptions.reticulocytes.pourcentageCalcule
-  const valeurAbsolue = test.exceptions.reticulocytes.valeurAbsolue
+const renderReticulocytesException = (doc, test, excepY, invoice) => {
+  const r = test.exceptions.reticulocytes || {}
+  const pourcentage = r.pourcentage || r.pourcentageCalcule
+  const valeurAbsolue = r.valeurAbsolue
+
+  const refStr = '0,5 - 1,5 % (20 000 - 120 000 /mm³)'
 
   if (pourcentage?.valeur && valeurAbsolue?.valeur) {
-    // Formater le pourcentage avec virgule décimale française
-    const pourcentageFormate = pourcentage.valeur.toString().replace('.', ',')
-    
-    // Formater la valeur absolue avec des espaces comme séparateurs de milliers
-    const valeurFormatee = valeurAbsolue.valeur.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
-    
-    doc.setFont('Times', 'bold')
-    doc.text(`Taux : ${pourcentageFormate}%, soit ${valeurFormatee}`, 25, excepY)
-    
-    // ✅ Valeur de référence sur la même ligne à droite
-    doc.setFont('Times', 'normal')
-    doc.text('Réf: N : 0,5 - 1,5% (20 000 -120 000/mm³)', 130, excepY)
-    
-    excepY += 10
+    const pctFmt = pourcentage.valeur.toString().replace('.', ',')
+    const absFmt = valeurAbsolue.valeur.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+    excepY = drawParamRow(doc, excepY, invoice, 'Taux',
+      `${pctFmt}%, soit ${absFmt}`, refStr,
+      { labelBold: true, valueBold: true })
   } else if (valeurAbsolue?.valeur) {
-    // Si seulement la valeur absolue est disponible
-    const valeurFormatee = valeurAbsolue.valeur.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
-    
-    doc.setFont('Times', 'bold')
-    doc.text(`Valeur absolue : ${valeurFormatee} ${valeurAbsolue.unite}`, 25, excepY)
-    
-    // ✅ Valeur de référence sur la même ligne à droite
-    doc.setFont('Times', 'normal')
-    doc.text('Réf: N : 0,5 - 1,5% (20 000 -120 000/mm³)', 130, excepY)
-    
-    excepY += 10
+    const absFmt = valeurAbsolue.valeur.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+    excepY = drawParamRow(doc, excepY, invoice, 'Valeur absolue',
+      `${absFmt} ${valeurAbsolue.unite || ''}`, refStr,
+      { labelBold: true, valueBold: true })
   }
-
-  return excepY
+  return excepY + 2
 }
 
   const renderClairanceCreatinineException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
-    doc.setFont('Times', 'normal')
-    doc.setFontSize(9)
-
-    if (test.exceptions.clairanceCreatinine.creatininemie?.valeur) {
-      doc.text(`Créatininémie : ${test.exceptions.clairanceCreatinine.creatininemie.valeur} `, 25, excepY)
-      excepY += 5
+    const c = test.exceptions.clairanceCreatinine || {}
+    if (c.creatininemie?.valeur) {
+      excepY = drawParamRow(doc, excepY, invoice, 'Créatininémie',
+        c.creatininemie.valeur, getReference(c.creatininemie))
     }
-
-    if (test.exceptions.clairanceCreatinine.creatininurie?.valeur) {
-      doc.text(`Créatininurie : ${test.exceptions.clairanceCreatinine.creatininurie.valeur} `, 25, excepY)
-      excepY += 5
+    if (c.creatininurie?.valeur) {
+      excepY = drawParamRow(doc, excepY, invoice, 'Créatininurie',
+        c.creatininurie.valeur, getReference(c.creatininurie))
     }
-
-    if (test.exceptions.clairanceCreatinine.volume?.valeur) {
-      doc.text(`Volume : ${test.exceptions.clairanceCreatinine.volume.valeur} `, 25, excepY)
-      excepY += 5
+    if (c.volume?.valeur) {
+      excepY = drawParamRow(doc, excepY, invoice, 'Volume',
+        c.volume.valeur, getReference(c.volume))
     }
-
-    if (test.exceptions.clairanceCreatinine.clairance?.valeur) {
-      doc.setFont('Times', 'bold')
-      doc.text(`Clairance  : ${test.exceptions.clairanceCreatinine.clairance.valeur} `, 105, excepY, { align: 'center' })
-      doc.setFont('Times', 'normal')
-      excepY += 10
+    if (c.clairance?.valeur) {
+      excepY = drawParamRow(doc, excepY, invoice, 'Clairance',
+        c.clairance.valeur,
+        getReference(c.clairance, { reference: '> 90 mL/min' }),
+        { labelBold: true, valueBold: true })
     }
-
-    return excepY
+    return excepY + 2
   }
 
-  // ✅ PAS D'INTERPRÉTATION - Juste les valeurs
   const renderDfgException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
-    doc.setFont('Times', 'normal')
-    doc.setFontSize(9)
-
-    if (test.exceptions.dfg.creatininemie?.valeur) {
-      doc.text(`Créatininémie : ${test.exceptions.dfg.creatininemie.valeur} ${test.exceptions.dfg.creatininemie.unite}`, 25, excepY)
-      excepY += 5
+    const d = test.exceptions.dfg || {}
+    if (d.creatininemie?.valeur) {
+      excepY = drawParamRow(doc, excepY, invoice, 'Créatininémie',
+        d.creatininemie.valeur, getReference(d.creatininemie))
     }
-
-    if (test.exceptions.dfg.dfgValue?.valeur) {
-      doc.setFont('Times', 'bold')
-      doc.text(`${test.exceptions.dfg.dfgValue.valeur}`, 105, excepY, { align: 'center' })
-      doc.setFont('Times', 'normal')
-      excepY += 7
+    if (d.dfgValue?.valeur) {
+      excepY = drawParamRow(doc, excepY, invoice, 'DFG',
+        d.dfgValue.valeur,
+        getReference(d.dfgValue, { reference: '>= 90 mL/min/1,73m²' }),
+        { labelBold: true, valueBold: true })
     }
-
-    return excepY
+    return excepY + 2
   }
 
   const renderSaturationTransferrineException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
-    doc.setFont('Times', 'normal')
-    doc.setFontSize(9)
-
-    if (test.exceptions.saturationTransferrine.fer?.valeur) {
-      doc.text(`Fer sérique : ${test.exceptions.saturationTransferrine.fer.valeur} ${test.exceptions.saturationTransferrine.fer.unite}`, 25, excepY)
-      excepY += 5
+    const s = test.exceptions.saturationTransferrine || {}
+    if (s.fer?.valeur) {
+      excepY = drawParamRow(doc, excepY, invoice, 'Fer sérique',
+        s.fer.valeur, getReference(s.fer))
     }
-
-    if (test.exceptions.saturationTransferrine.ctf?.valeur) {
-      doc.text(`Capacité totale de fixation : ${test.exceptions.saturationTransferrine.ctf.valeur} ${test.exceptions.saturationTransferrine.ctf.unite}`, 25, excepY)
-      excepY += 5
+    if (s.ctf?.valeur) {
+      excepY = drawParamRow(doc, excepY, invoice, 'Capacité totale de fixation',
+        s.ctf.valeur, getReference(s.ctf))
     }
-
-    if (test.exceptions.saturationTransferrine.coefficient?.valeur) {
-      doc.setFont('Times', 'bold')
-      doc.text(`Coefficient de saturation : ${test.exceptions.saturationTransferrine.coefficient.valeur} ${test.exceptions.saturationTransferrine.coefficient.unite}`, 105, excepY, { align: 'center' })
-      doc.setFont('Times', 'normal')
-      excepY += 10
+    if (s.coefficient?.valeur) {
+      excepY = drawParamRow(doc, excepY, invoice, 'Coefficient de saturation',
+        s.coefficient.valeur,
+        getReference(s.coefficient, { reference: '20 - 40 %' }),
+        { labelBold: true, valueBold: true })
     }
-
-    return excepY
+    return excepY + 2
   }
 
   
@@ -1313,142 +1271,93 @@ const renderReticulocytesException = (doc, test, excepY, invoice) => {
 // }
  
 const renderCompteAddisException = (doc, test, excepY, invoice) => {
-  excepY = checkNewPage(doc, excepY, invoice)
-  doc.setFont('Times', 'normal')
-  doc.setFontSize(9)
-
   const addis = test.exceptions.compteAddis
-  
-  if (!addis) {
-    console.log('[COMPTE ADDIS] Aucune donnée')
-    return excepY
-  }
+  if (!addis) return excepY
 
-  console.log('[COMPTE ADDIS] Données complètes:', JSON.stringify(addis, null, 2))
-
-  // Affichage des leucocytes avec valeur de référence
   if (addis.leucocytesTotaux?.valeur) {
-    doc.text(`Leucocytes = ${addis.leucocytesTotaux.valeur}`, 25, excepY)
-    doc.text(`Leucocytes < 1000/minute`, 130, excepY) // Valeur de référence à droite
-    excepY += 5
+    excepY = drawParamRow(doc, excepY, invoice, 'Leucocytes',
+      addis.leucocytesTotaux.valeur,
+      getReference(addis.leucocytesTotaux, { reference: '< 1000/minute' }))
   }
-
-  // Affichage des hématies avec valeur de référence
   if (addis.hematiesTotales?.valeur) {
-    doc.text(`Hématies = ${addis.hematiesTotales.valeur}`, 25, excepY)
-    doc.text(`Hématies < 500/minute`, 130, excepY) // Valeur de référence à droite
-    excepY += 10
+    excepY = drawParamRow(doc, excepY, invoice, 'Hématies',
+      addis.hematiesTotales.valeur,
+      getReference(addis.hematiesTotales, { reference: '< 500/minute' }))
   }
-
-  return excepY
+  return excepY + 2
 }
 
 const renderCalciumCorrigeException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
-    doc.setFont('Times', 'normal')
-    doc.setFontSize(9)
-
-    if (test.exceptions.calciumCorrige.calciumCorrige?.valeur) {
-      doc.setFont('Times', 'bold')
-      doc.text(`Calcium corrigé : ${test.exceptions.calciumCorrige.calciumCorrige.valeur} `, 105, excepY, { align: 'center' })
-      doc.setFont('Times', 'normal')
-      excepY += 10
-    }
-
-    return excepY
+    const cell = test.exceptions.calciumCorrige?.calciumCorrige
+    if (!cell?.valeur) return excepY
+    excepY = drawParamRow(doc, excepY, invoice, 'Calcium corrigé',
+      cell.valeur, getReference(cell, { reference: '2,20 - 2,60 mmol/L' }),
+      { labelBold: true, valueBold: true })
+    return excepY + 2
   }
 
   // ✅ PAS D'INTERPRÉTATION - Juste les valeurs
 const renderRapportAlbuminurieException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
-    doc.setFont('Times', 'normal')
-    doc.setFontSize(9)
-
-    if (test.exceptions.rapportAlbuminurie.albumineUrinaire?.valeur) {
-      doc.text(`Albumine urinaire : ${test.exceptions.rapportAlbuminurie.albumineUrinaire.valeur} ${test.exceptions.rapportAlbuminurie.albumineUrinaire.unite}`, 25, excepY)
-      excepY += 5
+    const rac = test.exceptions.rapportAlbuminurie || {}
+    if (rac.albumineUrinaire?.valeur) {
+      excepY = drawParamRow(doc, excepY, invoice, 'Albumine urinaire',
+        rac.albumineUrinaire.valeur, getReference(rac.albumineUrinaire))
     }
-
-    if (test.exceptions.rapportAlbuminurie.creatinineUrinaire?.valeur) {
-      doc.text(`Créatinine urinaire : ${test.exceptions.rapportAlbuminurie.creatinineUrinaire.valeur} ${test.exceptions.rapportAlbuminurie.creatinineUrinaire.unite}`, 25, excepY)
-      excepY += 5
+    if (rac.creatinineUrinaire?.valeur) {
+      excepY = drawParamRow(doc, excepY, invoice, 'Créatinine urinaire',
+        rac.creatinineUrinaire.valeur, getReference(rac.creatinineUrinaire))
     }
-
-    if (test.exceptions.rapportAlbuminurie.rapport?.valeur) {
-      doc.setFont('Times', 'bold')
-      doc.text(`Rapport : ${test.exceptions.rapportAlbuminurie.rapport.valeur} `, 105, excepY, { align: 'center' })
-
-      // ✅ Valeur de référence sur la même ligne à droite
-      doc.setFont('Times', 'normal')
-      doc.text('Réf: N : < 30 mg/g', 130, excepY)
-      doc.setFont('Times', 'normal')
-      excepY += 7
+    if (rac.rapport?.valeur) {
+      excepY = drawParamRow(doc, excepY, invoice, 'Rapport',
+        rac.rapport.valeur,
+        getReference(rac.rapport, { reference: 'N : < 30 mg/g' }),
+        { labelBold: true, valueBold: true })
     }
-
-    return excepY
+    return excepY + 2
   }
 
   const renderRapportProteinesException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
-    doc.setFont('Times', 'normal')
-    doc.setFontSize(9)
-
-    if (test.exceptions.rapportProteines.proteinesUrinaires?.valeur) {
-      doc.text(`Protéines urinaires : ${test.exceptions.rapportProteines.proteinesUrinaires.valeur} ${test.exceptions.rapportProteines.proteinesUrinaires.unite}`, 25, excepY)
-      excepY += 5
+    const rpc = test.exceptions.rapportProteines || {}
+    if (rpc.proteinesUrinaires?.valeur) {
+      excepY = drawParamRow(doc, excepY, invoice, 'Protéines urinaires',
+        rpc.proteinesUrinaires.valeur, getReference(rpc.proteinesUrinaires))
     }
-
-    if (test.exceptions.rapportProteines.creatinineUrinaire?.valeur) {
-      doc.text(`Créatinine urinaire : ${test.exceptions.rapportProteines.creatinineUrinaire.valeur} ${test.exceptions.rapportProteines.creatinineUrinaire.unite}`, 25, excepY)
-      excepY += 5
+    if (rpc.creatinineUrinaire?.valeur) {
+      excepY = drawParamRow(doc, excepY, invoice, 'Créatinine urinaire',
+        rpc.creatinineUrinaire.valeur, getReference(rpc.creatinineUrinaire))
     }
-
-    if (test.exceptions.rapportProteines.rapport?.valeur) {
-      doc.setFont('Times', 'bold')
-      doc.text(`Rapport : ${test.exceptions.rapportProteines.rapport.valeur} `, 105, excepY, { align: 'center' })
-      doc.setFont('Times', 'normal')
-      // ✅ Valeur de référence sur la même ligne à droite
-      doc.setFont('Times', 'normal')
-      doc.text('Réf: N : < 150 mg/g', 130, excepY)
-      excepY += 10
+    if (rpc.rapport?.valeur) {
+      excepY = drawParamRow(doc, excepY, invoice, 'Rapport',
+        rpc.rapport.valeur,
+        getReference(rpc.rapport, { reference: 'N : < 150 mg/g' }),
+        { labelBold: true, valueBold: true })
     }
-
-    return excepY
+    return excepY + 2
   }
 
   const renderCholesterolLdlException = (doc, test, excepY, invoice) => {
+    const ldlCell = test.exceptions.cholesterolLdl?.ldl
+    if (!ldlCell?.valeur) return excepY
+    excepY = drawParamRow(doc, excepY, invoice, 'LDL Dosé',
+      ldlCell.valeur, getReference(ldlCell),
+      { labelBold: true, valueBold: true })
+    // Note bas de page en italique petit
     excepY = checkNewPage(doc, excepY, invoice)
+    doc.setFontSize(7)
+    doc.setFont('Times', 'italic')
+    doc.text('* Valable si triglycérides < 3,5 g/L', PDF_LAYOUT.LABEL_X, excepY)
     doc.setFont('Times', 'normal')
     doc.setFontSize(9)
-
-    if (test.exceptions.cholesterolLdl.ldl?.valeur) {
-      doc.setFont('Times', 'bold')
-      doc.text(`LDL Dosé: ${test.exceptions.cholesterolLdl.ldl.valeur} ${test.exceptions.cholesterolLdl.ldl.unite}`, 105, excepY, { align: 'center' })
-      doc.setFont('Times', 'normal')
-      excepY += 5
-
-      doc.setFontSize(7)
-      doc.text('* Valable si triglycérides < 3.5 g/L', 25, excepY)
-      doc.setFontSize(9)
-      excepY += 7
-    }
-
-    return excepY
+    return excepY + 5
   }
 
   const renderLipidesTotauxException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
-    doc.setFont('Times', 'normal')
-    doc.setFontSize(9)
-
-    if (test.exceptions.lipidesTotaux.lipidesTotaux?.valeur) {
-      doc.setFont('Times', 'bold')
-      doc.text(`Lipides totaux : ${test.exceptions.lipidesTotaux.lipidesTotaux.valeur} ${test.exceptions.lipidesTotaux.lipidesTotaux.unite}`, 105, excepY, { align: 'center' })
-      doc.setFont('Times', 'normal')
-      excepY += 10
-    }
-
-    return excepY
+    const cell = test.exceptions.lipidesTotaux?.lipidesTotaux
+    if (!cell?.valeur) return excepY
+    excepY = drawParamRow(doc, excepY, invoice, 'Lipides totaux',
+      cell.valeur, getReference(cell, { reference: '2 - 10 g/L' }),
+      { labelBold: true, valueBold: true })
+    return excepY + 2
   }
 
   // const renderMicroalbuminurie24hException = (doc, test, excepY, invoice) => {
@@ -1556,34 +1465,18 @@ const renderRapportAlbuminurieException = (doc, test, excepY, invoice) => {
 //   return excepY
 // }
 const renderMicroalbuminurie24hException = (doc, test, excepY, invoice) => {
-  excepY = checkNewPage(doc, excepY, invoice)
-  doc.setFont('Times', 'normal')
-  doc.setFontSize(9)
-
-  // ❌ RETIRÉ - Ne pas afficher l'albumine urinaire
-  // if (test.exceptions.microalbuminurie24h.albumineUrinaire?.valeur) {
-  //   doc.text(`Albumine urinaire : ${test.exceptions.microalbuminurie24h.albumineUrinaire.valeur} ${test.exceptions.microalbuminurie24h.albumineUrinaire.unite}`, 25, excepY)
-  //   excepY += 5
-  // }
-
-  if (test.exceptions.microalbuminurie24h.volumeUrinaire24h?.valeur) {
-    doc.text(`Diurèse : ${test.exceptions.microalbuminurie24h.volumeUrinaire24h.valeur} ${test.exceptions.microalbuminurie24h.volumeUrinaire24h.unite}`, 25, excepY)
-    excepY += 5
+  const m = test.exceptions.microalbuminurie24h || {}
+  if (m.volumeUrinaire24h?.valeur) {
+    excepY = drawParamRow(doc, excepY, invoice, 'Diurèse',
+      m.volumeUrinaire24h.valeur, getReference(m.volumeUrinaire24h))
   }
-
-  if (test.exceptions.microalbuminurie24h.microalbuminurie?.valeur) {
-    const valeur = test.exceptions.microalbuminurie24h.microalbuminurie.valeur
-
-    doc.setFont('Times', 'bold')
-    doc.text(`Microalbuminurie : ${valeur} `, 105, excepY, { align: 'center' })
-
-    doc.setFont('Times', 'normal')
-    doc.text('< 30 mg/24h', 130, excepY)  // ✅ Valeur de référence à droite
-
-    excepY += 10
+  if (m.microalbuminurie?.valeur) {
+    excepY = drawParamRow(doc, excepY, invoice, 'Microalbuminurie',
+      m.microalbuminurie.valeur,
+      getReference(m.microalbuminurie, { reference: '< 30 mg/24h' }),
+      { labelBold: true, valueBold: true })
   }
-
-  return excepY
+  return excepY + 2
 }
 
 // const renderProteinurie24hException = (doc, test, excepY, invoice) => {
@@ -1617,50 +1510,30 @@ const renderMicroalbuminurie24hException = (doc, test, excepY, invoice) => {
 // }
 
 const renderProteinurie24hException = (doc, test, excepY, invoice) => {
-  excepY = checkNewPage(doc, excepY, invoice)
-  doc.setFont('Times', 'normal')
-  doc.setFontSize(9)
-
-  // ❌ RETIRÉ - Ne pas afficher les protéines urinaires
-  // if (test.exceptions.proteinurie24h.proteinesUrinaires?.valeur) {
-  //   doc.text(`Protéines urinaires : ${test.exceptions.proteinurie24h.proteinesUrinaires.valeur} ${test.exceptions.proteinurie24h.proteinesUrinaires.unite}`, 25, excepY)
-  //   excepY += 5
-  // }
-
-  if (test.exceptions.proteinurie24h.volumeUrinaire24h?.valeur) {
-    doc.text(`Diurèse : ${test.exceptions.proteinurie24h.volumeUrinaire24h.valeur} ${test.exceptions.proteinurie24h.volumeUrinaire24h.unite}`, 25, excepY)
-    excepY += 5
+  const p = test.exceptions.proteinurie24h || {}
+  if (p.volumeUrinaire24h?.valeur) {
+    excepY = drawParamRow(doc, excepY, invoice, 'Diurèse',
+      p.volumeUrinaire24h.valeur, getReference(p.volumeUrinaire24h))
   }
-
-  if (test.exceptions.proteinurie24h.proteinurie?.valeur) {
-    const valeur = test.exceptions.proteinurie24h.proteinurie.valeur
-
-    doc.setFont('Times', 'bold')
-    doc.text(`Protéinurie : ${valeur}`, 105, excepY, { align: 'center' })
-
-    doc.setFont('Times', 'normal')
-    doc.text('< 150 mg/24h', 130, excepY)  // ✅ Valeur de référence à droite
-
-    excepY += 10
+  if (p.proteinurie?.valeur) {
+    excepY = drawParamRow(doc, excepY, invoice, 'Protéinurie',
+      p.proteinurie.valeur,
+      getReference(p.proteinurie, { reference: '< 150 mg/24h' }),
+      { labelBold: true, valueBold: true })
   }
+  excepY += 2
 
   return excepY
 }
 
 
   const renderBilirubineIndirecteException = (doc, test, excepY, invoice) => {
-    excepY = checkNewPage(doc, excepY, invoice)
-    doc.setFont('Times', 'normal')
-    doc.setFontSize(9)
-
-    if (test.exceptions.bilirubineIndirecte.bilirubineIndirecte?.valeur) {
-      doc.setFont('Times', 'bold')
-      doc.text(`Bilirubine indirecte : ${test.exceptions.bilirubineIndirecte.bilirubineIndirecte.valeur} ${test.exceptions.bilirubineIndirecte.bilirubineIndirecte.unite}`, 105, excepY, { align: 'center' })
-      doc.setFont('Times', 'normal')
-      excepY += 10
-    }
-
-    return excepY
+    const cell = test.exceptions.bilirubineIndirecte?.bilirubineIndirecte
+    if (!cell?.valeur) return excepY
+    excepY = drawParamRow(doc, excepY, invoice, 'Bilirubine indirecte',
+      cell.valeur, getReference(cell, { reference: '< 10 mg/L' }),
+      { labelBold: true, valueBold: true })
+    return excepY + 2
   }
 
   // 16. Taux de Prothrombine (TP + INR) — format parametre simple, une ligne par valeur
