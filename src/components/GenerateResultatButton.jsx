@@ -2001,16 +2001,9 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     doc.text('Interprétation:', PDF_LAYOUT.LABEL_X, currentY)
     currentY += 6
 
-    // Rendu de la partie texte (si presente)
-    if (hasText) {
-      doc.setFontSize(9)
-      doc.setFont('Courier', 'normal')
-      doc.text(textLines, PDF_LAYOUT.LABEL_X, currentY)
-      currentY += textLines.length * 5 + 3
-    }
-
-    // Rendu de la partie tableau (si presente, ET en plus du texte si les
-    // deux existent). Utilise cols/rows normalisees (depuis content.columns/rows).
+    // Rendu de la partie tableau D'ABORD (juste en dessous du titre
+    // "Interpretation:"), car la grille de seuils sert de reference
+    // visuelle rapide. Le texte explicatif suit en dessous.
     if (hasTable) {
       doc.setFontSize(9)
       doc.setFont('Times', 'bold')
@@ -2028,7 +2021,16 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
         })
         currentY += 5
       })
-      currentY += 2
+      currentY += 3
+    }
+
+    // Rendu de la partie texte ENSUITE (paragraphe d'interpretation
+    // clinique, plus long et lu en complement du tableau au-dessus).
+    if (hasText) {
+      doc.setFontSize(9)
+      doc.setFont('Courier', 'normal')
+      doc.text(textLines, PDF_LAYOUT.LABEL_X, currentY)
+      currentY += textLines.length * 5 + 3
     }
 
     return currentY
