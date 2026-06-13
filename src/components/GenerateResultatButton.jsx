@@ -2869,23 +2869,38 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
 
     const isTechnical = !finalValidation && techValidation
     const validator = validation.updatedBy
-    const fullName = `Dr ${validator.prenom || ''} ${validator.nom || ''}`.trim()
-    const header = isTechnical ? 'Validation technique' : 'Le Biologiste'
 
-    // Bloc validateur dans la colonne droite, centre autour de X_CENTER.
-    // Ordre d'affichage : en-tete -> nom -> titres -> signature en BAS.
-    // On part de Y=235 pour que la signature reste au-dessus du footer
-    // (qui commence vers Y=280).
     const X_CENTER = 145
-    const SIG_W = 40 // largeur signature
+
+    // --- CAS VALIDATION TECHNIQUE SEULE ---
+    // L'usage labo : pas de signature individuelle pour la validation
+    // technique (c'est juste une etape de QC avant le biologiste). Seul
+    // le texte "Validation technique" apparait, souligne. Pas de nom,
+    // pas de titres, pas de signature.
+    if (isTechnical) {
+      const currentY = 240
+      doc.setFontSize(11)
+      doc.setFont('Times', 'bold')
+      doc.text('Validation technique', X_CENTER, currentY, { align: 'center' })
+      const w = doc.getTextWidth('Validation technique')
+      doc.setLineWidth(0.3)
+      doc.line(X_CENTER - w / 2, currentY + 1, X_CENTER + w / 2, currentY + 1)
+      return
+    }
+
+    // --- CAS VALIDATION FINALE (BIOLOGISTE) ---
+    // Le prenom en DB contient parfois deja le prefixe "Dr" : on ne le
+    // ajoute donc PAS hardcode (sinon affichage "Dr Dr ..."). C'est au
+    // profil de stocker le nom complet tel qu'il doit apparaitre.
+    const fullName = `${validator.prenom || ''} ${validator.nom || ''}`.trim()
+    const SIG_W = 40
     let currentY = 235
 
-    // 1) En-tete : "Le Biologiste" ou "Validation technique" en gras
-    //    souligne, centre dans le bloc validateur.
+    // 1) En-tete "Le Biologiste", gras souligne, centre.
     doc.setFontSize(11)
     doc.setFont('Times', 'bold')
-    doc.text(header, X_CENTER, currentY, { align: 'center' })
-    const headerWidth = doc.getTextWidth(header)
+    doc.text('Le Biologiste', X_CENTER, currentY, { align: 'center' })
+    const headerWidth = doc.getTextWidth('Le Biologiste')
     doc.setLineWidth(0.3)
     doc.line(
       X_CENTER - headerWidth / 2,
@@ -2901,8 +2916,7 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     doc.text(fullName, X_CENTER, currentY, { align: 'center' })
     currentY += 5
 
-    // 3) Titres / qualifications (profil) : une ligne par entree separee
-    //    par \n. Italique 9pt, centres sous le nom.
+    // 3) Titres / qualifications (profil) : 1 ligne par entree, italique.
     const profil = String(validator.profil || '').trim()
     if (profil) {
       doc.setFontSize(9)
@@ -2915,8 +2929,7 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
       doc.setFont('Times', 'normal')
     }
 
-    // 4) Signature / cachet (image) en BAS du bloc, centree.
-    //    Petit espace avant la signature pour la separer des titres.
+    // 4) Signature / cachet en BAS du bloc, centre.
     if (validator.logo) {
       try {
         const rawPath = String(validator.logo).replace(/\\/g, '/')
