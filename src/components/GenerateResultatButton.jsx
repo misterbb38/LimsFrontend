@@ -289,14 +289,15 @@ const GenerateResultatButton = forwardRef(function GenerateResultatButton(
     if (ref) {
       doc.setFont('Times', 'normal')
       doc.setFontSize(opts.fontSize || 9)
-      // Antériorités occupe x=170 a x=190 (label "Antériorités" au fontSize 8).
-      // Donc l'espace LIBRE entre REF_X (155) et Antériorités (170) = 15mm.
-      // On utilise une DOUBLE detection (caractere + pixel) pour eviter le
-      // cas ou getTextWidth retourne une valeur inexacte (fontes Unicode,
-      // glyphes manquants...). Le critere le plus conservateur l'emporte.
+      // Compromis : on tolere des refs jusqu'a ~30 caracteres / 35mm en
+      // ligne (couvre la grande majorite des refs labo standards :
+      // "N : < 30 mg/g", "0,5 - 1,5 % (...)", "≥ 16 000 000", etc.).
+      // Seules les refs vraiment longues (Toxoplasmose qualitatif) sont
+      // basculees sur la ligne suivante en italique pour ne pas masquer
+      // la zone Antériorités quand elle est presente.
       const refWidth = doc.getTextWidth(ref)
-      const tooWideByWidth = refWidth > 15
-      const tooWideByChars = ref.length > 12
+      const tooWideByWidth = refWidth > 35
+      const tooWideByChars = ref.length > 30
       const isLongRef = tooWideByWidth || tooWideByChars
       if (!isLongRef) {
         doc.text(ref, PDF_LAYOUT.REF_X, y)
