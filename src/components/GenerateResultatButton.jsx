@@ -289,22 +289,24 @@ const GenerateResultatButton = forwardRef(function GenerateResultatButton(
     if (ref) {
       doc.setFont('Times', 'normal')
       doc.setFontSize(opts.fontSize || 9)
-      // Largeur dispo a droite de la valeur, avant la zone Anteriorites :
-      // REF_X = 155, zone Anteriorites commence vers x=160-165, on garde
-      // donc une marge de 33mm. getTextWidth mesure la largeur EXACTE du
-      // texte rendu avec la police + taille courante (precise, pas une
-      // estimation de wrapping comme splitTextToSize).
+      // Antériorités occupe x=170 a x=190 (label "Antériorités" au fontSize 8).
+      // Donc l'espace LIBRE entre REF_X (155) et Antériorités (170) = 15mm.
+      // On utilise une DOUBLE detection (caractere + pixel) pour eviter le
+      // cas ou getTextWidth retourne une valeur inexacte (fontes Unicode,
+      // glyphes manquants...). Le critere le plus conservateur l'emporte.
       const refWidth = doc.getTextWidth(ref)
-      const refMaxWidth = 33
-      if (refWidth <= refMaxWidth) {
+      const tooWideByWidth = refWidth > 15
+      const tooWideByChars = ref.length > 12
+      const isLongRef = tooWideByWidth || tooWideByChars
+      if (!isLongRef) {
         doc.text(ref, PDF_LAYOUT.REF_X, y)
       } else {
-        // Reference trop longue : on la rejette sur la ligne suivante
-        // en italique 8pt sur toute la largeur pour ne pas chevaucher
-        // la zone Anteriorites a droite.
+        // Reference trop longue : on la rejette sur la ligne suivante en
+        // italique 8pt sur toute la largeur 170mm pour ne pas chevaucher
+        // la zone Antériorités a droite. Le saut de ligne reste discret.
         doc.setFontSize(8)
         doc.setFont('Times', 'italic')
-        const wrapped = doc.splitTextToSize(ref, 170)
+        const wrapped = doc.splitTextToSize(ref, 165)
         nextY = checkNewPage(doc, nextY, invoice)
         doc.text(wrapped, PDF_LAYOUT.LABEL_X + 5, nextY)
         nextY += wrapped.length * 4 + 1
@@ -1958,11 +1960,21 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
       content.columns.length > 0 && content.rows.length > 0
     const textBody = typeof content === 'string' ? content : (content.text || '')
 
+    // Largeur dispo pour le texte d'interpretation : entre PDF_LAYOUT.LABEL_X
+    // (25) et la marge droite (190) = 165mm. Courier etant plus large que
+    // Times, on doit IMPERATIVEMENT mesurer avec la police de rendu
+    // (Courier 9pt) pour que splitTextToSize wrappe au bon endroit.
+    const INTERPRETATION_WIDTH = 160
+
     // Calcul de la hauteur necessaire (texte + tableau eventuels)
     let neededHeight = 10 // titre "Interpretation:" + marge
     let textLines = []
     if (hasText) {
-      textLines = doc.splitTextToSize(textBody, 170)
+      // IMPORTANT : configurer la police de RENDU avant splitTextToSize
+      // pour que le wrapping soit calcule au bon ratio.
+      doc.setFont('Courier', 'normal')
+      doc.setFontSize(9)
+      textLines = doc.splitTextToSize(textBody, INTERPRETATION_WIDTH)
       neededHeight += textLines.length * 5 + 3
     }
     if (hasTable) {

@@ -1979,6 +1979,42 @@ function AddTestForm({ onTestChange }) {
     }
   }
 
+  // Bascule entre les 3 types (text / table / mixed) en preservant
+  // les donnees deja saisies dans la nouvelle structure adequate.
+  const handleInterpretationTypeChange = (name, newType) => {
+    const prev = name === 'interpretationA' ? interpretationA : interpretationB
+    const prevContent = prev?.content
+    const isPrevObject = prevContent && typeof prevContent === 'object'
+
+    let content
+    if (newType === 'text') {
+      content = isPrevObject ? prevContent.text || '' : prevContent || ''
+    } else if (newType === 'table') {
+      content = isPrevObject && prevContent.columns
+        ? { columns: prevContent.columns, rows: prevContent.rows }
+        : { columns: [], rows: [] }
+    } else {
+      content = {
+        text: typeof prevContent === 'string'
+          ? prevContent
+          : (prevContent?.text || ''),
+        columns: isPrevObject && prevContent.columns ? prevContent.columns : [],
+        rows: isPrevObject && prevContent.rows ? prevContent.rows : [],
+      }
+    }
+    handleInterpretationChange(name, newType, content)
+  }
+
+  // Met a jour la partie texte d'une interpretation 'mixed' sans toucher
+  // au tableau.
+  const handleMixedTextChange = (name, newText) => {
+    const prev = name === 'interpretationA' ? interpretationA : interpretationB
+    handleInterpretationChange(name, prev.type, {
+      ...prev.content,
+      text: newText,
+    })
+  }
+
   const handleAddColumn = (interpretationName) => {
     if (interpretationName === 'interpretationA') {
       const updatedColumns = [...interpretationA.content.columns, '']
@@ -2275,18 +2311,16 @@ function AddTestForm({ onTestChange }) {
             className="input input-bordered"
             value={interpretationA?.type || 'text'}
             onChange={(e) =>
-              handleInterpretationChange(
-                'interpretationA',
-                e.target.value,
-                interpretationA?.content || { columns: [], rows: [] }
-              )
+              handleInterpretationTypeChange('interpretationA', e.target.value)
             }
           >
             <option value="text">Texte</option>
             <option value="table">Tableau</option>
+            <option value="mixed">Mixte (Texte + Tableau)</option>
           </select>
         </div>
-        {interpretationA?.type === 'table' && (
+        {(interpretationA?.type === 'table' ||
+          interpretationA?.type === 'mixed') && (
           <div className="form-control">
             <label className="label">Tableau de l'Interprétation A</label>
             <div>
@@ -2374,20 +2408,29 @@ function AddTestForm({ onTestChange }) {
             </table>
           </div>
         )}
-        {interpretationA?.type === 'text' && (
+        {(interpretationA?.type === 'text' ||
+          interpretationA?.type === 'mixed') && (
           <div className="form-control">
-            <label className="label">Contenu de l'Interprétation A</label>
+            <label className="label">
+              {interpretationA?.type === 'mixed'
+                ? "Texte de l'Interprétation A"
+                : "Contenu de l'Interprétation A"}
+            </label>
             <textarea
               className="textarea textarea-bordered"
               name="interpretationAContent"
-              value={interpretationA?.content}
-              onChange={(e) =>
-                handleInterpretationChange(
-                  'interpretationA',
-                  interpretationA?.type,
-                  e.target.value
-                )
+              value={
+                interpretationA?.type === 'mixed'
+                  ? interpretationA?.content?.text || ''
+                  : interpretationA?.content || ''
               }
+              onChange={(e) => {
+                if (interpretationA?.type === 'mixed') {
+                  handleMixedTextChange('interpretationA', e.target.value)
+                } else {
+                  handleInterpretationChange('interpretationA', 'text', e.target.value)
+                }
+              }}
             />
           </div>
         )}
@@ -2399,18 +2442,16 @@ function AddTestForm({ onTestChange }) {
             className="input input-bordered"
             value={interpretationB?.type || 'text'}
             onChange={(e) =>
-              handleInterpretationChange(
-                'interpretationB',
-                e.target.value,
-                interpretationB?.content || { columns: [], rows: [] }
-              )
+              handleInterpretationTypeChange('interpretationB', e.target.value)
             }
           >
             <option value="text">Texte</option>
             <option value="table">Tableau</option>
+            <option value="mixed">Mixte (Texte + Tableau)</option>
           </select>
         </div>
-        {interpretationB?.type === 'table' && (
+        {(interpretationB?.type === 'table' ||
+          interpretationB?.type === 'mixed') && (
           <div className="form-control">
             <label className="label">Tableau de l'Interprétation B</label>
             <div>
@@ -2498,20 +2539,29 @@ function AddTestForm({ onTestChange }) {
             </table>
           </div>
         )}
-        {interpretationB?.type === 'text' && (
+        {(interpretationB?.type === 'text' ||
+          interpretationB?.type === 'mixed') && (
           <div className="form-control">
-            <label className="label">Contenu de l'Interprétation B</label>
+            <label className="label">
+              {interpretationB?.type === 'mixed'
+                ? "Texte de l'Interprétation B"
+                : "Contenu de l'Interprétation B"}
+            </label>
             <textarea
               className="textarea textarea-bordered"
               name="interpretationBContent"
-              value={interpretationB?.content}
-              onChange={(e) =>
-                handleInterpretationChange(
-                  'interpretationB',
-                  interpretationB?.type,
-                  e.target.value
-                )
+              value={
+                interpretationB?.type === 'mixed'
+                  ? interpretationB?.content?.text || ''
+                  : interpretationB?.content || ''
               }
+              onChange={(e) => {
+                if (interpretationB?.type === 'mixed') {
+                  handleMixedTextChange('interpretationB', e.target.value)
+                } else {
+                  handleInterpretationChange('interpretationB', 'text', e.target.value)
+                }
+              }}
             />
           </div>
         )}
