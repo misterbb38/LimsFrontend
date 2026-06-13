@@ -2858,12 +2858,8 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
   }
 
   const addValidationInfo = async (doc, invoice) => {
-    let currentY = 250
-    const X_RIGHT = 110 // colonne droite (bloc validateur)
-
     // Cherche d'abord la validation finale, puis la validation technique
-    // en repli. Le PDF affiche en priorite la validation finale (Validé),
-    // sinon "Validation technique" si elle existe seule.
+    // en repli.
     const finalValidation = invoice.historiques.find((h) => h.status === 'Validé')
     const techValidation = invoice.historiques.find(
       (h) => h.status === 'Validation technique'
@@ -2873,48 +2869,74 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
 
     const isTechnical = !finalValidation && techValidation
     const validator = validation.updatedBy
-    const fullName = `${validator.prenom || ''} ${validator.nom || ''}`.trim()
-    const heading = isTechnical
-      ? `Validation technique : ${fullName}`
-      : `Validé par : ${fullName}`
+    const fullName = `Dr ${validator.prenom || ''} ${validator.nom || ''}`.trim()
+    const header = isTechnical ? 'Validation technique' : 'Le Biologiste'
 
-    doc.setFontSize(10)
+    // Bloc validateur dans la colonne droite, centre autour de X_CENTER.
+    // On part de Y plus haut (235) pour eviter de toucher le footer
+    // (qui debute autour de Y=280).
+    const X_CENTER = 145
+    const SIG_W = 40 // largeur signature reduite a 40mm
+    let currentY = 235
+
+    // 1) En-tete : "Le Biologiste" ou "Validation technique" en gras
+    //    souligne, centre dans le bloc validateur.
+    doc.setFontSize(11)
     doc.setFont('Times', 'bold')
-    doc.text(heading, X_RIGHT, currentY)
-    currentY += 5
+    doc.text(header, X_CENTER, currentY, { align: 'center' })
+    // Trait de soulignement sous l'en-tete
+    const headerWidth = doc.getTextWidth(header)
+    doc.setLineWidth(0.3)
+    doc.line(
+      X_CENTER - headerWidth / 2,
+      currentY + 1,
+      X_CENTER + headerWidth / 2,
+      currentY + 1
+    )
+    currentY += 6
 
-    // Profil professionnel (titres / qualifications) : une ligne par
-    // entree separee par \n dans le champ user.profil. Affiche en
-    // italique, taille 8, juste sous le nom du validateur.
-    const profil = String(validator.profil || '').trim()
-    if (profil) {
-      doc.setFontSize(8)
-      doc.setFont('Times', 'italic')
-      const lines = profil.split(/\r?\n/).filter((l) => l.trim() !== '')
-      lines.forEach((line) => {
-        doc.text(line.trim(), X_RIGHT, currentY)
-        currentY += 4
-      })
-      doc.setFont('Times', 'normal')
-      currentY += 1
-    }
-
-    // Signature / cachet (image stockee dans user.logo). Peut etre une
-    // URL Cloudinary (https://...) ou un chemin relatif local. On gere
-    // les deux cas pour rester retrocompatible.
+    // 2) Signature / cachet en image, centree dans le bloc.
+    //    Hauteur calculee selon le ratio pour ne pas deformer.
     if (validator.logo) {
       try {
         const rawPath = String(validator.logo).replace(/\\/g, '/')
         const fullLogoPath = rawPath.startsWith('http')
           ? rawPath
           : `${import.meta.env.VITE_APP_API_BASE_URL}/${rawPath}`
-
         const doctorLogo = await loadImage(fullLogoPath)
-        const doctorLogoHeight = 50 * (doctorLogo.height / doctorLogo.width)
-        doc.addImage(doctorLogo, 'PNG', X_RIGHT, currentY, 50, doctorLogoHeight)
+        const sigH = SIG_W * (doctorLogo.height / doctorLogo.width)
+        doc.addImage(
+          doctorLogo,
+          'PNG',
+          X_CENTER - SIG_W / 2,
+          currentY,
+          SIG_W,
+          sigH
+        )
+        currentY += sigH + 2
       } catch (error) {
-        console.error('Erreur lors du chargement du logo du validateur:', error)
+        console.error('Erreur lors du chargement de la signature :', error)
       }
+    }
+
+    // 3) Nom du docteur, gras, centre sous la signature.
+    doc.setFontSize(10)
+    doc.setFont('Times', 'bold')
+    doc.text(fullName, X_CENTER, currentY, { align: 'center' })
+    currentY += 5
+
+    // 4) Titres / qualifications (profil) : une ligne par entree separee
+    //    par \n. Affiches en italique 9pt, centres sous le nom.
+    const profil = String(validator.profil || '').trim()
+    if (profil) {
+      doc.setFontSize(9)
+      doc.setFont('Times', 'italic')
+      const lines = profil.split(/\r?\n/).filter((l) => l.trim() !== '')
+      lines.forEach((line) => {
+        doc.text(line.trim(), X_CENTER, currentY, { align: 'center' })
+        currentY += 4
+      })
+      doc.setFont('Times', 'normal')
     }
   }
 
