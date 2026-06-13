@@ -154,7 +154,7 @@ const GenerateResultatButton = forwardRef(function GenerateResultatButton(
    * Ajoute un header discret sur les nouvelles pages
    */
   const addPageHeader = (doc, invoice, startY = 25) => {
-    doc.setFontSize(8)
+    doc.setFontSize(9)
     doc.setFont('Times', 'normal')
     doc.setTextColor(100, 100, 100)
     doc.text(`Nº Dossier: ${invoice?.identifiant}`, 25, startY)
@@ -305,7 +305,7 @@ const GenerateResultatButton = forwardRef(function GenerateResultatButton(
         // Reference trop longue : on la rejette sur la ligne suivante en
         // italique 8pt sur toute la largeur 170mm pour ne pas chevaucher
         // la zone Antériorités a droite. Le saut de ligne reste discret.
-        doc.setFontSize(8)
+        doc.setFontSize(9)
         doc.setFont('Times', 'italic')
         const wrapped = doc.splitTextToSize(ref, 165)
         nextY = checkNewPage(doc, nextY, invoice)
@@ -383,7 +383,7 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
     const footerY = 277
     doc.setFillColor(userColor)
     doc.rect(20, footerY, 170, 0.5, 'F')
-    doc.setFontSize(6)
+    doc.setFontSize(7)
     doc.setTextColor(0, 0, 0)
     doc.text(
       `Rufisque Ouest, rond-point SOCABEG vers cité SIPRES - Sortie 9 autoroute à péage Dakar Sénégal Aut. minist. n° 013545-28/03/19`,
@@ -391,7 +391,7 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
       footerY + 6
     )
     doc.text(
-      `Site web : www.bioram.org Tel. +221 78 601 09 09 email : contact@bioram.org`,
+      `Site web : www.bioram.org Tel. 78 601 09 09 email : contact@bioram.org`,
       60,
       footerY + 10
     )
@@ -402,7 +402,7 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
     const pageCount = doc.internal.getNumberOfPages()
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i)
-      doc.setFontSize(9)
+      doc.setFontSize(10)
       doc.setTextColor(0, 0, 0)
       doc.text(` ${i}/${pageCount}`, 185, 275, { align: 'center' })
     }
@@ -413,11 +413,11 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
     const leftHeight = maxWidth * (imgLeft.height / imgLeft.width)
     doc.addImage(imgLeft, 'PNG', 20, 5, maxWidth, leftHeight)
 
-    doc.setFontSize(12)
+    doc.setFontSize(13)
     doc.setFont('Times')
     doc.text("LABORATOIRE D'ANALYSES MEDICALES", 65, 10)
 
-    doc.setFontSize(7)
+    doc.setFontSize(8)
     doc.text(
       'Hématologie – Immuno-Hématologie – Biochimie – Immunologie – Bactériologie – Virologie – Parasitologie',
       52,
@@ -426,14 +426,14 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
     doc.text('24H/24 7J/7', 98, 18)
     doc.text('Prélèvement à domicile sur rendez-vous', 85, 21)
     doc.text(
-      'Tel. +221 78 601 09 09 / 33 836 99 98 email : contact@bioram.org',
+      'Tel. 78 601 09 09 / 33 836 99 98 email : contact@bioram.org',
       75,
       24
     )
 
     doc.setFont('Times')
     doc.setTextColor(userColor)
-    doc.setFontSize(14)
+    doc.setFontSize(15)
     doc.text('', 105, 30, null, null, 'center')
     doc.setFillColor(userColor)
     doc.setLineWidth(0.5)
@@ -445,7 +445,7 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
 
   const addPatientInformation = (doc, invoice) => {
     const currentY = 40
-    doc.setFontSize(10)
+    doc.setFontSize(11)
     doc.setFont('Times', 'bold')
 
     doc.text(`Nº Dossier: ${invoice?.identifiant}`, 135, currentY + 7)
@@ -473,7 +473,7 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
     doc.text(`Tel: ${invoice.userId.telephone}`, 135, currentY + 22)
     doc.text(`NIP: ${invoice?.userId.nip}`, 35, currentY + 7)
     doc.setTextColor(0, 0, 0)
-    doc.setFontSize(10)
+    doc.setFontSize(11)
     doc.setFont('Times')
 
     const formattedDate = formatDate(invoice?.createdAt)
@@ -486,7 +486,7 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
   }
 
   const renderMachineInfo = (doc, test, currentY) => {
-    doc.setFontSize(8)
+    doc.setFontSize(9)
     doc.setFont('Times', 'italic')
 
     let machineText = test?.statutMachine
@@ -523,32 +523,32 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
     const maxLineWidth = 100
     let nomTestLines = doc.splitTextToSize(`${test.testId.nom.toUpperCase()}`, maxLineWidth)
 
-    doc.setFontSize(9)
+    doc.setFontSize(10)
     doc.setFont('Courier', 'normal')
-    doc.setFontSize(8)
+    doc.setFontSize(9)
     doc.setFont('Times', 'bold')
 
     doc.setFillColor(0, 0, 0)
     doc.circle(18, currentY - 1, 1, 'F')
 
     if (test?.observations && test?.observations?.macroscopique?.length > 0) {
-      doc.setFontSize(9)
+      doc.setFontSize(10)
       doc.setFont('Times', 'bold')
       doc.text(nomTestLines, 60, currentY)
     } else {
-      doc.setFontSize(9)
+      doc.setFontSize(10)
       doc.text(nomTestLines, 20, currentY)
     }
 
     currentY += 5 * nomTestLines.length
     doc.setFont('Times', 'normal')
-    doc.setFontSize(8)
+    doc.setFontSize(9)
 
     const formattedDate = formatDateAndTime(test?.datePrelevement)
     const formattedDateAnterieur = formatDateAndTime(test?.dernierResultatAnterieur?.date)
 
     doc.setFont('Times', 'bold')
-    doc.setFontSize(8)
+    doc.setFontSize(9)
 
     let anterioriteHeight = 0
 
@@ -571,7 +571,7 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
     // Contenu principal du test (si pas d'observations macroscopiques)
     if (test?.observations?.macroscopique?.length === 0) {
       if (test?.typePrelevement) {
-        doc.setFontSize(8)
+        doc.setFontSize(9)
         doc.setFont('Times', 'normal')
         doc.text(
           `Prélèvement : ${formattedDate}, ${test?.typePrelevement}`,
@@ -585,7 +585,7 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
       currentY += 2
 
       doc.setFont('Times', 'bold')
-      doc.setFontSize(10)
+      doc.setFontSize(11)
       doc.text(`${test?.valeur || ''}`, 90, currentY)
 
       if (test?.qualitatif) {
@@ -603,7 +603,7 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
       // Commentaires
       if (test?.remarque) {
         currentY = checkNewPage(doc, currentY, invoice)
-        doc.setFontSize(8)
+        doc.setFontSize(9)
         doc.setFont('Times', 'italic')
         const remarqueLines = doc.splitTextToSize(`Commentaires: ${test.remarque}`, 170)
         doc.text(remarqueLines, 20, currentY)
@@ -641,7 +641,7 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
       // Pour chaque catégorie, vérifier qu'on a au moins 20mm d'espace
       currentY = checkSpace(doc, currentY, 20, invoice)
 
-      doc.setFontSize(12)
+      doc.setFontSize(13)
       doc.setFont('Times', 'bold')
       // Centre du contenu = (20+190)/2 = 105 ; align center pour que le
       // texte soit visuellement centre entre les deux marges, peu importe
@@ -810,7 +810,7 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
   const renderBloodGroupException = (doc, test, excepY, invoice) => {
     excepY = checkNewPage(doc, excepY, invoice)
     doc.setFont('Times', 'normal')
-    doc.setFontSize(9)
+    doc.setFontSize(10)
 
     if (test.exceptions.groupeSanguin.abo) {
       doc.text(`Groupe sanguin ABO : ${test.exceptions.groupeSanguin.abo}`, 25, excepY)
@@ -878,12 +878,12 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
 
     if (hasHematies) {
       excepY = checkNewPage(doc, excepY, invoice)
-      doc.setFontSize(10)
+      doc.setFontSize(11)
       doc.setFont('Times', 'bold')
       doc.text('HÉMATIES ET CONSTANTES', 25, excepY)
       excepY += 5
 
-      doc.setFontSize(9)
+      doc.setFontSize(10)
       doc.setFont('Times', 'normal')
 
       const { gr, hgb, hct, vgm, tcmh, ccmh, idr_cv } = hematiesEtConstantes
@@ -915,12 +915,12 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
 
     if (hasLeuco) {
       excepY = checkNewPage(doc, excepY, invoice)
-      doc.setFontSize(10)
+      doc.setFontSize(11)
       doc.setFont('Times', 'bold')
       doc.text('LEUCOCYTES ET FORMULE', 25, excepY)
       excepY += 5
 
-      doc.setFontSize(9)
+      doc.setFontSize(10)
       doc.setFont('Times', 'normal')
 
       const {
@@ -1375,11 +1375,11 @@ const renderRapportAlbuminurieException = (doc, test, excepY, invoice) => {
       { labelBold: true, valueBold: true })
     // Note bas de page en italique petit
     excepY = checkNewPage(doc, excepY, invoice)
-    doc.setFontSize(7)
+    doc.setFontSize(8)
     doc.setFont('Times', 'italic')
     doc.text('* Valable si triglycérides < 3,5 g/L', PDF_LAYOUT.LABEL_X, excepY)
     doc.setFont('Times', 'normal')
-    doc.setFontSize(9)
+    doc.setFontSize(10)
     return excepY + 5
   }
 
@@ -1648,8 +1648,8 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     const SECTION_GAP  = 4      // espace blanc entre deux sections
     const VAL_X        = 110    // colonne valeur centree
     const REF_X        = 145    // colonne reference a droite
-    const BODY_FONT    = 9      // taille corps de texte
-    const TITLE_FONT   = 10     // taille des titres de section
+    const BODY_FONT    = 10      // taille corps de texte
+    const TITLE_FONT   = 11     // taille des titres de section
 
     // Bandeau de section : rectangle gris clair + titre gras a l'interieur
     const drawBanner = (title) => {
@@ -1682,7 +1682,7 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     // --- TITRE PRINCIPAL SPERMOGRAMME ---
     excepY += 2
     doc.setFont('Times', 'bold')
-    doc.setFontSize(12)
+    doc.setFontSize(13)
     doc.text('SPERMOGRAMME', 105, excepY, { align: 'center' })
     excepY += 2
     doc.setLineWidth(0.3)
@@ -1739,7 +1739,7 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
       // Mention italique du test de reference, entre parentheses, taille reduite
       excepY = checkNewPage(doc, excepY, invoice)
       doc.setFont('Times', 'italic')
-      doc.setFontSize(7)
+      doc.setFontSize(8)
       doc.text("(Test de Williams : effectué 1 heure après l'émission)", LEFT_X + 5, excepY)
       doc.setFontSize(BODY_FONT)
       doc.setFont('Times', 'normal')
@@ -1780,7 +1780,7 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
       excepY = addPageHeader(doc, invoice)
 
       doc.setFont('Times', 'bold')
-      doc.setFontSize(12)
+      doc.setFontSize(13)
       doc.text('SPERMOCYTOGRAMME', 105, excepY, { align: 'center' })
       excepY += 2
       doc.setLineWidth(0.3)
@@ -1857,13 +1857,13 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
         // Definition en italique sur la ligne du dessous, entre parentheses
         excepY = checkNewPage(doc, excepY, invoice)
         doc.setFont('Times', 'italic')
-        doc.setFontSize(8)
+        doc.setFontSize(9)
         doc.text(
           '(total anomalies relevées / spermatozoïdes anormaux)',
           LEFT_X + 5,
           excepY
         )
-        doc.setFontSize(9)
+        doc.setFontSize(10)
         doc.setFont('Times', 'normal')
         excepY += ROW_H
       }
@@ -1928,7 +1928,7 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     // Titre de section (la 1ere ligne se chargera du checkNewPage)
     excepY = checkNewPage(doc, excepY, invoice)
     doc.setFont('Times', 'bold')
-    doc.setFontSize(10)
+    doc.setFontSize(11)
     doc.text('GAZ DU SANG', PDF_LAYOUT.LABEL_X, excepY)
     excepY += PDF_LAYOUT.ROW_H
 
@@ -1987,7 +1987,7 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
       // IMPORTANT : configurer la police de RENDU avant splitTextToSize
       // pour que le wrapping soit calcule au bon ratio.
       doc.setFont('Courier', 'normal')
-      doc.setFontSize(9)
+      doc.setFontSize(10)
       textLines = doc.splitTextToSize(textBody, INTERPRETATION_WIDTH)
       neededHeight += textLines.length * 5 + 3
     }
@@ -1997,7 +1997,7 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     currentY = checkSpace(doc, currentY, neededHeight, invoice)
 
     // Titre de section
-    doc.setFontSize(10)
+    doc.setFontSize(11)
     doc.setFont('Times', 'bold')
     doc.text('Interprétation:', PDF_LAYOUT.LABEL_X, currentY)
     currentY += 6
@@ -2006,7 +2006,7 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     // "Interpretation:"), car la grille de seuils sert de reference
     // visuelle rapide. Le texte explicatif suit en dessous.
     if (hasTable) {
-      doc.setFontSize(9)
+      doc.setFontSize(10)
       doc.setFont('Times', 'bold')
       cols.forEach((col, colIndex) => {
         doc.text(String(col || ''), PDF_LAYOUT.LABEL_X + colIndex * 40, currentY)
@@ -2028,7 +2028,7 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     // Rendu de la partie texte ENSUITE (paragraphe d'interpretation
     // clinique, plus long et lu en complement du tableau au-dessus).
     if (hasText) {
-      doc.setFontSize(9)
+      doc.setFontSize(10)
       doc.setFont('Courier', 'normal')
       doc.text(textLines, PDF_LAYOUT.LABEL_X, currentY)
       currentY += textLines.length * 5 + 3
@@ -2043,7 +2043,7 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
 
     if (test?.observations?.macroscopique?.length > 0) {
       currentY = checkNewPage(doc, currentY, invoice)
-      doc.setFontSize(9)
+      doc.setFontSize(10)
       doc.setFont('Times', 'bold')
       doc.text(` ${test?.typePrelevement} : ${test?.lieuPrelevement}  ${formattedDate}`, 20, currentY)
       currentY += 6
@@ -2083,7 +2083,7 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
 
     if (test?.observations?.macroscopique?.length > 0 && test?.remarque) {
       currentY = checkNewPage(doc, currentY, invoice)
-      doc.setFontSize(8)
+      doc.setFontSize(9)
       doc.setFont('Times', 'italic')
       doc.text(`Commentaires: ${test.remarque}`, 20, currentY)
       currentY += 5
@@ -2266,11 +2266,11 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
 // }
 const renderMacroscopicExam = (doc, test, currentY, positionX, invoice) => {
   currentY = checkNewPage(doc, currentY, invoice)
-  doc.setFontSize(10)
+  doc.setFontSize(11)
   doc.setFont('Times', 'bold')
   doc.text(`EXAMEN MACROSCOPIQUE`, 20, currentY)
   currentY += 8
-  doc.setFontSize(10)
+  doc.setFontSize(11)
   doc.setFont('Times', 'normal')
 
   // ✅ Joindre les éléments du tableau avec des virgules et "et" pour le dernier
@@ -2319,11 +2319,11 @@ const renderMacroscopicExam = (doc, test, currentY, positionX, invoice) => {
 
   const renderMicroscopicExam = (doc, test, currentY, positionX, invoice) => {
     currentY = checkNewPage(doc, currentY, invoice)
-    doc.setFontSize(10)
+    doc.setFontSize(11)
     doc.setFont('Times', 'bold')
     doc.text(`EXAMEN MICROSCOPIQUE APRES COLORATION`, 20, currentY)
     currentY += 8
-    doc.setFontSize(10)
+    doc.setFontSize(11)
     doc.setFont('Times', 'normal')
 
     const micro = test?.observations?.microscopique
@@ -2565,11 +2565,11 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
   if (!hasAny) return currentY
 
   currentY = checkNewPage(doc, currentY, invoice)
-  doc.setFontSize(10)
+  doc.setFontSize(11)
   doc.setFont('Times', 'bold')
   doc.text(`EXAMEN CHIMIQUE`, 20, currentY)
   currentY += 8
-  doc.setFontSize(10)
+  doc.setFontSize(11)
   doc.setFont('Times', 'normal')
 
   // Champs standards
@@ -2664,11 +2664,11 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
 
   const renderGramExam = (doc, test, currentY, positionX, invoice) => {
     currentY = checkNewPage(doc, currentY, invoice)
-    doc.setFontSize(10)
+    doc.setFontSize(11)
     doc.setFont('Times', 'bold')
     doc.text(`EXAMEN BACTERIOLOGIE DIRECT (Coloration de gram)`, 20, currentY)
     currentY += 8
-    doc.setFontSize(10)
+    doc.setFontSize(11)
     doc.setFont('Times', 'normal')
     doc.text(`Gram:`, 20, currentY)
     doc.text(`${test.gram}`, positionX, currentY)
@@ -2685,11 +2685,11 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     }
 
     currentY = checkNewPage(doc, currentY, invoice)
-    doc.setFontSize(10)
+    doc.setFontSize(11)
     doc.setFont('Times', 'bold')
     doc.text(`CULTURES SUR MILIEUX SPECIFIQUES:`, 20, currentY)
     currentY += 5
-    doc.setFontSize(10)
+    doc.setFontSize(11)
     doc.setFont('Times', 'normal')
 
     if (culture) {
@@ -2732,11 +2732,11 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     }
 
     currentY = checkNewPage(doc, currentY, invoice)
-    doc.setFontSize(10)
+    doc.setFontSize(11)
     doc.setFont('Times', 'bold')
     doc.text('RECHERCHE DE CHLAMYDIA', 20, currentY)
     currentY += 5
-    doc.setFontSize(10)
+    doc.setFontSize(11)
     doc.setFont('Times', 'normal')
 
     if (naturePrelevement) {
@@ -2762,11 +2762,11 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     }
 
     currentY = checkNewPage(doc, currentY, invoice)
-    doc.setFontSize(10)
+    doc.setFontSize(11)
     doc.setFont('Times', 'bold')
     doc.text('RECHERCHE DE MYCOPLASMES', 20, currentY)
     currentY += 5
-    doc.setFontSize(10)
+    doc.setFontSize(11)
     doc.setFont('Times', 'normal')
 
     if (naturePrelevement) {
@@ -2792,7 +2792,7 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
 
   const renderConclusion = (doc, test, currentY, invoice) => {
     currentY = checkNewPage(doc, currentY, invoice)
-    doc.setFontSize(10)
+    doc.setFontSize(11)
     doc.setFont('Times', 'bold')
     doc.text('CONCLUSION', 20, currentY)
     currentY += 5
@@ -2802,7 +2802,7 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     doc.text(conclusionLines, 20, currentY)
 
     currentY += conclusionLines.length * 5
-    doc.setFontSize(10)
+    doc.setFontSize(11)
     doc.setFont('Times', 'normal')
     currentY += 5
 
@@ -2824,7 +2824,7 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
       currentY = checkSpace(doc, currentY, neededHeight, invoice)
       currentY += 5 // petit espacement avant le bloc antibiogramme
 
-      doc.setFontSize(10)
+      doc.setFontSize(11)
       doc.setFont('Times', 'bold')
       doc.text(`ANTIBIOGRAMME : ${germe.nom}`, 42, currentY)
       currentY += 7
@@ -2879,7 +2879,7 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     // pas de titres, pas de signature.
     if (isTechnical) {
       const currentY = 240
-      doc.setFontSize(11)
+      doc.setFontSize(12)
       doc.setFont('Times', 'bold')
       doc.text('Validation technique', X_CENTER, currentY, { align: 'center' })
       const w = doc.getTextWidth('Validation technique')
@@ -2897,7 +2897,7 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     let currentY = 235
 
     // 1) Nom du docteur, gras, centre. Pas d'en-tete "Le Biologiste".
-    doc.setFontSize(11)
+    doc.setFontSize(12)
     doc.setFont('Times', 'bold')
     doc.text(fullName, X_CENTER, currentY, { align: 'center' })
     currentY += 5
@@ -2905,7 +2905,7 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     // 3) Titres / qualifications (profil) : 1 ligne par entree, italique.
     const profil = String(validator.profil || '').trim()
     if (profil) {
-      doc.setFontSize(9)
+      doc.setFontSize(10)
       doc.setFont('Times', 'italic')
       const lines = profil.split(/\r?\n/).filter((l) => l.trim() !== '')
       lines.forEach((line) => {
