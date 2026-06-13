@@ -289,21 +289,19 @@ const GenerateResultatButton = forwardRef(function GenerateResultatButton(
     if (ref) {
       doc.setFont('Times', 'normal')
       doc.setFontSize(opts.fontSize || 9)
-      // Place disponible entre REF_X (155) et la zone Anteriorites
-      // (qui termine vers x=158, mais est aligned-right a x=190).
-      // On garde une marge confortable de 33mm pour eviter tout overlap.
+      // Largeur dispo a droite de la valeur, avant la zone Anteriorites :
+      // REF_X = 155, zone Anteriorites commence vers x=160-165, on garde
+      // donc une marge de 33mm. getTextWidth mesure la largeur EXACTE du
+      // texte rendu avec la police + taille courante (precise, pas une
+      // estimation de wrapping comme splitTextToSize).
+      const refWidth = doc.getTextWidth(ref)
       const refMaxWidth = 33
-
-      // splitTextToSize estime le wrapping selon la largeur dispo.
-      // Si la ref tient sur 1 ligne, on l'affiche en ligne avec la valeur.
-      // Sinon, on la rejette sur la ligne suivante en pleine largeur (170mm)
-      // avec une police plus petite (8pt) pour ne pas casser l'air visuel.
-      const oneLine = doc.splitTextToSize(ref, refMaxWidth)
-      if (oneLine.length === 1) {
-        doc.text(oneLine[0], PDF_LAYOUT.REF_X, y)
+      if (refWidth <= refMaxWidth) {
+        doc.text(ref, PDF_LAYOUT.REF_X, y)
       } else {
-        // Reference longue : sur la ligne d'apres, plein largeur, italique
-        // pour distinguer du label principal. Fontsize 8 pour gain d'espace.
+        // Reference trop longue : on la rejette sur la ligne suivante
+        // en italique 8pt sur toute la largeur pour ne pas chevaucher
+        // la zone Anteriorites a droite.
         doc.setFontSize(8)
         doc.setFont('Times', 'italic')
         const wrapped = doc.splitTextToSize(ref, 170)

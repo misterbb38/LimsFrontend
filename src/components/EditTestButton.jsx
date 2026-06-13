@@ -124,6 +124,47 @@ function EditTestButton({ testId, ontestUpdated }) {
     }))
   }
 
+  // Bascule le type d'interpretation tout en preservant les donnees deja
+  // saisies. Quand on passe en 'mixed', on conserve les champs existants
+  // dans la nouvelle structure { text, columns, rows }.
+  const handleInterpretationTypeChange = (name, newType) => {
+    setFormData((prevFormData) => {
+      const prev = prevFormData[name] || {}
+      const prevContent = prev.content
+      const isPrevObject = prevContent && typeof prevContent === 'object'
+
+      let content
+      if (newType === 'text') {
+        content = isPrevObject ? prevContent.text || '' : prevContent || ''
+      } else if (newType === 'table') {
+        content = isPrevObject && prevContent.columns
+          ? { columns: prevContent.columns, rows: prevContent.rows }
+          : { columns: [], rows: [] }
+      } else { // 'mixed'
+        content = {
+          text: typeof prevContent === 'string'
+            ? prevContent
+            : (prevContent?.text || ''),
+          columns: isPrevObject && prevContent.columns ? prevContent.columns : [],
+          rows: isPrevObject && prevContent.rows ? prevContent.rows : [],
+        }
+      }
+      return { ...prevFormData, [name]: { type: newType, content } }
+    })
+  }
+
+  // Met a jour la partie texte d'une interpretation mixte sans toucher
+  // au tableau.
+  const handleMixedTextChange = (name, newText) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: {
+        ...prevFormData[name],
+        content: { ...prevFormData[name].content, text: newText },
+      },
+    }))
+  }
+
   const handleAddColumn = (interpretationName) => {
     setFormData((prevFormData) => {
       const updatedColumns = [
@@ -445,21 +486,16 @@ function EditTestButton({ testId, ontestUpdated }) {
                   className="input input-bordered"
                   value={formData.interpretationA?.type || 'text'}
                   onChange={(e) =>
-                    handleInterpretationChange(
-                      'interpretationA',
-                      e.target.value,
-                      formData.interpretationA?.content || {
-                        columns: [],
-                        rows: [],
-                      }
-                    )
+                    handleInterpretationTypeChange('interpretationA', e.target.value)
                   }
                 >
                   <option value="text">Texte</option>
                   <option value="table">Tableau</option>
+                  <option value="mixed">Mixte (Texte + Tableau)</option>
                 </select>
               </div>
-              {formData.interpretationA?.type === 'table' && (
+              {(formData.interpretationA?.type === 'table' ||
+                formData.interpretationA?.type === 'mixed') && (
                 <div className="form-control">
                   <label className="label">Tableau de l'Interprétation A</label>
                   <div>
@@ -552,20 +588,33 @@ function EditTestButton({ testId, ontestUpdated }) {
                   </table>
                 </div>
               )}
-              {formData.interpretationA?.type === 'text' && (
+              {(formData.interpretationA?.type === 'text' ||
+                formData.interpretationA?.type === 'mixed') && (
                 <div className="form-control">
-                  <label className="label">Contenu de l'Interprétation A</label>
+                  <label className="label">
+                    {formData.interpretationA?.type === 'mixed'
+                      ? "Texte de l'Interprétation A"
+                      : "Contenu de l'Interprétation A"}
+                  </label>
                   <textarea
                     className="textarea textarea-bordered"
                     name="interpretationAContent"
-                    value={formData.interpretationA?.content}
-                    onChange={(e) =>
-                      handleInterpretationChange(
-                        'interpretationA',
-                        formData.interpretationA?.type,
-                        e.target.value
-                      )
+                    value={
+                      formData.interpretationA?.type === 'mixed'
+                        ? formData.interpretationA?.content?.text || ''
+                        : formData.interpretationA?.content || ''
                     }
+                    onChange={(e) => {
+                      if (formData.interpretationA?.type === 'mixed') {
+                        handleMixedTextChange('interpretationA', e.target.value)
+                      } else {
+                        handleInterpretationChange(
+                          'interpretationA',
+                          'text',
+                          e.target.value
+                        )
+                      }
+                    }}
                   />
                 </div>
               )}
@@ -577,21 +626,16 @@ function EditTestButton({ testId, ontestUpdated }) {
                   className="input input-bordered"
                   value={formData.interpretationB?.type || 'text'}
                   onChange={(e) =>
-                    handleInterpretationChange(
-                      'interpretationB',
-                      e.target.value,
-                      formData.interpretationB?.content || {
-                        columns: [],
-                        rows: [],
-                      }
-                    )
+                    handleInterpretationTypeChange('interpretationB', e.target.value)
                   }
                 >
                   <option value="text">Texte</option>
                   <option value="table">Tableau</option>
+                  <option value="mixed">Mixte (Texte + Tableau)</option>
                 </select>
               </div>
-              {formData.interpretationB?.type === 'table' && (
+              {(formData.interpretationB?.type === 'table' ||
+                formData.interpretationB?.type === 'mixed') && (
                 <div className="form-control">
                   <label className="label">Tableau de l'Interprétation B</label>
                   <div>
@@ -684,20 +728,33 @@ function EditTestButton({ testId, ontestUpdated }) {
                   </table>
                 </div>
               )}
-              {formData.interpretationB?.type === 'text' && (
+              {(formData.interpretationB?.type === 'text' ||
+                formData.interpretationB?.type === 'mixed') && (
                 <div className="form-control">
-                  <label className="label">Contenu de l'Interprétation B</label>
+                  <label className="label">
+                    {formData.interpretationB?.type === 'mixed'
+                      ? "Texte de l'Interprétation B"
+                      : "Contenu de l'Interprétation B"}
+                  </label>
                   <textarea
                     className="textarea textarea-bordered"
                     name="interpretationBContent"
-                    value={formData.interpretationB?.content}
-                    onChange={(e) =>
-                      handleInterpretationChange(
-                        'interpretationB',
-                        formData.interpretationB?.type,
-                        e.target.value
-                      )
+                    value={
+                      formData.interpretationB?.type === 'mixed'
+                        ? formData.interpretationB?.content?.text || ''
+                        : formData.interpretationB?.content || ''
                     }
+                    onChange={(e) => {
+                      if (formData.interpretationB?.type === 'mixed') {
+                        handleMixedTextChange('interpretationB', e.target.value)
+                      } else {
+                        handleInterpretationChange(
+                          'interpretationB',
+                          'text',
+                          e.target.value
+                        )
+                      }
+                    }}
                   />
                 </div>
               )}
