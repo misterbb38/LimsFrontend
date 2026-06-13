@@ -1946,19 +1946,32 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     const interpretation = test.statutMachine ? test.testId.interpretationA : test.testId.interpretationB
     if (!interpretation) return currentY
 
-    // Normalisation : on detecte si l'interpretation contient texte ET tableau
-    // (nouveau format type 'mixed' OU ancien format ou content possede
-    // .text + .columns/.rows). Cela permet aux praticiens de combiner un
-    // paragraphe d'explication et une grille de seuils dans une seule
-    // interpretation, sans dupliquer la section.
+    // Debug : permet de tracer le contenu exact recu pour diagnostiquer
+    // les cas ou texte ou tableau ne s'affiche pas (mauvais format,
+    // donnees vides, type incorrect...).
+    console.log('[INTERPRETATION DEBUG]', {
+      type: interpretation.type,
+      contentType: typeof interpretation.content,
+      content: interpretation.content,
+    })
+
+    // Normalisation tolerante : detecte texte/tableau independamment du
+    // champ "type", en se basant sur la structure reelle du content.
+    // Ainsi un content {text, columns, rows} affiche les deux meme si
+    // type='text' a ete sauve par erreur (donnees historiques).
     const content = interpretation.content || {}
-    const hasText =
-      (typeof content === 'string' && content.trim() !== '') ||
-      (typeof content.text === 'string' && content.text.trim() !== '')
+    const isStringContent = typeof content === 'string'
+    const textBody = isStringContent ? content : (content.text || '')
+    const hasText = typeof textBody === 'string' && textBody.trim() !== ''
+    // Table consideree presente si columns/rows existent ET au moins une
+    // cellule non vide (evite les tableaux fantomes vides qui prennent
+    // de la place sans rien afficher).
+    const cols = Array.isArray(content.columns) ? content.columns : []
+    const rows = Array.isArray(content.rows) ? content.rows : []
     const hasTable =
-      Array.isArray(content.columns) && Array.isArray(content.rows) &&
-      content.columns.length > 0 && content.rows.length > 0
-    const textBody = typeof content === 'string' ? content : (content.text || '')
+      cols.length > 0 && rows.length > 0 &&
+      (cols.some((c) => c && String(c).trim() !== '') ||
+       rows.some((r) => Array.isArray(r) && r.some((c) => c && String(c).trim() !== '')))
 
     // Largeur dispo pour le texte d'interpretation : entre PDF_LAYOUT.LABEL_X
     // (25) et la marge droite (190) = 165mm. Courier etant plus large que
@@ -1997,20 +2010,21 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
     }
 
     // Rendu de la partie tableau (si presente, ET en plus du texte si les
-    // deux existent)
+    // deux existent). Utilise cols/rows normalisees (depuis content.columns/rows).
     if (hasTable) {
       doc.setFontSize(9)
       doc.setFont('Times', 'bold')
-      content.columns.forEach((col, colIndex) => {
-        doc.text(String(col), PDF_LAYOUT.LABEL_X + colIndex * 40, currentY)
+      cols.forEach((col, colIndex) => {
+        doc.text(String(col || ''), PDF_LAYOUT.LABEL_X + colIndex * 40, currentY)
       })
       currentY += 5
 
       doc.setFont('Times', 'normal')
-      content.rows.forEach((row) => {
+      rows.forEach((row) => {
         currentY = checkNewPage(doc, currentY, invoice)
-        row.forEach((cell, cellIndex) => {
-          doc.text(String(cell), PDF_LAYOUT.LABEL_X + cellIndex * 40, currentY)
+        const cells = Array.isArray(row) ? row : []
+        cells.forEach((cell, cellIndex) => {
+          doc.text(String(cell || ''), PDF_LAYOUT.LABEL_X + cellIndex * 40, currentY)
         })
         currentY += 5
       })
