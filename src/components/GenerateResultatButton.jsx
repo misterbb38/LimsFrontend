@@ -2896,25 +2896,11 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     const SIG_W = 40
     let currentY = 235
 
-    // 1) En-tete "Le Biologiste", gras souligne, centre.
+    // 1) Nom du docteur, gras, centre. Pas d'en-tete "Le Biologiste".
     doc.setFontSize(11)
     doc.setFont('Times', 'bold')
-    doc.text('Le Biologiste', X_CENTER, currentY, { align: 'center' })
-    const headerWidth = doc.getTextWidth('Le Biologiste')
-    doc.setLineWidth(0.3)
-    doc.line(
-      X_CENTER - headerWidth / 2,
-      currentY + 1,
-      X_CENTER + headerWidth / 2,
-      currentY + 1
-    )
-    currentY += 5
-
-    // 2) Nom du docteur, gras, centre.
-    doc.setFontSize(10)
-    doc.setFont('Times', 'bold')
     doc.text(fullName, X_CENTER, currentY, { align: 'center' })
-    currentY += 4
+    currentY += 5
 
     // 3) Titres / qualifications (profil) : 1 ligne par entree, italique.
     const profil = String(validator.profil || '').trim()
