@@ -284,10 +284,38 @@ const GenerateResultatButton = forwardRef(function GenerateResultatButton(
     doc.setFont('Times', opts.valueBold ? 'bold' : 'normal')
     if (val) doc.text(val, PDF_LAYOUT.VALUE_X, y, { align: 'center' })
 
-    doc.setFont('Times', 'normal')
-    if (ref) doc.text(ref, PDF_LAYOUT.REF_X, y)
+    let nextY = y + PDF_LAYOUT.ROW_H
 
-    return y + PDF_LAYOUT.ROW_H
+    if (ref) {
+      doc.setFont('Times', 'normal')
+      doc.setFontSize(opts.fontSize || 9)
+      // Place disponible entre REF_X (155) et la zone Anteriorites
+      // (qui termine vers x=158, mais est aligned-right a x=190).
+      // On garde une marge confortable de 33mm pour eviter tout overlap.
+      const refMaxWidth = 33
+
+      // splitTextToSize estime le wrapping selon la largeur dispo.
+      // Si la ref tient sur 1 ligne, on l'affiche en ligne avec la valeur.
+      // Sinon, on la rejette sur la ligne suivante en pleine largeur (170mm)
+      // avec une police plus petite (8pt) pour ne pas casser l'air visuel.
+      const oneLine = doc.splitTextToSize(ref, refMaxWidth)
+      if (oneLine.length === 1) {
+        doc.text(oneLine[0], PDF_LAYOUT.REF_X, y)
+      } else {
+        // Reference longue : sur la ligne d'apres, plein largeur, italique
+        // pour distinguer du label principal. Fontsize 8 pour gain d'espace.
+        doc.setFontSize(8)
+        doc.setFont('Times', 'italic')
+        const wrapped = doc.splitTextToSize(ref, 170)
+        nextY = checkNewPage(doc, nextY, invoice)
+        doc.text(wrapped, PDF_LAYOUT.LABEL_X + 5, nextY)
+        nextY += wrapped.length * 4 + 1
+        doc.setFontSize(opts.fontSize || 9)
+        doc.setFont('Times', 'normal')
+      }
+    }
+
+    return nextY
   }
 
   // const printHematiesLine = (doc, posY, label, value, unit, ref) => {
@@ -1916,49 +1944,67 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
   // ✅ SEULE FONCTION AUTORISÉE À AFFICHER DES INTERPRÉTATIONS
   const renderInterpretation = (doc, test, currentY, invoice) => {
     const interpretation = test.statutMachine ? test.testId.interpretationA : test.testId.interpretationB
-
     if (!interpretation) return currentY
 
-    let interpretationHeight = 0
-    let interpretationLines = []
+    // Normalisation : on detecte si l'interpretation contient texte ET tableau
+    // (nouveau format type 'mixed' OU ancien format ou content possede
+    // .text + .columns/.rows). Cela permet aux praticiens de combiner un
+    // paragraphe d'explication et une grille de seuils dans une seule
+    // interpretation, sans dupliquer la section.
+    const content = interpretation.content || {}
+    const hasText =
+      (typeof content === 'string' && content.trim() !== '') ||
+      (typeof content.text === 'string' && content.text.trim() !== '')
+    const hasTable =
+      Array.isArray(content.columns) && Array.isArray(content.rows) &&
+      content.columns.length > 0 && content.rows.length > 0
+    const textBody = typeof content === 'string' ? content : (content.text || '')
 
-    if (interpretation.type === 'text') {
-      interpretationLines = doc.splitTextToSize(interpretation.content, 100)
-      interpretationHeight = 5 * interpretationLines.length + 10
-    } else if (interpretation.type === 'table') {
-      const { rows } = interpretation.content
-      interpretationHeight = 5 + rows.length * 5 + 10
+    // Calcul de la hauteur necessaire (texte + tableau eventuels)
+    let neededHeight = 10 // titre "Interpretation:" + marge
+    let textLines = []
+    if (hasText) {
+      textLines = doc.splitTextToSize(textBody, 170)
+      neededHeight += textLines.length * 5 + 3
     }
+    if (hasTable) {
+      neededHeight += 5 + content.rows.length * 5 + 5
+    }
+    currentY = checkSpace(doc, currentY, neededHeight, invoice)
 
-    // Vérifier qu'on a assez d'espace
-    currentY = checkSpace(doc, currentY, interpretationHeight, invoice)
-
+    // Titre de section
     doc.setFontSize(10)
     doc.setFont('Times', 'bold')
-    doc.text('Interprétation:', 20, currentY)
-    currentY += 5
+    doc.text('Interprétation:', PDF_LAYOUT.LABEL_X, currentY)
+    currentY += 6
 
-    if (interpretation.type === 'text') {
+    // Rendu de la partie texte (si presente)
+    if (hasText) {
       doc.setFontSize(9)
       doc.setFont('Courier', 'normal')
-      doc.text(interpretationLines, 20, currentY)
-      currentY += interpretationHeight
-    } else if (interpretation.type === 'table') {
+      doc.text(textLines, PDF_LAYOUT.LABEL_X, currentY)
+      currentY += textLines.length * 5 + 3
+    }
+
+    // Rendu de la partie tableau (si presente, ET en plus du texte si les
+    // deux existent)
+    if (hasTable) {
       doc.setFontSize(9)
       doc.setFont('Times', 'bold')
-      interpretation.content.columns.forEach((col, colIndex) => {
-        doc.text(col, 20 + colIndex * 40, currentY)
+      content.columns.forEach((col, colIndex) => {
+        doc.text(String(col), PDF_LAYOUT.LABEL_X + colIndex * 40, currentY)
       })
       currentY += 5
 
       doc.setFont('Times', 'normal')
-      interpretation.content.rows.forEach((row) => {
+      content.rows.forEach((row) => {
         currentY = checkNewPage(doc, currentY, invoice)
         row.forEach((cell, cellIndex) => {
-          doc.text(cell, 20 + cellIndex * 40, currentY)
+          doc.text(String(cell), PDF_LAYOUT.LABEL_X + cellIndex * 40, currentY)
         })
         currentY += 5
       })
+      currentY += 2
     }
 
     return currentY
