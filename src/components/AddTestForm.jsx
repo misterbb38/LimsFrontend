@@ -2569,28 +2569,44 @@ function AddTestForm({ onTestChange }) {
         {/* Ajout de champs pour les machines */}
         <div>
           <label className="text-sm font-medium base-content">
-            Valeur d'interprétation Machine A
+            Valeur de référence Machine A
           </label>
           <br />
           <textarea
-            type="text"
             value={valeurMachineA}
             onChange={(e) => setValeurMachineA(e.target.value)}
+            placeholder="Ex : < 30 mg/g, 0,9 - 1,2, > 70 %"
             className="input input-bordered input-primary w-full max-w-xs"
             maxLength="600"
           />
+          {valeurMachineA && valeurMachineA.length > 30 && (
+            <span className="block text-warning text-sm mt-1 max-w-xs">
+              ⚠ Référence trop longue ({valeurMachineA.length} car.).
+              Préférez laisser ce champ vide et saisir un{' '}
+              <strong>tableau dans l'Interprétation A</strong>{' '}
+              (positive/négative, homme/femme, seuils multiples…).
+            </span>
+          )}
         </div>
         <div>
           <label className="text-sm font-medium base-content">
-            Valeur d'interprétation Machine B
+            Valeur de référence Machine B
           </label>
           <br />
           <textarea
-            type="text"
             value={valeurMachineB}
             onChange={(e) => setValeurMachineB(e.target.value)}
+            placeholder="Ex : < 30 mg/g, 0,9 - 1,2, > 70 %"
             className="input input-bordered input-primary w-full max-w-xs"
           />
+          {valeurMachineB && valeurMachineB.length > 30 && (
+            <span className="block text-warning text-sm mt-1 max-w-xs">
+              ⚠ Référence trop longue ({valeurMachineB.length} car.).
+              Préférez laisser ce champ vide et saisir un{' '}
+              <strong>tableau dans l'Interprétation B</strong>{' '}
+              (positive/négative, homme/femme, seuils multiples…).
+            </span>
+          )}
         </div>
         <div>
           <label className="text-sm font-medium base-content">Machine A</label>

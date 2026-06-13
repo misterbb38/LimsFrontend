@@ -438,25 +438,45 @@ function EditTestButton({ testId, ontestUpdated }) {
               </div>
 
               <div className="form-control">
-                <label className="label">Valeur Machine A</label>
+                <label className="label">Valeur de référence Machine A</label>
                 <input
                   className="input input-bordered"
                   type="text"
                   name="valeurMachineA"
                   value={formData.valeurMachineA}
                   onChange={handleChange}
+                  placeholder="Ex : < 30 mg/g, 0,9 - 1,2, > 70 %"
                 />
+                {formData.valeurMachineA &&
+                  formData.valeurMachineA.length > 30 && (
+                    <span className="text-warning text-sm mt-1">
+                      ⚠ Référence trop longue ({formData.valeurMachineA.length}{' '}
+                      car.). Préférez laisser ce champ vide et saisir un{' '}
+                      <strong>tableau dans l'Interprétation A</strong>{' '}
+                      (positive / négative, homme / femme, seuils multiples…).
+                    </span>
+                  )}
               </div>
 
               <div className="form-control">
-                <label className="label">Valeur Machine B</label>
+                <label className="label">Valeur de référence Machine B</label>
                 <input
                   className="input input-bordered"
                   type="text"
                   name="valeurMachineB"
                   value={formData.valeurMachineB}
                   onChange={handleChange}
+                  placeholder="Ex : < 30 mg/g, 0,9 - 1,2, > 70 %"
                 />
+                {formData.valeurMachineB &&
+                  formData.valeurMachineB.length > 30 && (
+                    <span className="text-warning text-sm mt-1">
+                      ⚠ Référence trop longue ({formData.valeurMachineB.length}{' '}
+                      car.). Préférez laisser ce champ vide et saisir un{' '}
+                      <strong>tableau dans l'Interprétation B</strong>{' '}
+                      (positive / négative, homme / femme, seuils multiples…).
+                    </span>
+                  )}
               </div>
 
               <div className="form-control">
