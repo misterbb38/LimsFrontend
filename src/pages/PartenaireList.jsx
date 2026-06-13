@@ -26,8 +26,14 @@ function PartenaireList() {
       })
       const data = await response.json()
       if (data.success) {
-        setpartenaires(data.data)
-        setDisplayedPartenaires(data.data)
+        // Cette page est dediee a Assurance/IPM/Sococim. Les cliniques
+        // partenaires ont leur propre page (PartenaireCliniqueList) et
+        // sont referencees independamment dans les analyses.
+        const sansCliniques = (data.data || []).filter(
+          (p) => p.typePartenaire !== 'clinique'
+        )
+        setpartenaires(sansCliniques)
+        setDisplayedPartenaires(sansCliniques)
       } else {
         console.error('Failed to fetch partenaires')
       }

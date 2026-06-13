@@ -1,127 +1,133 @@
 import { useEffect, useState } from 'react'
-import EditPatientButton from '../components/EditPatientButton' // Ajustez le chemin d'importation selon votre structure de fichiers
 import NavigationBreadcrumb from '../components/NavigationBreadcrumb'
 import Chatbot from '../components/Chatbot'
-import SignUp from '../components/Auth/SignUp'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash } from '@fortawesome/free-solid-svg-icons'
+import AddCliniqueForm from '../components/AddCliniqueForm'
+import EditCliniqueButton from '../components/EditCliniqueButton'
 
-function Personnel() {
-  const [personnel, setpersonnel] = useState([])
-
-  const [loading, setLoading] = useState(false)
+// Page "Partenaire" du sidebar : liste les cliniques partenaires
+// (entrees de la collection Partenaire avec typePartenaire='clinique').
+// Le contexte est purement cabinet medical / centre de soin partenaire
+// du laboratoire ; aucune logique de facturation specifique ici (la
+// facturation des assurances/IPM est dans la page Assurance/IPM).
+function PartenaireCliniqueList() {
+  const [cliniques, setCliniques] = useState([])
+  const [displayed, setDisplayed] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [loading, setLoading] = useState(false)
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
 
-  // Fonction pour charger les personnel
-  const fetchpersonnel = async () => {
-    setLoading(true) // Commencer le chargement
+  const fetchCliniques = async () => {
+    setLoading(true)
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'))
       const token = userInfo?.token
-      const response = await fetch(`${apiUrl}/api/user/partenaireclinique`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      const data = await response.json()
-      if (data.success) {
-        setpersonnel(data.data)
-        setFilteredpersonnel(data.data)
-      } else {
-        console.error('Failed to fetch personnel')
+      // Fetch en parallele : la liste des partenaires (filtree sur
+      // clinique) ET la liste des comptes utilisateurs type=partenaire
+      // (qui detiennent le vrai NIP utilise pour l'authentification).
+      const [partRes, userRes] = await Promise.all([
+        fetch(`${apiUrl}/api/partenaire`, {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`${apiUrl}/api/user/partenaireclinique`, {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ])
+      const partData = await partRes.json()
+      const userData = await userRes.json()
+      if (!partData.success) {
+        console.error('Failed to fetch cliniques')
+        return
       }
+      // Mappe partenaireId -> { nip, userId } recupere depuis User
+      const userByPartenaireId = new Map()
+      if (userData.success && Array.isArray(userData.data)) {
+        userData.data.forEach((u) => {
+          const pid =
+            u.partenaireId && (u.partenaireId._id || u.partenaireId)
+          if (pid) {
+            userByPartenaireId.set(String(pid), {
+              userId: u._id,
+              nip: u.nip,
+            })
+          }
+        })
+      }
+      const cliniquesOnly = (partData.data || [])
+        .filter((p) => p.typePartenaire === 'clinique')
+        .map((c) => {
+          const u = userByPartenaireId.get(String(c._id))
+          return {
+            ...c,
+            nip: u?.nip || c.nip || '',
+            userId: u?.userId || null,
+          }
+        })
+      setCliniques(cliniquesOnly)
+      setDisplayed(cliniquesOnly)
     } catch (error) {
-      console.error('Error fetching personnel:', error)
+      console.error('Error fetching cliniques:', error)
     } finally {
-      setLoading(false) // Arrêter le chargement une fois que les données sont récupérées ou en cas d'erreur
+      setLoading(false)
     }
   }
-  const handleSearchTermChange = (event) => {
-    const { value } = event.target
-    setSearchTerm(value)
-    filterpersonnel(value) // Applique le filtre dès que le terme de recherche change
-  }
 
-  const filterpersonnel = (searchTerm) => {
-    if (!searchTerm) {
-      fetchpersonnel() // Si le champ de recherche est vide, réaffiche tous les personnel
-      return
-    }
-    const searchTermLower = searchTerm.toLowerCase()
-    const filtered = personnel.filter((patient) =>
-      patient.telephone.toLowerCase().includes(searchTermLower)
-    )
-    setpersonnel(filtered) // Met à jour l'état `personnel` avec les personnel filtrés
-  }
-
-  // Utilisez useEffect pour charger les personnel au montage du composant
   useEffect(() => {
-    fetchpersonnel()
+    fetchCliniques()
   }, [])
 
-  // Définir refreshpersonnel comme un appel à fetchpersonnel pour recharger les données
-  const refreshpersonnel = () => {
-    fetchpersonnel()
+  const refresh = () => fetchCliniques()
+
+  const handleSearch = (value) => {
+    setSearchTerm(value)
+    const term = value.toLowerCase()
+    if (!term) {
+      setDisplayed(cliniques)
+      return
+    }
+    setDisplayed(
+      cliniques.filter(
+        (c) =>
+          (c.nom || '').toLowerCase().includes(term) ||
+          (c.telephone || '').toLowerCase().includes(term) ||
+          (c.nip || '').toLowerCase().includes(term)
+      )
+    )
   }
 
-  // Fonction pour supprimer un patient
-  const deletePatient = async (patientId) => {
+  const deleteClinique = async (id) => {
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'))
       const token = userInfo?.token
-      const response = await fetch(`${apiUrl}/api/user/${patientId}`, {
+      const response = await fetch(`${apiUrl}/api/partenaire/${id}`, {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
       const data = await response.json()
-      if (data.success) {
-        // Rafraîchir la liste des personnel après la suppression
-        alert('Personnel supprimé avec succès.')
-        fetchpersonnel()
-      } else {
-        console.error('Failed to delete patient')
-      }
+      if (data.success) fetchCliniques()
+      else console.error('Failed to delete clinique')
     } catch (error) {
-      console.error('Error deleting patient:', error)
+      console.error('Error deleting clinique:', error)
     }
   }
 
-  // Récupérer les informations de l'utilisateur stockées localement
+  // Verification du role : seuls superadmin, medecin, technicien,
+  // preleveur ont acces a la gestion des cliniques.
   const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-
-  // Vérifier si le type d'utilisateur est autorisé
   if (
-    !['superadmin', 'medecin', 'technicien', 'preleveur'].includes(
+    !['superadmin', 'medecin', 'technicien', 'preleveur', 'docteur'].includes(
       userInfo?.userType
     )
   ) {
-    // Si l'utilisateur n'est pas autorisé, retourner un message d'erreur ou un composant spécifique
     return (
       <div role="alert" className="alert alert-warning">
-        <font></font>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="stroke-current shrink-0 h-6 w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-          />
-        </svg>
-        <font></font>
         <span>
-          {' '}
-          Informations non autorisées. Vous n'avez pas le droit d'accéder à
-          cette page.
+          Informations non autorisées. Vous n&apos;avez pas le droit
+          d&apos;accéder à cette page.
         </span>
-        <font></font>
       </div>
     )
   }
@@ -129,40 +135,39 @@ function Personnel() {
   return (
     <div className="base-content bg-base-100 mx-auto p-4 min-h-[800px]">
       <Chatbot />
-      <NavigationBreadcrumb pageName="Partenaire" />
-      {/* You can open the modal using document.getElementById('ID').showModal() method */}
+      <NavigationBreadcrumb pageName="Clinique partenaire" />
 
       <button
         className="btn"
-        onClick={() => document.getElementById('my_modal_4').showModal()}
+        onClick={() => document.getElementById('add_clinique_modal').showModal()}
       >
-        Ajouter un compte Partenaire/clinique
+        Ajouter une clinique partenaire
       </button>
-      <br></br>
 
       <input
         type="text"
-        placeholder="Rechercher par téléphone..."
+        placeholder="Rechercher par nom, téléphone ou NIP..."
         value={searchTerm}
-        onChange={handleSearchTermChange}
-        className="input input-bordered input-primary w-full max-w-xs my-4"
+        onChange={(e) => handleSearch(e.target.value)}
+        className="input input-bordered input-primary w-full max-w-xs my-4 ml-4"
       />
 
-      <dialog id="my_modal_4" className="modal">
-        <div className="modal-box modal-xl max-h-[90vh] overflow-y-auto">
-          <SignUp onUser={refreshpersonnel} />
-          <div className="modal-action">
-            <form method="dialog">
-              {/* if there is a button, it will close the modal */}
-              <button className="btn">Fermer</button>
-            </form>
-          </div>
+      <dialog id="add_clinique_modal" className="modal">
+        <div className="modal-box max-h-[90vh] overflow-y-auto">
+          <form method="dialog">
+            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+              ✕
+            </button>
+          </form>
+          <AddCliniqueForm onPartenaireChange={refresh} />
         </div>
       </dialog>
+
       <div className="divider"></div>
+
       {loading ? (
         <div className="loading loading-spinner text-primary">
-          <div className="loader">Chargement...</div>
+          Chargement...
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -170,8 +175,6 @@ function Personnel() {
             <thead>
               <tr>
                 <th className="font-bold text-lg text-base-content">Nom</th>
-                <th className="font-bold text-lg text-base-content">Email</th>
-
                 <th className="font-bold text-lg text-base-content">
                   Téléphone
                 </th>
@@ -180,22 +183,20 @@ function Personnel() {
               </tr>
             </thead>
             <tbody>
-              {personnel.map((patient) => (
-                <tr key={patient._id}>
-                  <td>{patient.partenaireId.nom}</td>
-                  <td>{patient.email}</td>
-
-                  <td>{patient.telephone}</td>
-                  <td>{patient.nip}</td>
+              {displayed.map((c) => (
+                <tr key={c._id}>
+                  <td>{c.nom}</td>
+                  <td>{c.telephone}</td>
+                  <td className="font-mono">{c.nip || '-'}</td>
                   <td>
-                    <div className="flex justify-around space-x-1">
-                      <EditPatientButton
-                        userId={patient._id}
-                        onuserUpdated={refreshpersonnel}
+                    <div className="flex space-x-1">
+                      <EditCliniqueButton
+                        userId={c.userId}
+                        onPartenaireUpdated={refresh}
                       />
                       <button
                         className="btn btn-error"
-                        onClick={() => deletePatient(patient._id)}
+                        onClick={() => deleteClinique(c._id)}
                       >
                         <FontAwesomeIcon icon={faTrash} />
                       </button>
@@ -211,4 +212,4 @@ function Personnel() {
   )
 }
 
-export default Personnel
+export default PartenaireCliniqueList

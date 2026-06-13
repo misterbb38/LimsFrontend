@@ -26,6 +26,11 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
   const [selectedPartenaireId, setSelectedPartenaireId] = useState('')
   const [pourcentageCouverture, setPourcentageCouverture] = useState(0)
 
+  // Clinique partenaire (separe d'assurance/IPM, juste informationnel).
+  const [hasCliniquePartenaire, setHasCliniquePartenaire] = useState('')
+  const [selectedCliniqueId, setSelectedCliniqueId] = useState('')
+  const [searchTermClinique, setSearchTermClinique] = useState('')
+
   const [hasReduction, setHasReduction] = useState('')
   const [reductionType, setReductionType] = useState('pourcentage')
   const [reductionValue, setReductionValue] = useState(0)
@@ -112,6 +117,14 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
         setHasInsurance(!!partenaireId ? 'oui' : 'non')
         setSelectedPartenaireId(partenaireId)
         setPourcentageCouverture(data.data.pourcentageCouverture || 0)
+
+        // Pre-remplit la clinique partenaire si l'analyse en a une.
+        const cliniqueId =
+          data.data.cliniquePartenaireId && data.data.cliniquePartenaireId._id
+            ? data.data.cliniquePartenaireId._id
+            : ''
+        setHasCliniquePartenaire(cliniqueId ? 'oui' : 'non')
+        setSelectedCliniqueId(cliniqueId)
         setHasReduction(data.data.reduction > 0 ? 'oui' : 'non')
         setReductionType(data.data.typeReduction || 'pourcentage')
         setReductionValue(data.data.reduction || 0)
@@ -176,16 +189,32 @@ setPc2Quantity(data.data.pc2 > 0 ? Math.round(data.data.pc2 / 4000) : 0)
           .sort((a, b) => a.nom.localeCompare(b.nom)) // Ajout du tri alphabétique
       : availableTests.sort((a, b) => a.nom.localeCompare(b.nom))
 
+  // Le bloc Assurance/IPM ne liste QUE assurance/ipm/sococim.
+  const partenairesAssurance = partenaires.filter((p) =>
+    ['assurance', 'ipm', 'sococim'].includes(p.typePartenaire)
+  )
   const filteredPartenaires =
     searchTermPartenaire.length > 0
-      ? partenaires
+      ? partenairesAssurance
           .filter((partenaire) =>
             partenaire.nom
               .toLowerCase()
               .includes(searchTermPartenaire.toLowerCase())
           )
-          .sort((a, b) => a.nom.localeCompare(b.nom)) // Ajout du tri alphabétique
-      : partenaires.sort((a, b) => a.nom.localeCompare(b.nom))
+          .sort((a, b) => a.nom.localeCompare(b.nom))
+      : partenairesAssurance.sort((a, b) => a.nom.localeCompare(b.nom))
+
+  const cliniquesPartenaires = partenaires.filter(
+    (p) => p.typePartenaire === 'clinique'
+  )
+  const filteredCliniques =
+    searchTermClinique.length > 0
+      ? cliniquesPartenaires
+          .filter((c) =>
+            c.nom.toLowerCase().includes(searchTermClinique.toLowerCase())
+          )
+          .sort((a, b) => a.nom.localeCompare(b.nom))
+      : cliniquesPartenaires.sort((a, b) => a.nom.localeCompare(b.nom))
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -215,6 +244,14 @@ formData.append('pc2', pc2Quantity * 4000) // Calculer le montant total PC2
       formData.append('partenaireId', selectedPartenaireId)
       // Assumer que pourcentageCouverture a une valeur valide si selectedPartenaireId est présent
       formData.append('pourcentageCouverture', pourcentageCouverture.toString())
+    }
+
+    // Clinique partenaire (informationnel). On envoie toujours la cle
+    // pour permettre au backend de la vider si "non" est selectionne.
+    if (hasCliniquePartenaire === 'oui' && selectedCliniqueId) {
+      formData.append('cliniquePartenaireId', selectedCliniqueId)
+    } else if (hasCliniquePartenaire === 'non') {
+      formData.append('cliniquePartenaireId', '')
     }
     // De même, pour la réduction, vérifie que reductionType n'est pas vide
     if (reductionType && reductionValue > 0) {
@@ -324,6 +361,67 @@ formData.append('pc2', pc2Quantity * 4000) // Calculer le montant total PC2
                   <option value="Interne">Interne</option>
                   <option value="Externe">Externe</option>
                 </select>
+              </div>
+
+              {/* Bloc Clinique partenaire (separe, informationnel). */}
+              <div className="form-control">
+                <label className="cursor-pointer label">
+                  <span className="label-text">
+                    Le patient vient-il d&apos;une clinique partenaire ?
+                  </span>
+                  <div className="flex mt-2">
+                    <input
+                      type="radio"
+                      name="hasCliniquePartenaire"
+                      className="radio radio-primary"
+                      value="oui"
+                      checked={hasCliniquePartenaire === 'oui'}
+                      onChange={() => setHasCliniquePartenaire('oui')}
+                    />{' '}
+                    <span className="ml-2">Oui</span>
+                    <input
+                      type="radio"
+                      name="hasCliniquePartenaire"
+                      className="radio radio-primary ml-4"
+                      value="non"
+                      checked={hasCliniquePartenaire === 'non'}
+                      onChange={() => {
+                        setHasCliniquePartenaire('non')
+                        setSelectedCliniqueId('')
+                      }}
+                    />{' '}
+                    <span className="ml-2">Non</span>
+                  </div>
+                </label>
+                {hasCliniquePartenaire === 'oui' && (
+                  <>
+                    <div>
+                      <label className="label">
+                        <span className="label-text">Filtre Clinique</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Rechercher une clinique..."
+                        value={searchTermClinique}
+                        onChange={(e) => setSearchTermClinique(e.target.value)}
+                        className="input input-bordered w-full max-w-xs"
+                      />
+                    </div>
+                    <select
+                      className="select select-primary w-full max-w-xs mt-2"
+                      value={selectedCliniqueId}
+                      onChange={(e) => setSelectedCliniqueId(e.target.value)}
+                      required
+                    >
+                      <option value="">Sélectionner une clinique</option>
+                      {filteredCliniques.map((c) => (
+                        <option key={c._id} value={c._id}>
+                          {c.nom}
+                        </option>
+                      ))}
+                    </select>
+                  </>
+                )}
               </div>
 
               <div className="form-control">

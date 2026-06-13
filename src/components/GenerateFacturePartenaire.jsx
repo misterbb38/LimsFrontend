@@ -239,7 +239,7 @@ import PropTypes from 'prop-types'
 import logoLeft from '../images/bioramlogo.png'
 import logoRight from '../images/logo2.png'
 
-function GenerateFacturePartenaire({ partner, mois, annee }) {
+function GenerateFacturePartenaire({ partner, mois, annee, label = 'PARTENAIRE' }) {
   const [user, setUser] = useState({
     nom: '',
     prenom: '',
@@ -457,7 +457,7 @@ function GenerateFacturePartenaire({ partner, mois, annee }) {
       doc.setFont('helvetica', 'bold')
       doc.text(`FACTURE`, 90, currentY - 3)
       doc.setFontSize(10)
-      doc.text(`PARTENAIRE: ${partner.partenaire || ''}`, 20, currentY + 2)
+      doc.text(`${label}: ${partner.partenaire || ''}`, 20, currentY + 2)
       doc.setFontSize(8)
       doc.text(`Nombre de factures: ${partner.count || ''}`, 20, currentY + 17)
       const reference = `${partner.partenaire || ''}-${mois || ''}${annee || ''}`
@@ -543,6 +543,7 @@ GenerateFacturePartenaire.propTypes = {
   partner: PropTypes.object.isRequired,
   mois: PropTypes.string,
   annee: PropTypes.string,
+  label: PropTypes.string,
 }
 
 export default GenerateFacturePartenaire

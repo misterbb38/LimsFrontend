@@ -25,7 +25,6 @@ function FiltrePartenaire({ onFilter }) {
         <option value="">Choisir un type de partenaire</option>
         <option value="assurance">Assurance</option>
         <option value="ipm">IPM</option>
-        <option value="clinique">Clinique</option>
         <option value="sococim">Sococim</option>
       </select>
       <button

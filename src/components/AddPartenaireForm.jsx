@@ -103,7 +103,7 @@ function AddPartenaireForm({ onPartenaireChange }) {
             </option>
             <option value="assurance">assurance</option>
             <option value="ipm">ipm</option>
-            <option value="clinique">Clinique</option>
+            <option value="sococim">sococim</option>
           </select>
         </div>
 

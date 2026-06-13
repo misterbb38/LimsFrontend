@@ -14,6 +14,10 @@ function CreateAnalyseForm({ onAnalyseChange, preselectedUserId }) {
   const [selectedUserId, setSelectedUserId] = useState(preselectedUserId || '')
   const [hasInsurance, setHasInsurance] = useState('')
   const [selectedPartenaireId, setSelectedPartenaireId] = useState('')
+  // Clinique partenaire (separe d'assurance/IPM, juste informationnel).
+  const [hasCliniquePartenaire, setHasCliniquePartenaire] = useState('')
+  const [selectedCliniqueId, setSelectedCliniqueId] = useState('')
+  const [searchTermClinique, setSearchTermClinique] = useState('')
   const [statusPayement, setStatusPayement] = useState('')
   const [typeAnalyse, setTypeAnalyse] = useState('Interne')
   const [pourcentageCouverture, setPourcentageCouverture] = useState('')
@@ -189,14 +193,29 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
         )
       : users
 
+  // Le bloc "Assurance/IPM" ne doit lister QUE assurance/ipm/sococim.
+  // Les cliniques partenaires ont leur propre bloc en-dessous.
+  const partenairesAssurance = partenaires.filter((p) =>
+    ['assurance', 'ipm', 'sococim'].includes(p.typePartenaire)
+  )
   const filteredPartenaires =
     searchTermPartenaire.length > 0
-      ? partenaires.filter((partenaire) =>
+      ? partenairesAssurance.filter((partenaire) =>
           partenaire.nom
             .toLowerCase()
             .includes(searchTermPartenaire.toLowerCase())
         )
-      : partenaires
+      : partenairesAssurance
+
+  const cliniquesPartenaires = partenaires.filter(
+    (p) => p.typePartenaire === 'clinique'
+  )
+  const filteredCliniques =
+    searchTermClinique.length > 0
+      ? cliniquesPartenaires.filter((c) =>
+          c.nom.toLowerCase().includes(searchTermClinique.toLowerCase())
+        )
+      : cliniquesPartenaires
 
   // Ajout d'une fonction pour réinitialiser le formulaire
   // const resetForm = () => {
@@ -226,6 +245,9 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
   setSearchTermPatient('')
   setPc1Quantity(0)
   setPc2Quantity(0)
+  setHasCliniquePartenaire('')
+  setSelectedCliniqueId('')
+  setSearchTermClinique('')
 }
 
   const handleSubmit = async (e) => {
@@ -264,6 +286,11 @@ if (pc2Quantity > 0) formData.append('pc2', pc2Quantity * 4000)
     if (hasInsurance === 'oui') {
       formData.append('partenaireId', selectedPartenaireId)
       formData.append('pourcentageCouverture', pourcentageCouverture)
+    }
+
+    // Clinique partenaire (informationnel, n'affecte pas le calcul).
+    if (hasCliniquePartenaire === 'oui' && selectedCliniqueId) {
+      formData.append('cliniquePartenaireId', selectedCliniqueId)
     }
 
     if (hasReduction) {
@@ -416,11 +443,78 @@ if (pc2Quantity > 0) formData.append('pc2', pc2Quantity * 4000)
               </select>
             </div>
 
-            {/* Ajout des boutons radio pour l'assurance */}
+            {/* Bloc Clinique partenaire (informationnel : reception des
+                resultats par la clinique, pas de couverture facturee). */}
             <div className="form-control">
               <label className="cursor-pointer label">
                 <span className="label-text">
-                  Le patient a t-il une partenaire ?
+                  Le patient vient-il d&apos;une clinique partenaire ?
+                </span>
+                <div className="flex mt-2">
+                  <input
+                    className="radio radio-primary"
+                    type="radio"
+                    value="oui"
+                    checked={hasCliniquePartenaire === 'oui'}
+                    onChange={() => setHasCliniquePartenaire('oui')}
+                  />{' '}
+                  <span className="ml-2">Oui</span>
+                  <input
+                    className="radio radio-primary ml-4"
+                    type="radio"
+                    value="non"
+                    checked={hasCliniquePartenaire === 'non'}
+                    onChange={() => {
+                      setHasCliniquePartenaire('non')
+                      setSelectedCliniqueId('')
+                    }}
+                  />{' '}
+                  <span className="ml-2">Non</span>
+                </div>
+              </label>
+            </div>
+
+            {hasCliniquePartenaire === 'oui' && (
+              <>
+                <div>
+                  <label className="label">
+                    <span className="label-text">Filtre Clinique</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Rechercher une clinique..."
+                    value={searchTermClinique}
+                    onChange={(e) => setSearchTermClinique(e.target.value)}
+                    className="input input-bordered input-primary w-full max-w-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="label">
+                    <span className="label-text">Clinique partenaire</span>
+                  </label>
+                  <select
+                    className="select select-primary w-full max-w-xs"
+                    value={selectedCliniqueId}
+                    onChange={(e) => setSelectedCliniqueId(e.target.value)}
+                    required
+                  >
+                    <option value="">Sélectionner une clinique</option>
+                    {filteredCliniques.map((c) => (
+                      <option key={c._id} value={c._id}>
+                        {c.nom}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            )}
+
+            {/* Ajout des boutons radio pour l'assurance/IPM */}
+            <div className="form-control">
+              <label className="cursor-pointer label">
+                <span className="label-text">
+                  Le patient a t-il une assurance / IPM ?
                 </span>
                 <div className="flex mt-2">
                   <input

@@ -115,6 +115,7 @@ import {
   faBuilding,
   faFileInvoice,
   faFlask,
+  faChartLine,
 } from '@fortawesome/free-solid-svg-icons'
 import logo from '../images/bioramlogo.png'
 
@@ -177,7 +178,7 @@ function Sidebar() {
     },
     {
       id: 6,
-      label: 'Partenaire',
+      label: 'Clinique',
       route: '/dash/partenaireclinique',
       icon: faBuilding,
       allowedUserTypes: ['superadmin', 'medecin', 'docteur'],
@@ -211,6 +212,13 @@ function Sidebar() {
         'acceuil',
         'accueil',
       ],
+    },
+    {
+      id: 11,
+      label: 'Compta',
+      route: '/dash/compta',
+      icon: faChartLine,
+      allowedUserTypes: ['superadmin', 'medecin', 'docteur', 'acceuil', 'accueil'],
     },
     {
       id: 10,
