@@ -2908,13 +2908,13 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
       X_CENTER + headerWidth / 2,
       currentY + 1
     )
-    currentY += 6
+    currentY += 5
 
     // 2) Nom du docteur, gras, centre.
     doc.setFontSize(10)
     doc.setFont('Times', 'bold')
     doc.text(fullName, X_CENTER, currentY, { align: 'center' })
-    currentY += 5
+    currentY += 4
 
     // 3) Titres / qualifications (profil) : 1 ligne par entree, italique.
     const profil = String(validator.profil || '').trim()
@@ -2929,7 +2929,8 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
       doc.setFont('Times', 'normal')
     }
 
-    // 4) Signature / cachet en BAS du bloc, centre.
+    // 4) Signature / cachet juste sous les titres (sans gap supplementaire,
+    //    car visuellement le bloc precedent avait beaucoup d'air).
     if (validator.logo) {
       try {
         const rawPath = String(validator.logo).replace(/\\/g, '/')
@@ -2938,7 +2939,7 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
           : `${import.meta.env.VITE_APP_API_BASE_URL}/${rawPath}`
         const doctorLogo = await loadImage(fullLogoPath)
         const sigH = SIG_W * (doctorLogo.height / doctorLogo.width)
-        currentY += 2
+        // Pas de gap : la signature suit directement la derniere ligne.
         doc.addImage(
           doctorLogo,
           'PNG',
