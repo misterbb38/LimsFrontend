@@ -28,14 +28,29 @@ const MODE_PRELEV        = ['au laboratoire', 'apporté au laboratoire']
 const CONCLUSION_SPG     = [
   'Normozoospermie',
   'Oligozoospermie',
-  'Asthenozoospermie',
-  'Teratozoospermie',
-  'Oligo-Astheno-Teratozoospermie (OAT)',
+  'Asthénozoospermie',
+  'Tératozoospermie',
+  'Oligo-Asthénozoospermie',
+  'Oligo-Tératozoospermie',
+  'Asthéno-Tératozoospermie',
+  'Oligo-Asthéno-Tératozoospermie (OAT)',
   'Azoospermie',
-  'Necrozoospermie',
   'Cryptozoospermie',
+  'Nécrozoospermie',
+  'Hypospermie',
+  'Hyperspermie',
+  'Aspermie',
+  'Leucospermie',
+  'Hématospermie',
+  'Pyospermie',
 ]
-const CONCLUSION_SCG = ['Normal', 'Teratospermie', 'Borderline']
+const CONCLUSION_SCG = [
+  'Normal',
+  'Tératospermie',
+  'Tératospermie modérée',
+  'Tératospermie sévère',
+  'Borderline',
+]
 
 // Champs numeriques avec pattern { valeur, unite, reference }.
 const NUMERIC_GENERAUX = [
@@ -171,8 +186,18 @@ CommentairesSection.propTypes = {
  * sous-composants definis a l'interieur de cette fonction : React les
  * recreerait a chaque frappe et le focus serait perdu.
  */
-function SpermogrammeFormSection({ excepValues, setExcepValues }) {
+function SpermogrammeFormSection({ excepValues, setExcepValues, conclusionsList }) {
   const sp = excepValues.spermogramme || {}
+
+  // Si le test "Spermogramme" en base a des conclusions configurees par
+  // l'utilisateur (page Parametre du test), on les utilise pour les deux
+  // selects. Sinon, on retombe sur la liste medicale standard.
+  const conclusionsFromTest =
+    Array.isArray(conclusionsList) && conclusionsList.length > 0
+      ? conclusionsList
+      : null
+  const conclusionsSpg = conclusionsFromTest || CONCLUSION_SPG
+  const conclusionsScg = conclusionsFromTest || CONCLUSION_SCG
 
   // Calcul automatique en temps reel : ejaculat total = volume x numeration.
   // IMPORTANT : on retire les espaces (separateurs de milliers a la francaise)
@@ -444,7 +469,7 @@ function SpermogrammeFormSection({ excepValues, setExcepValues }) {
               onChange={(e) => updateScalar('conclusionSpermogramme', e.target.value)}
             >
               <option value="">--</option>
-              {CONCLUSION_SPG.map((o) => (
+              {conclusionsSpg.map((o) => (
                 <option key={o} value={o}>{o}</option>
               ))}
             </select>
@@ -457,7 +482,7 @@ function SpermogrammeFormSection({ excepValues, setExcepValues }) {
               onChange={(e) => updateScalar('conclusionSpermocytogramme', e.target.value)}
             >
               <option value="">--</option>
-              {CONCLUSION_SCG.map((o) => (
+              {conclusionsScg.map((o) => (
                 <option key={o} value={o}>{o}</option>
               ))}
             </select>
@@ -471,6 +496,11 @@ function SpermogrammeFormSection({ excepValues, setExcepValues }) {
 SpermogrammeFormSection.propTypes = {
   excepValues: PropTypes.object.isRequired,
   setExcepValues: PropTypes.func.isRequired,
+  conclusionsList: PropTypes.arrayOf(PropTypes.string),
+}
+
+SpermogrammeFormSection.defaultProps = {
+  conclusionsList: undefined,
 }
 
 export default SpermogrammeFormSection

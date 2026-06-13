@@ -4417,6 +4417,7 @@ if (data.data.exceptions) {
           typeof updater === 'function' ? updater(prev.exceptions) : updater,
       }))
     }
+    conclusionsList={Array.isArray(conclusion) ? conclusion : []}
   />
 )}
                 </>

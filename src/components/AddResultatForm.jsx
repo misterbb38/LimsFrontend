@@ -4029,6 +4029,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
               <SpermogrammeFormSection
                 excepValues={excepValues}
                 setExcepValues={setExcepValues}
+                conclusionsList={Array.isArray(conclusion) ? conclusion : []}
               />
             )}
 

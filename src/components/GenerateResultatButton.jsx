@@ -2897,7 +2897,7 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     let currentY = 235
 
     // 1) Nom du docteur, gras, centre. Pas d'en-tete "Le Biologiste".
-    doc.setFontSize(12)
+    doc.setFontSize(10)
     doc.setFont('Times', 'bold')
     doc.text(fullName, X_CENTER, currentY, { align: 'center' })
     currentY += 5
