@@ -14,6 +14,7 @@ const Parametre = () => {
     site: '',
     couleur: '',
     nomEntreprise: '',
+    profil: '', // Titres / qualifications affichees sous le nom dans le PDF
   })
   const [logo, setLogo] = useState(null) // Pour gérer le fichier image sélectionné
   const [isModified, setIsModified] = useState(false)
@@ -53,10 +54,11 @@ const Parametre = () => {
           email: data.email || '',
           telephone: data.telephone || '',
           devise: data.devise || '',
-          logo: data.logo || '', // Initialiser avec le chemin de l'image stockée
+          logo: data.logo || '', // Chemin de l'image (signature/logo)
           site: data.site || '',
           nomEntreprise: data.nomEntreprise || '',
           couleur: data.couleur || '',
+          profil: data.profil || '',
         })
       } catch (error) {
         console.error('Erreur lors de la récupération du profil:', error)
@@ -249,6 +251,31 @@ const Parametre = () => {
                         placeholder="Adresse"
                         name="adresse"
                         value={user.adresse}
+                        onChange={handleChange}
+                      />
+                    </label>
+                  </div>
+
+                  {/* Profil professionnel : titres / qualifications affichees
+                      sous le nom dans les PDF de resultat valides. */}
+                  <div className="mb-5.5">
+                    <label className="block">
+                      <span className="block text-sm font-medium mb-1">
+                        Profil professionnel
+                      </span>
+                      <span className="block text-xs text-base-content/60 mb-2">
+                        Titres et qualifications (1 ligne par titre). Affiche
+                        sous votre nom dans les PDF de résultats que vous validez.
+                        Ex : « Pharmacien - Biologiste » / « Ancien Interne des Hôpitaux »
+                      </span>
+                      <textarea
+                        className="textarea textarea-bordered w-full font-mono"
+                        rows={3}
+                        placeholder={
+                          "Pharmacien - Biologiste\nAncien Interne des Hôpitaux"
+                        }
+                        name="profil"
+                        value={user.profil}
                         onChange={handleChange}
                       />
                     </label>

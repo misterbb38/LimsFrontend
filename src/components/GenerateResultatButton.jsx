@@ -2859,33 +2859,61 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
 
   const addValidationInfo = async (doc, invoice) => {
     let currentY = 250
+    const X_RIGHT = 110 // colonne droite (bloc validateur)
 
-    const validatedHistory = invoice.historiques.find((h) => h.status === 'Validé')
+    // Cherche d'abord la validation finale, puis la validation technique
+    // en repli. Le PDF affiche en priorite la validation finale (Validé),
+    // sinon "Validation technique" si elle existe seule.
+    const finalValidation = invoice.historiques.find((h) => h.status === 'Validé')
+    const techValidation = invoice.historiques.find(
+      (h) => h.status === 'Validation technique'
+    )
+    const validation = finalValidation || techValidation
+    if (!validation || !validation.updatedBy) return
 
-    if (validatedHistory && validatedHistory.updatedBy) {
-      const validatedBy = `${validatedHistory.updatedBy.prenom} ${validatedHistory.updatedBy.nom}`
+    const isTechnical = !finalValidation && techValidation
+    const validator = validation.updatedBy
+    const fullName = `${validator.prenom || ''} ${validator.nom || ''}`.trim()
+    const heading = isTechnical
+      ? `Validation technique : ${fullName}`
+      : `Validé par : ${fullName}`
 
-      doc.setFontSize(10)
-      doc.setFont('Times', 'bold')
-      doc.text(`Validé par: ${validatedBy}`, 110, currentY)
+    doc.setFontSize(10)
+    doc.setFont('Times', 'bold')
+    doc.text(heading, X_RIGHT, currentY)
+    currentY += 5
 
-      doc.setFont('Times', 'normal')
+    // Profil professionnel (titres / qualifications) : une ligne par
+    // entree separee par \n dans le champ user.profil. Affiche en
+    // italique, taille 8, juste sous le nom du validateur.
+    const profil = String(validator.profil || '').trim()
+    if (profil) {
       doc.setFontSize(8)
+      doc.setFont('Times', 'italic')
+      const lines = profil.split(/\r?\n/).filter((l) => l.trim() !== '')
+      lines.forEach((line) => {
+        doc.text(line.trim(), X_RIGHT, currentY)
+        currentY += 4
+      })
+      doc.setFont('Times', 'normal')
+      currentY += 1
+    }
 
-      currentY += 5
+    // Signature / cachet (image stockee dans user.logo). Peut etre une
+    // URL Cloudinary (https://...) ou un chemin relatif local. On gere
+    // les deux cas pour rester retrocompatible.
+    if (validator.logo) {
+      try {
+        const rawPath = String(validator.logo).replace(/\\/g, '/')
+        const fullLogoPath = rawPath.startsWith('http')
+          ? rawPath
+          : `${import.meta.env.VITE_APP_API_BASE_URL}/${rawPath}`
 
-      const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
-      if (validatedHistory.updatedBy && validatedHistory.updatedBy.logo) {
-        try {
-          const logoPath = validatedHistory.updatedBy.logo.replace(/\\/g, '/')
-          const fullLogoPath = `${apiUrl}/${logoPath}`
-
-          const doctorLogo = await loadImage(fullLogoPath)
-          const doctorLogoHeight = 50 * (doctorLogo.height / doctorLogo.width)
-          doc.addImage(doctorLogo, 'PNG', 110, currentY, 50, doctorLogoHeight)
-        } catch (error) {
-          console.error('Erreur lors du chargement du logo du validateur:', error)
-        }
+        const doctorLogo = await loadImage(fullLogoPath)
+        const doctorLogoHeight = 50 * (doctorLogo.height / doctorLogo.width)
+        doc.addImage(doctorLogo, 'PNG', X_RIGHT, currentY, 50, doctorLogoHeight)
+      } catch (error) {
+        console.error('Erreur lors du chargement du logo du validateur:', error)
       }
     }
   }
