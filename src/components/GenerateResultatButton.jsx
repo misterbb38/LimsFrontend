@@ -614,7 +614,10 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
 
       doc.setFontSize(12)
       doc.setFont('Times', 'bold')
-      doc.text(group.category.toUpperCase(), 90, currentY)
+      // Centre du contenu = (20+190)/2 = 105 ; align center pour que le
+      // texte soit visuellement centre entre les deux marges, peu importe
+      // la longueur du libelle (BIOCHIMIE SANGUINE vs ENDOCRINOLOGIE).
+      doc.text(group.category.toUpperCase(), 105, currentY, { align: 'center' })
 
       doc.line(20, currentY + 2, 190, currentY + 2)
       currentY += 10
