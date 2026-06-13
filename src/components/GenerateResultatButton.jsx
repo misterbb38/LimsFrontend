@@ -2929,8 +2929,9 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
       doc.setFont('Times', 'normal')
     }
 
-    // 4) Signature / cachet juste sous les titres (sans gap supplementaire,
-    //    car visuellement le bloc precedent avait beaucoup d'air).
+    // 4) Signature / cachet remontee de SIG_OVERLAP mm pour absorber
+    //    l'eventuel espace blanc en haut de l'image PNG. Si le rendu
+    //    chevauche les titres, baisser SIG_OVERLAP.
     if (validator.logo) {
       try {
         const rawPath = String(validator.logo).replace(/\\/g, '/')
@@ -2939,12 +2940,12 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
           : `${import.meta.env.VITE_APP_API_BASE_URL}/${rawPath}`
         const doctorLogo = await loadImage(fullLogoPath)
         const sigH = SIG_W * (doctorLogo.height / doctorLogo.width)
-        // Pas de gap : la signature suit directement la derniere ligne.
+        const SIG_OVERLAP = 8 // mm tires vers le haut pour cacher l'air blanc
         doc.addImage(
           doctorLogo,
           'PNG',
           X_CENTER - SIG_W / 2,
-          currentY,
+          currentY - SIG_OVERLAP,
           SIG_W,
           sigH
         )
