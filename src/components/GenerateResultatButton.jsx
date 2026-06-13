@@ -2552,6 +2552,17 @@ const renderMacroscopicExam = (doc, test, currentY, positionX, invoice) => {
   //   return currentY
   // }
 const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
+  const chimie = test?.observations?.chimie
+
+  // Court-circuit : si chimie est un objet vide (tous champs blancs),
+  // on n'affiche meme pas l'en-tete "EXAMEN CHIMIQUE". Sinon il
+  // apparaissait sous chaque test ayant une remarque ou interpretation,
+  // sans contenu en dessous.
+  const hasAny = chimie && Object.values(chimie).some(
+    (v) => typeof v === 'string' && v.trim() !== ''
+  )
+  if (!hasAny) return currentY
+
   currentY = checkNewPage(doc, currentY, invoice)
   doc.setFontSize(10)
   doc.setFont('Times', 'bold')
@@ -2559,8 +2570,6 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
   currentY += 8
   doc.setFontSize(10)
   doc.setFont('Times', 'normal')
-
-  const chimie = test?.observations?.chimie
 
   // Champs standards
   if (chimie?.albumine && chimie.albumine.trim()) {
