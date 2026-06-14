@@ -33,6 +33,14 @@ const COLOR_PAIE = {
   Reliquat: '#f59e0b',
 }
 
+const MODE_COLOR = {
+  'Espèces': 'border-emerald-500',
+  'Wave': 'border-sky-500',
+  'Orange money': 'border-orange-500',
+  'Carte bancaire': 'border-violet-500',
+  'Non spécifié': 'border-gray-400',
+}
+
 const MOIS = [
   '',
   'Janvier',
@@ -64,6 +72,7 @@ const getGroupKey = (name = '') => {
 
 function Compta() {
   const [analyses, setAnalyses] = useState([])
+  const [etiquettes, setEtiquettes] = useState([])
   const [loading, setLoading] = useState(true)
   const [erreur, setErreur] = useState('')
 
@@ -82,20 +91,21 @@ function Compta() {
       try {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'))
         const token = userInfo?.token
-        const response = await fetch(`${apiUrl}/api/analyse`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          signal: ctrl.signal,
-        })
-        const data = await response.json()
-        if (data.success) {
-          setAnalyses(data.data || [])
-        } else {
-          setErreur('Erreur lors du chargement des analyses')
+        const headers = {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         }
+        // Fetch parallele : analyses (part patient) + etiquettes
+        // partenaire (part partenaire avec son propre statusPayement).
+        const [aRes, eRes] = await Promise.all([
+          fetch(`${apiUrl}/api/analyse`, { headers, signal: ctrl.signal }),
+          fetch(`${apiUrl}/api/eti`, { headers, signal: ctrl.signal }),
+        ])
+        const aData = await aRes.json()
+        const eData = await eRes.json()
+        if (aData.success) setAnalyses(aData.data || [])
+        else setErreur('Erreur lors du chargement des analyses')
+        if (eData.success) setEtiquettes(eData.data || [])
       } catch (e) {
         if (e.name !== 'AbortError') {
           console.error(e)
@@ -126,6 +136,34 @@ function Compta() {
     return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'))
   }, [analyses])
 
+  // Map analyseId -> etiquette partenaire (statut + somme + date paie).
+  // Utilisee pour separer ce qui est encaisse cote patient vs cote
+  // partenaire.
+  const etiquetteByAnalyseId = useMemo(() => {
+    const m = new Map()
+    etiquettes.forEach((e) => {
+      const aid = e.analyseId?._id || e.analyseId
+      if (aid) m.set(String(aid), e)
+    })
+    return m
+  }, [etiquettes])
+
+  // Helper : retourne {partenairePaye, partenaireAttendu} pour une analyse
+  const partenaireDetail = (a) => {
+    const eti = etiquetteByAnalyseId.get(String(a._id))
+    if (!eti) {
+      // Pas d'etiquette : si l'analyse a une part partenaire on la
+      // considere comme "attendu" (impayee).
+      const att = num(a.prixPartenaire)
+      return { partenairePaye: 0, partenaireAttendu: att }
+    }
+    const somme = num(eti.sommeAPayer)
+    if (eti.statusPayement === 'Payée') {
+      return { partenairePaye: somme, partenaireAttendu: 0 }
+    }
+    return { partenairePaye: 0, partenaireAttendu: somme }
+  }
+
   // Application des filtres
   const filtered = useMemo(() => {
     return analyses.filter((a) => {
@@ -145,12 +183,17 @@ function Compta() {
   }, [analyses, annee, mois, typeFilter, partenaireFilter, statutFilter])
 
   // === Agregations ===
+  // Encaisse total = avance patient (paiements) + montant partenaire
+  // de l'etiquette payee. Permet de differencier les deux sources de
+  // revenu et de ne plus compter la part partenaire comme recue
+  // automatiquement quand le patient paie sa part.
   const stats = useMemo(() => {
     let totalFacture = 0
-    let totalPaye = 0
-    let totalImpaye = 0
+    let totalPayePatient = 0
+    let totalPayePartenaire = 0
+    let totalImpayePatient = 0
+    let totalImpayePartenaire = 0
     let totalReliquat = 0
-    let totalAvance = 0
     let totalPartenaire = 0
     let totalPatient = 0
     const patientsUniques = new Set()
@@ -164,29 +207,36 @@ function Compta() {
       totalFacture += prixTotal
       totalPartenaire += prixPart
       totalPatient += prixPat
-      totalAvance += avance
-      if (a.statusPayement === 'Payée') totalPaye += prixTotal
-      else if (a.statusPayement === 'Reliquat') {
-        totalReliquat += reliquat
-        totalPaye += prixTotal - reliquat
-      } else {
-        totalImpaye += prixTotal
-      }
+      // Cote patient : encaisse = avance, impaye = reliquat ou prixPat
+      totalPayePatient += avance
+      if (a.statusPayement === 'Reliquat') totalReliquat += reliquat
+      totalImpayePatient += Math.max(0, prixPat - avance)
+      // Cote partenaire : on s'appuie sur l'etiquette
+      const { partenairePaye, partenaireAttendu } = partenaireDetail(a)
+      totalPayePartenaire += partenairePaye
+      totalImpayePartenaire += partenaireAttendu
       if (a.userId?._id) patientsUniques.add(String(a.userId._id))
     })
+
+    const totalPaye = totalPayePatient + totalPayePartenaire
+    const totalImpaye = totalImpayePatient + totalImpayePartenaire
 
     return {
       totalFacture,
       totalPaye,
       totalImpaye,
       totalReliquat,
-      totalAvance,
+      totalAvance: totalPayePatient,
       totalPartenaire,
       totalPatient,
+      totalPayePatient,
+      totalPayePartenaire,
+      totalImpayePatient,
+      totalImpayePartenaire,
       nbAnalyses: filtered.length,
       nbPatients: patientsUniques.size,
     }
-  }, [filtered])
+  }, [filtered, etiquetteByAnalyseId])
 
   // Repartition par type de partenaire (montant)
   const parType = useMemo(() => {
@@ -266,17 +316,25 @@ function Compta() {
       target.nbFactures++
       const prixTotal = num(a.prixTotal)
       target.totalFacture += prixTotal
-      if (a.statusPayement === 'Payée') {
+      // Statut "payee/reliquat/impayee" du groupe = statut COMBINE
+      // patient + partenaire. Une facture est totalement payee si la
+      // part patient est payee ET l'etiquette partenaire est payee
+      // (ou s'il n'y a pas de partenaire).
+      const avance = num(a.avance)
+      const prixPat = num(a.prixPatient)
+      const patientPaye = avance >= prixPat
+      const { partenairePaye, partenaireAttendu } = partenaireDetail(a)
+      const partenaireOk = partenaireAttendu === 0
+      if (patientPaye && partenaireOk) {
         target.nbPayees++
-        target.totalPaye += prixTotal
-      } else if (a.statusPayement === 'Reliquat') {
+      } else if (avance > 0 || partenairePaye > 0) {
         target.nbReliquat++
-        target.totalPaye += prixTotal - num(a.reliquat)
-        target.totalImpaye += num(a.reliquat)
       } else {
         target.nbImpayees++
-        target.totalImpaye += prixTotal
       }
+      // Encaisse total = ce qui est reellement entre en caisse
+      target.totalPaye += avance + partenairePaye
+      target.totalImpaye += Math.max(0, prixPat - avance) + partenaireAttendu
     }
 
     const map = new Map()
@@ -313,11 +371,131 @@ function Compta() {
         nbFiliales: g.filialesMap.size,
       }))
       .sort((a, b) => b.totalFacture - a.totalFacture)
-  }, [filtered])
+  }, [filtered, etiquetteByAnalyseId])
 
   const [expandedGroups, setExpandedGroups] = useState({})
   const toggleGroup = (key) =>
     setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] }))
+
+  // === Suivi paiements : section autonome (independante des filtres
+  //     globaux) avec ses propres boutons periode + vue ===
+  const [suiviPeriode, setSuiviPeriode] = useState('jour') // jour | semaine | mois
+  const [suiviVue, setSuiviVue] = useState('total') // recu | arecevoir | total
+
+  const suiviStats = useMemo(() => {
+    const now = new Date()
+    const startToday = new Date(now)
+    startToday.setHours(0, 0, 0, 0)
+    const startWeek = (() => {
+      const d = new Date(startToday)
+      const day = d.getDay() // 0 = dim
+      const diff = (day + 6) % 7 // lundi = 0
+      d.setDate(d.getDate() - diff)
+      return d
+    })()
+    const startMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const startPeriod =
+      suiviPeriode === 'jour'
+        ? startToday
+        : suiviPeriode === 'semaine'
+          ? startWeek
+          : startMonth
+
+    const inPeriod = analyses.filter((a) => {
+      if (!a.createdAt) return false
+      return new Date(a.createdAt) >= startPeriod
+    })
+
+    let nb = inPeriod.length
+    let caTotal = 0
+    let payePatient = 0
+    let payePartenaire = 0
+    let aRecevoirPatient = 0
+    let aRecevoirPartenaire = 0
+    const modes = {} // detail par mode de paiement
+
+    inPeriod.forEach((a) => {
+      const prixTotal = num(a.prixTotal)
+      const prixPatient = num(a.prixPatient)
+      const avance = num(a.avance)
+
+      caTotal += prixTotal
+      // Patient : reellement encaisse vs reste a percevoir
+      payePatient += avance
+      aRecevoirPatient += Math.max(0, prixPatient - avance)
+      // Partenaire : depend du statut de l'etiquette (Payee / Impayee)
+      const { partenairePaye, partenaireAttendu } = partenaireDetail(a)
+      payePartenaire += partenairePaye
+      aRecevoirPartenaire += partenaireAttendu
+
+      // Detail par mode (a partir du tableau paiements multi-modes).
+      // Si l'analyse a une avance mais aucun paiement detaille, on
+      // bascule le montant dans 'Non specifie' pour ne pas perdre
+      // l'information.
+      const detailMontant = Array.isArray(a.paiements)
+        ? a.paiements.reduce((s, p) => s + (Number(p?.montant) || 0), 0)
+        : 0
+      if (Array.isArray(a.paiements) && a.paiements.length > 0) {
+        a.paiements.forEach((p) => {
+          const m = p?.mode || 'Non spécifié'
+          modes[m] = (modes[m] || 0) + (Number(p?.montant) || 0)
+        })
+      }
+      // Difference entre avance reelle et detail = portion non
+      // categorisee (anciennes analyses sans paiements[]).
+      const restant = avance - detailMontant
+      if (restant > 0) {
+        modes['Non spécifié'] = (modes['Non spécifié'] || 0) + restant
+      }
+    })
+
+    // Toujours afficher les 4 modes officiels meme a zero pour
+    // visibilite, plus 'Non specifie' s'il y a du montant non
+    // categorise.
+    const MODES_FIXES = ['Espèces', 'Wave', 'Orange money', 'Carte bancaire']
+    const allModes = new Set([...MODES_FIXES, ...Object.keys(modes)])
+    const modesArr = Array.from(allModes).map((m) => ({
+      mode: m,
+      montant: modes[m] || 0,
+    }))
+
+    return {
+      nb,
+      caTotal,
+      recu: payePatient + payePartenaire,
+      aRecevoir: aRecevoirPatient + aRecevoirPartenaire,
+      payePatient,
+      payePartenaire,
+      aRecevoirPatient,
+      aRecevoirPartenaire,
+      modes: modesArr.sort((a, b) => b.montant - a.montant),
+    }
+  }, [analyses, etiquetteByAnalyseId, suiviPeriode])
+
+  const suiviMontantPrincipal =
+    suiviVue === 'recu'
+      ? suiviStats.recu
+      : suiviVue === 'arecevoir'
+        ? suiviStats.aRecevoir
+        : suiviStats.caTotal
+  const suiviLabelPrincipal =
+    suiviVue === 'recu'
+      ? 'Argent reçu'
+      : suiviVue === 'arecevoir'
+        ? "Argent à recevoir"
+        : 'Total facturé'
+  const suiviColorPrincipal =
+    suiviVue === 'recu'
+      ? 'success'
+      : suiviVue === 'arecevoir'
+        ? 'error'
+        : 'primary'
+  const suiviPeriodeLabel =
+    suiviPeriode === 'jour'
+      ? "Aujourd'hui"
+      : suiviPeriode === 'semaine'
+        ? 'Cette semaine'
+        : 'Ce mois-ci'
 
   // Onglet (Toutes / Payées / Impayées / Reliquat) propre a chaque
   // tiroir de groupe ouvert.
@@ -685,6 +863,152 @@ function Compta() {
             </ChartCard>
           </div>
 
+          {/* === SUIVI PAIEMENTS (independant des filtres globaux) === */}
+          <div className="card bg-base-200 mt-4">
+            <div className="card-body p-3">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                <h3 className="card-title text-base">
+                  Suivi des paiements — {suiviPeriodeLabel}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  <div role="tablist" className="tabs tabs-boxed tabs-sm">
+                    <a
+                      role="tab"
+                      className={`tab ${suiviPeriode === 'jour' ? 'tab-active' : ''}`}
+                      onClick={() => setSuiviPeriode('jour')}
+                    >
+                      Aujourd&apos;hui
+                    </a>
+                    <a
+                      role="tab"
+                      className={`tab ${suiviPeriode === 'semaine' ? 'tab-active' : ''}`}
+                      onClick={() => setSuiviPeriode('semaine')}
+                    >
+                      Semaine
+                    </a>
+                    <a
+                      role="tab"
+                      className={`tab ${suiviPeriode === 'mois' ? 'tab-active' : ''}`}
+                      onClick={() => setSuiviPeriode('mois')}
+                    >
+                      Mois
+                    </a>
+                  </div>
+                  <div role="tablist" className="tabs tabs-boxed tabs-sm">
+                    <a
+                      role="tab"
+                      className={`tab ${suiviVue === 'recu' ? 'tab-active' : ''}`}
+                      onClick={() => setSuiviVue('recu')}
+                    >
+                      Reçu
+                    </a>
+                    <a
+                      role="tab"
+                      className={`tab ${suiviVue === 'arecevoir' ? 'tab-active' : ''}`}
+                      onClick={() => setSuiviVue('arecevoir')}
+                    >
+                      À recevoir
+                    </a>
+                    <a
+                      role="tab"
+                      className={`tab ${suiviVue === 'total' ? 'tab-active' : ''}`}
+                      onClick={() => setSuiviVue('total')}
+                    >
+                      Total
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mise en avant du montant principal selon la vue choisie */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                <div className="md:col-span-1">
+                  <KpiCard
+                    label={suiviLabelPrincipal}
+                    value={fmt(suiviMontantPrincipal)}
+                    hint={`${pct(suiviMontantPrincipal, suiviStats.caTotal)}% du CA`}
+                    color={suiviColorPrincipal}
+                  />
+                </div>
+                <KpiCard
+                  label="Nombre d'analyses"
+                  value={String(suiviStats.nb)}
+                  hint={
+                    suiviStats.nb
+                      ? `Ticket moyen : ${fmt(suiviStats.caTotal / suiviStats.nb)}`
+                      : '-'
+                  }
+                  color="neutral"
+                />
+                <KpiCard
+                  label="Total facturé"
+                  value={fmt(suiviStats.caTotal)}
+                  hint="Hors statut paiement"
+                  color="primary"
+                />
+              </div>
+
+              {/* Detail receveur / a recevoir */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                <KpiCard
+                  label="Reçu (total)"
+                  value={fmt(suiviStats.recu)}
+                  hint={`${pct(suiviStats.recu, suiviStats.caTotal)}%`}
+                  color="success"
+                />
+                <KpiCard
+                  label="Non reçu"
+                  value={fmt(suiviStats.aRecevoir)}
+                  hint={`${pct(suiviStats.aRecevoir, suiviStats.caTotal)}%`}
+                  color="error"
+                />
+                <KpiCard
+                  label="Payé par patient"
+                  value={fmt(suiviStats.payePatient)}
+                  hint={`${pct(suiviStats.payePatient, suiviStats.caTotal)}% du CA`}
+                  color="info"
+                />
+                <KpiCard
+                  label="Payé par partenaire"
+                  value={fmt(suiviStats.payePartenaire)}
+                  hint={`${pct(suiviStats.payePartenaire, suiviStats.caTotal)}% du CA`}
+                  color="warning"
+                />
+              </div>
+
+              {/* Detail par mode de paiement (multi-modes + non specifie) */}
+              <div>
+                <h4 className="font-semibold text-sm mb-2">
+                  Détail par mode de paiement reçu
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                  {suiviStats.modes.map((m) => {
+                    const color = MODE_COLOR[m.mode] || 'border-base-300'
+                    return (
+                      <div
+                        key={m.mode}
+                        className={`bg-base-100 rounded-lg p-3 border-l-4 ${color}`}
+                      >
+                        <div className="text-xs opacity-70">{m.mode}</div>
+                        <div className="font-bold text-lg">
+                          {fmt(m.montant)}
+                        </div>
+                        <div className="text-xs opacity-50">
+                          {pct(m.montant, suiviStats.recu)}% du reçu
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+                {suiviStats.recu === 0 && (
+                  <div className="text-xs opacity-50 italic mt-2">
+                    Aucun paiement reçu sur la période.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* === REDUCTIONS === */}
           <div className="card bg-base-200 mt-4">
             <div className="card-body p-3">
@@ -914,6 +1238,7 @@ function Compta() {
                                     g.key,
                                     getGroupTab(g.key)
                                   )}
+                                  etiquetteByAnalyseId={etiquetteByAnalyseId}
                                 />
                               </td>
                             </tr>
@@ -940,6 +1265,7 @@ function KpiCard({ label, value, hint, color = 'primary' }) {
     success: 'border-success text-success',
     error: 'border-error text-error',
     info: 'border-info text-info',
+    warning: 'border-warning text-warning',
     neutral: 'border-base-300',
   }
   return (
@@ -966,7 +1292,7 @@ function ChartCard({ title, children }) {
   )
 }
 
-function GroupDrawer({ groupe, hasFiliales, tab, setTab, analyses }) {
+function GroupDrawer({ groupe, hasFiliales, tab, setTab, analyses, etiquetteByAnalyseId }) {
   return (
     <div className="p-3 border-l-4 border-primary bg-base-200">
       {hasFiliales && (
@@ -1060,7 +1386,8 @@ function GroupDrawer({ groupe, hasFiliales, tab, setTab, analyses }) {
                 <th>Identifiant</th>
                 <th>Patient</th>
                 <th>Partenaire</th>
-                <th>Statut</th>
+                <th>Statut patient</th>
+                <th>Statut partenaire</th>
                 <th className="text-right">CA</th>
                 <th className="text-right">Part part.</th>
                 <th className="text-right">Part patient</th>
@@ -1071,43 +1398,66 @@ function GroupDrawer({ groupe, hasFiliales, tab, setTab, analyses }) {
             <tbody>
               {analyses.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="text-center opacity-50">
+                  <td colSpan={11} className="text-center opacity-50">
                     Aucune facture dans cette catégorie
                   </td>
                 </tr>
               )}
-              {analyses.map((a) => (
-                <tr key={a._id}>
-                  <td>
-                    {a.createdAt
-                      ? new Date(a.createdAt).toLocaleDateString('fr-FR')
-                      : '-'}
-                  </td>
-                  <td className="font-mono">{a.identifiant}</td>
-                  <td>
-                    {a.userId?.nom} {a.userId?.prenom}
-                  </td>
-                  <td>{a.partenaireId?.nom || '-'}</td>
-                  <td>
-                    <span
-                      className={`badge badge-xs ${
-                        a.statusPayement === 'Payée'
-                          ? 'badge-success'
-                          : a.statusPayement === 'Reliquat'
-                          ? 'badge-warning'
-                          : 'badge-error'
-                      }`}
-                    >
-                      {a.statusPayement}
-                    </span>
-                  </td>
-                  <td className="text-right">{fmt(a.prixTotal)}</td>
-                  <td className="text-right">{fmt(a.prixPartenaire)}</td>
-                  <td className="text-right">{fmt(a.prixPatient)}</td>
-                  <td className="text-right">{fmt(a.avance)}</td>
-                  <td className="text-right">{fmt(a.reliquat)}</td>
-                </tr>
-              ))}
+              {analyses.map((a) => {
+                const eti = etiquetteByAnalyseId?.get(String(a._id))
+                const partenaireStatus = eti
+                  ? eti.statusPayement
+                  : num(a.prixPartenaire) > 0
+                    ? 'Impayée'
+                    : '-'
+                return (
+                  <tr key={a._id}>
+                    <td>
+                      {a.createdAt
+                        ? new Date(a.createdAt).toLocaleDateString('fr-FR')
+                        : '-'}
+                    </td>
+                    <td className="font-mono">{a.identifiant}</td>
+                    <td>
+                      {a.userId?.nom} {a.userId?.prenom}
+                    </td>
+                    <td>{a.partenaireId?.nom || '-'}</td>
+                    <td>
+                      <span
+                        className={`badge badge-xs ${
+                          a.statusPayement === 'Payée'
+                            ? 'badge-success'
+                            : a.statusPayement === 'Reliquat'
+                              ? 'badge-warning'
+                              : 'badge-error'
+                        }`}
+                      >
+                        {a.statusPayement}
+                      </span>
+                    </td>
+                    <td>
+                      {partenaireStatus === '-' ? (
+                        <span className="opacity-50">-</span>
+                      ) : (
+                        <span
+                          className={`badge badge-xs ${
+                            partenaireStatus === 'Payée'
+                              ? 'badge-success'
+                              : 'badge-error'
+                          }`}
+                        >
+                          {partenaireStatus}
+                        </span>
+                      )}
+                    </td>
+                    <td className="text-right">{fmt(a.prixTotal)}</td>
+                    <td className="text-right">{fmt(a.prixPartenaire)}</td>
+                    <td className="text-right">{fmt(a.prixPatient)}</td>
+                    <td className="text-right">{fmt(a.avance)}</td>
+                    <td className="text-right">{fmt(a.reliquat)}</td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>

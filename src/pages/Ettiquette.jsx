@@ -189,23 +189,63 @@ function EtiquetteList() {
                 </tr>
               </thead>
               <tbody>
-                {currentEtiquettes.map((etiquette) => (
-                  <tr key={etiquette._id}>
-                    <td>{formatDate(etiquette.createdAt)}</td>
-                    <td>{etiquette.analyseId?.identifiant}</td>
-                    <td>
-                      {etiquette.partenaireId
-                        ? etiquette.partenaireId.nom
-                        : 'Non disponible'}
-                    </td>
-                    <td>
-                      {etiquette.partenaireId
-                        ? etiquette.partenaireId.typePartenaire
-                        : 'Non disponible'}
-                    </td>
-                    <td>{`${etiquette.sommeAPayer} Cfa`}</td>
-                  </tr>
-                ))}
+                {currentEtiquettes.map((etiquette) => {
+                  const isPaye = etiquette.statusPayement === 'Payée'
+                  const togglePayement = async () => {
+                    try {
+                      const userInfo = JSON.parse(
+                        localStorage.getItem('userInfo')
+                      )
+                      const token = userInfo?.token
+                      const next = isPaye ? 'Impayée' : 'Payée'
+                      const response = await fetch(
+                        `${apiUrl}/api/eti/${etiquette._id}`,
+                        {
+                          method: 'PUT',
+                          headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            statusPayement: next,
+                            datePayement:
+                              next === 'Payée' ? new Date() : null,
+                          }),
+                        }
+                      )
+                      if (response.ok) fetchEtiquettes()
+                    } catch (err) {
+                      console.error(err)
+                    }
+                  }
+                  return (
+                    <tr key={etiquette._id}>
+                      <td>{formatDate(etiquette.createdAt)}</td>
+                      <td>{etiquette.analyseId?.identifiant}</td>
+                      <td>
+                        {etiquette.partenaireId
+                          ? etiquette.partenaireId.nom
+                          : 'Non disponible'}
+                      </td>
+                      <td>
+                        {etiquette.partenaireId
+                          ? etiquette.partenaireId.typePartenaire
+                          : 'Non disponible'}
+                      </td>
+                      <td>{`${etiquette.sommeAPayer} Cfa`}</td>
+                      <td>
+                        <button
+                          type="button"
+                          onClick={togglePayement}
+                          className={`btn btn-xs ${isPaye ? 'btn-success' : 'btn-error'}`}
+                          title="Cliquer pour basculer"
+                        >
+                          {isPaye ? 'Payée' : 'Impayée'}
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import SpermogrammeFormSection from './SpermogrammeFormSection'
+import PaiementsSection from './PaiementsSection'
 
 function CreateAnalyseForm({ onAnalyseChange, preselectedUserId }) {
   const [selectedPartenaireType, setSelectedPartenaireType] = useState('')
@@ -29,6 +31,8 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
   const [deplacement, setDeplacement] = useState(0)
   const [dateDeRecuperation, setDateDeRecuperation] = useState('')
   const [avance, setAvance] = useState() // Nouvel état pour l'avance
+  // Detail des paiements (multi-modes : especes, wave, etc.)
+  const [paiements, setPaiements] = useState([])
   const [partenaires, setPartenaires] = useState([])
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
@@ -248,6 +252,7 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
   setHasCliniquePartenaire('')
   setSelectedCliniqueId('')
   setSearchTermClinique('')
+  setPaiements([])
 }
 
   const handleSubmit = async (e) => {
@@ -278,6 +283,12 @@ if (pc2Quantity > 0) formData.append('pc2', pc2Quantity * 4000)
     if (statusPayement === 'Reliquat') {
       formData.append('avance', avance) // Ajouter l'avance au formData
       console.log('Avance ajoutée au formData:', avance) // Vérification
+    }
+
+    // Detail des paiements (multi-modes). Le backend recalculera
+    // l'avance comme somme des montants si le tableau est non vide.
+    if (paiements.length > 0) {
+      formData.append('paiements', JSON.stringify(paiements))
     }
     formData.append('deplacement', deplacement)
     formData.append('dateDeRecuperation', dateDeRecuperation)
@@ -732,36 +743,16 @@ if (pc2Quantity > 0) formData.append('pc2', pc2Quantity * 4000)
           </div>
 
           {/* // Dans le formulaire de soumission */}
-          <div className="form-control">
-            <label className="label">Status du paiement</label>
-            <select
-              className="select select-bordered"
-              value={statusPayement}
-              onChange={handleStatusPayementChange}
-            >
-              <option value="" disabled>
-                Choisissez
-              </option>
-              {/* option */}
-              <option value="Impayée">Impayée</option>
-              <option value="Payée">Payée</option>
-              <option value="Reliquat">Sous reliquat</option>
-            </select>
+          {/* Statut paiement = calcule automatiquement au save selon
+              la somme des paiements vs part patient. Plus de select
+              manuel ici : la verite est dans les paiements. */}
+          <PaiementsSection
+            value={paiements}
+            onChange={setPaiements}
+          />
+          <div className="text-xs opacity-70 mt-1 italic">
+            Le statut du paiement (Impayée / Reliquat / Payée) sera défini automatiquement selon le total payé par rapport à la part patient.
           </div>
-
-          {statusPayement === 'Reliquat' && (
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Avance</span>
-              </label>
-              <input
-                type="number"
-                value={avance}
-                onChange={handleAvanceChange}
-                className="input input-bordered input-primary w-full max-w-xs"
-              />
-            </div>
-          )}
 
           <div className="form-control">
             <label className="label">

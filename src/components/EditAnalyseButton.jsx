@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEdit, faTimes } from '@fortawesome/free-solid-svg-icons'
+import PaiementsSection from './PaiementsSection'
+import RecapPaiement from './RecapPaiement'
 
 function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
   const [showModal, setShowModal] = useState(false)
@@ -18,6 +20,10 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
   const [deplacement, setDeplacement] = useState(0)
   const [dateDeRecuperation, setDateDeRecuperation] = useState('')
   const [avance, setAvance] = useState(0) // Nouvel état pour l'avance
+  const [paiements, setPaiements] = useState([])
+  const [prixPatient, setPrixPatient] = useState(0)
+  const [prixTotal, setPrixTotal] = useState(0)
+  const [prixPartenaireDisplay, setPrixPartenaireDisplay] = useState(0)
   const [reliquat, setReliquat] = useState(0) // Nouvel état pour le reliquat
 
   const [avancePatient, setAvancePatient] = useState(0) // Nouvel état pour l'avance
@@ -137,6 +143,10 @@ setPc2Quantity(data.data.pc2 > 0 ? Math.round(data.data.pc2 / 4000) : 0)
         setTypeAnalyse(data.data.typeAnalyse)
         setAvance(data.data.avance || 0) // Récupération de l'avance
         setAvancePatient(data.data.avance || 0) // Récupération de l'avance
+        setPaiements(Array.isArray(data.data.paiements) ? data.data.paiements : [])
+        setPrixPatient(Number(data.data.prixPatient) || 0)
+        setPrixTotal(Number(data.data.prixTotal) || 0)
+        setPrixPartenaireDisplay(Number(data.data.prixPartenaire) || 0)
         setReliquat(data.data.reliquat || 0) // Récupération du reliquat
         setDeplacement(data.data.deplacement || 0)
 
@@ -264,6 +274,10 @@ formData.append('pc2', pc2Quantity * 4000) // Calculer le montant total PC2
       formData.append('avance', avance) // Ajouter l'avance au formData
       console.log('Avance ajoutée au formData:', avance) // Vérification
     }
+
+    // Detail des paiements (multi-modes). Toujours envoye (meme vide)
+    // pour permettre la mise a jour. Le backend recalcule l'avance.
+    formData.append('paiements', JSON.stringify(paiements))
 
     try {
       const response = await fetch(`${apiUrl}/api/analyse/${analyseId}`, {
@@ -642,42 +656,21 @@ formData.append('pc2', pc2Quantity * 4000) // Calculer le montant total PC2
                   onChange={handleOrdonnanceChange}
                 />
               </div>
-              {/* // Dans le formulaire de soumission */}
-              <div className="form-control">
-                <label className="label">Status du paiement</label>
-                <select
-                  className="select select-bordered"
-                  value={statusPayement}
-                  onChange={(e) => setStatusPayement(e.target.value)}
-                >
-                  <option value="" disabled>
-                    Choisissez
-                  </option>
-                  <option value="Impayée">Impayée</option>
-                  <option value="Payée">Payée</option>
-                  <option value="Reliquat">Sous reliquat</option>
-                </select>
-              </div>
+              {/* Recap automatique : part patient / part partenaire +
+                  statut paiement calcule cote backend. L'utilisateur
+                  saisit juste les paiements ; le statut suit. */}
+              <RecapPaiement
+                prixTotal={Number(prixTotal) || 0}
+                prixPartenaire={Number(prixPartenaireDisplay) || 0}
+                prixPatient={prixPatient}
+                paiements={paiements}
+              />
 
-              {statusPayement === 'Reliquat' && (
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Avance</span>
-                  </label>
-                  <input
-                    type="number"
-                    value={avance}
-                    onChange={handleAvanceChange}
-                    className="input input-bordered input-primary w-full max-w-xs"
-                  />
-                  <h6 className="label-text mt-2">
-                    *Si le patient donne une avance additionnelle,
-                    additionnez-la avec son dernier avance: {avance} CFA
-                  </h6>
-                  <p>Le patient a déjà avancé : {avancePatient} CFA</p>
-                  <p>Le patient doit donner : {reliquat} CFA</p>
-                </div>
-              )}
+              <PaiementsSection
+                value={paiements}
+                onChange={setPaiements}
+                prixPatient={prixPatient}
+              />
 
               <div className="form-control">
                 <label className="label">
