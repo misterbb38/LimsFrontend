@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
 import SpermogrammeFormSection from './SpermogrammeFormSection'
 import PaiementsSection from './PaiementsSection'
+import RecapPaiement from './RecapPaiement'
 
 function CreateAnalyseForm({ onAnalyseChange, preselectedUserId }) {
   const [selectedPartenaireType, setSelectedPartenaireType] = useState('')
@@ -254,6 +255,66 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
   setSearchTermClinique('')
   setPaiements([])
 }
+
+  // Calcul LIVE des prix (reproduction de la logique du controller
+  // analyseController.createAnalyse). Sert a afficher en temps reel
+  // ce que le patient doit payer pendant la saisie du formulaire.
+  // La reduction est appliquee EXCLUSIVEMENT sur la part patient.
+  const liveCalc = useMemo(() => {
+    let prixTotal = 0
+    selectedTests.forEach((t) => {
+      if (selectedPartenaireType === 'assurance')
+        prixTotal += (Number(t.coeficiantB) || 0) * (Number(t.prixAssurance) || 0)
+      else if (selectedPartenaireType === 'ipm')
+        prixTotal += (Number(t.coeficiantB) || 0) * (Number(t.prixIpm) || 0)
+      else if (selectedPartenaireType === 'sococim')
+        prixTotal += (Number(t.coeficiantB) || 0) * (Number(t.prixSococim) || 0)
+      else if (selectedPartenaireType === 'clinique')
+        prixTotal += Number(t.prixClinique) || 0
+      else
+        prixTotal += (Number(t.coeficiantB) || 0) * (Number(t.prixPaf) || 0)
+    })
+    prixTotal +=
+      (Number(pc1Quantity) || 0) * 2000 +
+      (Number(pc2Quantity) || 0) * 4000 +
+      (Number(deplacement) || 0)
+
+    let prixPartenaire = 0
+    let prixPatient = prixTotal
+    if (selectedPartenaireType) {
+      if (selectedPartenaireType === 'clinique') {
+        prixPartenaire = prixTotal
+        prixPatient = prixTotal
+      } else {
+        prixPartenaire =
+          (prixTotal * (Number(pourcentageCouverture) || 0)) / 100
+        prixPatient = prixTotal - prixPartenaire
+      }
+    }
+
+    let reductionAppliquee = 0
+    if (hasReduction && Number(reductionValue) > 0) {
+      const r = Number(reductionValue)
+      if (reductionType === 'montant') {
+        reductionAppliquee = Math.min(prixPatient, r)
+      } else {
+        reductionAppliquee = (prixPatient * r) / 100
+      }
+      prixPatient = Math.max(0, prixPatient - reductionAppliquee)
+    }
+
+    return { prixTotal, prixPartenaire, prixPatient, reductionAppliquee }
+  }, [
+    selectedTests,
+    selectedPartenaireType,
+    pourcentageCouverture,
+    pc1Quantity,
+    pc2Quantity,
+    deplacement,
+    hasReduction,
+    reductionType,
+    reductionValue,
+  ])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -743,12 +804,23 @@ if (pc2Quantity > 0) formData.append('pc2', pc2Quantity * 4000)
           </div>
 
           {/* // Dans le formulaire de soumission */}
+          {/* Recap estime en LIVE (reproduit la logique backend). La
+              reduction s'applique exclusivement sur la part patient. */}
+          <RecapPaiement
+            prixTotal={liveCalc.prixTotal}
+            prixPartenaire={liveCalc.prixPartenaire}
+            prixPatient={liveCalc.prixPatient}
+            paiements={paiements}
+            reductionAppliquee={liveCalc.reductionAppliquee}
+          />
+
           {/* Statut paiement = calcule automatiquement au save selon
               la somme des paiements vs part patient. Plus de select
               manuel ici : la verite est dans les paiements. */}
           <PaiementsSection
             value={paiements}
             onChange={setPaiements}
+            prixPatient={liveCalc.prixPatient}
           />
           <div className="text-xs opacity-70 mt-1 italic">
             Le statut du paiement (Impayée / Reliquat / Payée) sera défini automatiquement selon le total payé par rapport à la part patient.

@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 // partenaire et la part patient, total deja paye, reliquat patient,
 // et badge de statut paiement calcule automatiquement (le user n'a
 // plus de select de statut a saisir).
-function RecapPaiement({ prixTotal, prixPartenaire, prixPatient, paiements }) {
+function RecapPaiement({ prixTotal, prixPartenaire, prixPatient, paiements, reductionAppliquee }) {
   const totalPaye = (paiements || []).reduce(
     (s, p) => s + (Number(p?.montant) || 0),
     0
@@ -76,6 +76,16 @@ function RecapPaiement({ prixTotal, prixPartenaire, prixPatient, paiements }) {
           </div>
         )}
       </div>
+
+      {reductionAppliquee > 0 && (
+        <div className="mt-2 pt-2 border-t border-base-300 text-sm">
+          <span className="badge badge-warning badge-sm mr-2">Réduction</span>
+          <span>
+            -{fmt(reductionAppliquee)} appliquée sur la part patient — montant
+            à payer après réduction : <strong>{fmt(prixPatient)}</strong>
+          </span>
+        </div>
+      )}
     </div>
   )
 }
@@ -85,6 +95,7 @@ RecapPaiement.propTypes = {
   prixPartenaire: PropTypes.number,
   prixPatient: PropTypes.number,
   paiements: PropTypes.array,
+  reductionAppliquee: PropTypes.number,
 }
 
 RecapPaiement.defaultProps = {
@@ -92,6 +103,7 @@ RecapPaiement.defaultProps = {
   prixPartenaire: 0,
   prixPatient: 0,
   paiements: [],
+  reductionAppliquee: 0,
 }
 
 export default RecapPaiement

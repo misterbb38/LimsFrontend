@@ -25,6 +25,7 @@ import TestList from './pages/TestList'
 import PartenaireList from './pages/PartenaireList'
 import PartenaireFacture from './pages/PartenaireFacture'
 import Compta from './pages/Compta'
+import Logs from './pages/Logs'
 
 import KeyExpired from './components/KeyExpired'
 import Notifications from './components/Notifications'
@@ -109,6 +110,7 @@ function App() {
           <Route path="Formulaire" element={<Formulaire />} />
           <Route path="partenairefacture" element={<PartenaireFacture />} />
           <Route path="compta" element={<Compta />} />
+          <Route path="logs" element={<Logs />} />
           <Route path="notification" element={<Notifications />} />
 
           <Route path="parametre" element={<Parametre />} />

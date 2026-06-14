@@ -664,6 +664,17 @@ formData.append('pc2', pc2Quantity * 4000) // Calculer le montant total PC2
                 prixPartenaire={Number(prixPartenaireDisplay) || 0}
                 prixPatient={prixPatient}
                 paiements={paiements}
+                reductionAppliquee={(() => {
+                  // prixPatient stocke = deja apres reduction. On
+                  // reconstruit le montant deduit pour l'affichage.
+                  const r = Number(reductionValue) || 0
+                  if (hasReduction !== 'oui' || r <= 0) return 0
+                  if (reductionType === 'montant') return r
+                  if (reductionType === 'pourcentage' && r < 100) {
+                    return (prixPatient * r) / (100 - r)
+                  }
+                  return 0
+                })()}
               />
 
               <PaiementsSection

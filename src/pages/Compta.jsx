@@ -70,9 +70,28 @@ const getGroupKey = (name = '') => {
   return first.toUpperCase()
 }
 
+// Etat de pliage de chaque section principale. Defaut : tout ouvert
+// sauf le detail par groupe (gros tableau) qui est replie par defaut.
+const DEFAULT_OPEN = {
+  kpis: true,
+  charts: true,
+  suivi: true,
+  reliquats: true,
+  reductions: true,
+  detail: false,
+}
+
 function Compta() {
   const [analyses, setAnalyses] = useState([])
   const [etiquettes, setEtiquettes] = useState([])
+  const [openSections, setOpenSections] = useState(DEFAULT_OPEN)
+  const toggleSection = (k) =>
+    setOpenSections((p) => ({ ...p, [k]: !p[k] }))
+  // Filtres LOCAUX a la section Detail par groupe (en plus des
+  // filtres globaux en haut de page).
+  const [detailDateDebut, setDetailDateDebut] = useState('')
+  const [detailDateFin, setDetailDateFin] = useState('')
+  const [detailPartenaire, setDetailPartenaire] = useState('')
   const [loading, setLoading] = useState(true)
   const [erreur, setErreur] = useState('')
 
@@ -312,33 +331,52 @@ function Compta() {
       totalImpaye: 0,
     })
 
-    const apply = (target, a) => {
-      target.nbFactures++
+    const apply = (target, a, partenaireMode = false) => {
       const prixTotal = num(a.prixTotal)
-      target.totalFacture += prixTotal
-      // Statut "payee/reliquat/impayee" du groupe = statut COMBINE
-      // patient + partenaire. Une facture est totalement payee si la
-      // part patient est payee ET l'etiquette partenaire est payee
-      // (ou s'il n'y a pas de partenaire).
       const avance = num(a.avance)
       const prixPat = num(a.prixPatient)
-      const patientPaye = avance >= prixPat
+      const prixPart = num(a.prixPartenaire)
       const { partenairePaye, partenaireAttendu } = partenaireDetail(a)
-      const partenaireOk = partenaireAttendu === 0
-      if (patientPaye && partenaireOk) {
-        target.nbPayees++
-      } else if (avance > 0 || partenairePaye > 0) {
-        target.nbReliquat++
+
+      if (partenaireMode) {
+        // Vue partenaire pure : on ne compte que ce qui concerne le
+        // partenaire (factures avec part partenaire > 0).
+        if (prixPart <= 0) return
+        target.nbFactures++
+        target.totalFacture += prixPart
+        target.totalPaye += partenairePaye
+        target.totalImpaye += partenaireAttendu
+        if (partenaireAttendu === 0) target.nbPayees++
+        else target.nbImpayees++
       } else {
-        target.nbImpayees++
+        // Vue globale (groupe) : combine patient + partenaire
+        target.nbFactures++
+        target.totalFacture += prixTotal
+        const patientPaye = avance >= prixPat
+        const partenaireOk = partenaireAttendu === 0
+        if (patientPaye && partenaireOk) target.nbPayees++
+        else if (avance > 0 || partenairePaye > 0) target.nbReliquat++
+        else target.nbImpayees++
+        target.totalPaye += avance + partenairePaye
+        target.totalImpaye += Math.max(0, prixPat - avance) + partenaireAttendu
       }
-      // Encaisse total = ce qui est reellement entre en caisse
-      target.totalPaye += avance + partenairePaye
-      target.totalImpaye += Math.max(0, prixPat - avance) + partenaireAttendu
     }
 
+    // Sous-filtre LOCAL : detailDateDebut / detailDateFin / detailPartenaire
+    const dDeb = detailDateDebut ? new Date(detailDateDebut) : null
+    const dFin = detailDateFin
+      ? (() => { const d = new Date(detailDateFin); d.setHours(23, 59, 59, 999); return d })()
+      : null
+    const sousFiltre = filtered.filter((a) => {
+      if (dDeb && (!a.createdAt || new Date(a.createdAt) < dDeb)) return false
+      if (dFin && (!a.createdAt || new Date(a.createdAt) > dFin)) return false
+      if (detailPartenaire && (a.partenaireId?.nom || '') !== detailPartenaire)
+        return false
+      return true
+    })
+
     const map = new Map()
-    filtered.forEach((a) => {
+    sousFiltre.forEach((a) => {
       const nomP = a.partenaireId?.nom || '(Sans partenaire)'
       const key = a.partenaireId ? getGroupKey(nomP) : '(Sans partenaire)'
       if (!map.has(key)) {
@@ -350,8 +388,10 @@ function Compta() {
         })
       }
       const g = map.get(key)
-      apply(g, a)
-      // Stats par filiale (partenaire individuel)
+      apply(g, a) // groupe : stats combinees (patient + partenaire)
+      // Stats par filiale = stats PARTENAIRE PUR (sommes a percevoir
+      // du partenaire, pas du patient). Plus de colonne reliquat
+      // (le reliquat est un concept patient seulement).
       if (!g.filialesMap.has(nomP)) {
         g.filialesMap.set(nomP, {
           nom: nomP,
@@ -359,7 +399,7 @@ function Compta() {
           ...emptyStats(),
         })
       }
-      apply(g.filialesMap.get(nomP), a)
+      apply(g.filialesMap.get(nomP), a, true)
     })
 
     return Array.from(map.values())
@@ -371,7 +411,7 @@ function Compta() {
         nbFiliales: g.filialesMap.size,
       }))
       .sort((a, b) => b.totalFacture - a.totalFacture)
-  }, [filtered, etiquetteByAnalyseId])
+  }, [filtered, etiquetteByAnalyseId, detailDateDebut, detailDateFin, detailPartenaire])
 
   const [expandedGroups, setExpandedGroups] = useState({})
   const toggleGroup = (key) =>
@@ -508,16 +548,59 @@ function Compta() {
   // filtrees par statut). On reutilise la liste deja filtree par
   // les filtres globaux.
   const getAnalysesOfGroup = (key, tab) => {
+    const dDeb = detailDateDebut ? new Date(detailDateDebut) : null
+    const dFin = detailDateFin
+      ? (() => { const d = new Date(detailDateFin); d.setHours(23, 59, 59, 999); return d })()
+      : null
     return filtered.filter((a) => {
       const nomP = a.partenaireId?.nom || '(Sans partenaire)'
       const k = a.partenaireId ? getGroupKey(nomP) : '(Sans partenaire)'
       if (k !== key) return false
+      // Sous-filtre local Detail (date + partenaire) coherent avec
+      // detailParGroupe
+      if (dDeb && (!a.createdAt || new Date(a.createdAt) < dDeb)) return false
+      if (dFin && (!a.createdAt || new Date(a.createdAt) > dFin)) return false
+      if (detailPartenaire && nomP !== detailPartenaire) return false
       if (tab === 'paye') return a.statusPayement === 'Payée'
       if (tab === 'impaye') return a.statusPayement === 'Impayée'
       if (tab === 'reliquat') return a.statusPayement === 'Reliquat'
       return true
     })
   }
+
+  // === Reliquats patient (analyses avec part patient non entierement payee) ===
+  const reliquatsStats = useMemo(() => {
+    const items = filtered
+      .map((a) => {
+        const prixPatient = num(a.prixPatient)
+        const avance = num(a.avance)
+        const reliquat = Math.max(0, prixPatient - avance)
+        if (reliquat <= 0) return null
+        return {
+          analyse: a,
+          prixPatient,
+          avance,
+          reliquat,
+          paiements: Array.isArray(a.paiements) ? a.paiements : [],
+        }
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.reliquat - a.reliquat)
+    const totalReliquat = items.reduce((s, x) => s + x.reliquat, 0)
+    const totalPayeDeja = items.reduce((s, x) => s + x.avance, 0)
+    const totalDu = items.reduce((s, x) => s + x.prixPatient, 0)
+    return {
+      items,
+      nb: items.length,
+      totalReliquat,
+      totalPayeDeja,
+      totalDu,
+    }
+  }, [filtered])
+
+  const [reliquatExpand, setReliquatExpand] = useState({})
+  const toggleReliquat = (id) =>
+    setReliquatExpand((prev) => ({ ...prev, [id]: !prev[id] }))
 
   // === Reductions ===
   const reductionsStats = useMemo(() => {
@@ -530,9 +613,17 @@ function Compta() {
     avec.forEach((a) => {
       const r = num(a.reduction)
       let montantDeduit = 0
+      // La reduction s'applique sur la PART PATIENT, pas sur le CA
+      // total. En base, prixPatient est deja apres reduction. Pour
+      // retrouver le montant deduit en pourcentage on inverse :
+      //   prixPatient = prixPatientAvant * (1 - r/100)
+      //   montantDeduit = prixPatientAvant - prixPatient
+      //                 = prixPatient * r / (100 - r)
       if (a.typeReduction === 'pourcentage') {
         totalReductionPourcentage++
-        montantDeduit = (num(a.prixTotal) * r) / 100
+        if (r > 0 && r < 100) {
+          montantDeduit = (num(a.prixPatient) * r) / (100 - r)
+        }
       } else {
         totalReductionMontant++
         montantDeduit = r
@@ -697,7 +788,12 @@ function Compta() {
       ) : (
         <>
           {/* === KPIs === */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+          <Section
+            title="Indicateurs clés"
+            isOpen={openSections.kpis}
+            onToggle={() => toggleSection('kpis')}
+          >
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <KpiCard
               label="Chiffre d'affaires"
               value={fmt(stats.totalFacture)}
@@ -746,9 +842,15 @@ function Compta() {
               color="neutral"
             />
           </div>
+          </Section>
 
           {/* === GRAPHIQUES === */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+          <Section
+            title="Graphiques"
+            isOpen={openSections.charts}
+            onToggle={() => toggleSection('charts')}
+          >
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <ChartCard title="Répartition par type de partenaire (CA)">
               {parType.length === 0 ? (
                 <Empty />
@@ -862,14 +964,16 @@ function Compta() {
               </ResponsiveContainer>
             </ChartCard>
           </div>
+          </Section>
 
           {/* === SUIVI PAIEMENTS (independant des filtres globaux) === */}
-          <div className="card bg-base-200 mt-4">
-            <div className="card-body p-3">
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-                <h3 className="card-title text-base">
-                  Suivi des paiements — {suiviPeriodeLabel}
-                </h3>
+          <Section
+            title={`Suivi des paiements — ${suiviPeriodeLabel}`}
+            isOpen={openSections.suivi}
+            onToggle={() => toggleSection('suivi')}
+          >
+            <div>
+              <div className="flex flex-wrap items-center justify-end gap-3 mb-3">
                 <div className="flex flex-wrap gap-2">
                   <div role="tablist" className="tabs tabs-boxed tabs-sm">
                     <a
@@ -1007,13 +1111,189 @@ function Compta() {
                 )}
               </div>
             </div>
-          </div>
+          </Section>
+
+          {/* === RELIQUATS PATIENT === */}
+          <Section
+            title="Reliquats patient — historique et détail"
+            isOpen={openSections.reliquats}
+            onToggle={() => toggleSection('reliquats')}
+          >
+            <div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <KpiCard
+                  label="Analyses avec reliquat"
+                  value={String(reliquatsStats.nb)}
+                  hint={`${pct(reliquatsStats.nb, stats.nbAnalyses)}% du total`}
+                  color="warning"
+                />
+                <KpiCard
+                  label="Total reliquat patient"
+                  value={fmt(reliquatsStats.totalReliquat)}
+                  hint="Reste à percevoir des patients"
+                  color="error"
+                />
+                <KpiCard
+                  label="Déjà payé sur ces analyses"
+                  value={fmt(reliquatsStats.totalPayeDeja)}
+                  hint={`${pct(reliquatsStats.totalPayeDeja, reliquatsStats.totalDu)}% de la dette`}
+                  color="success"
+                />
+                <KpiCard
+                  label="Part patient totale"
+                  value={fmt(reliquatsStats.totalDu)}
+                  hint="Sur les analyses concernées"
+                  color="neutral"
+                />
+              </div>
+
+              {reliquatsStats.items.length === 0 ? (
+                <div className="text-sm opacity-50 italic mt-3">
+                  Aucun reliquat patient en attente.
+                </div>
+              ) : (
+                <div className="overflow-x-auto mt-3">
+                  <table className="table table-sm">
+                    <thead>
+                      <tr>
+                        <th className="w-8"></th>
+                        <th>Date</th>
+                        <th>Identifiant</th>
+                        <th>Patient</th>
+                        <th>Partenaire</th>
+                        <th className="text-right">Part patient</th>
+                        <th className="text-right">Déjà payé</th>
+                        <th className="text-right">Reliquat</th>
+                        <th className="text-right">% payé</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {reliquatsStats.items.map((r) => {
+                        const a = r.analyse
+                        const isOpen = !!reliquatExpand[a._id]
+                        return (
+                          <Fragment key={a._id}>
+                            <tr>
+                              <td>
+                                <button
+                                  className="btn btn-ghost btn-xs"
+                                  onClick={() => toggleReliquat(a._id)}
+                                  aria-label={isOpen ? 'Replier' : 'Déplier'}
+                                >
+                                  {isOpen ? '▼' : '▶'}
+                                </button>
+                              </td>
+                              <td className="text-sm">
+                                {new Date(a.createdAt).toLocaleDateString('fr-FR')}
+                              </td>
+                              <td className="font-mono text-xs">
+                                {a.identifiant}
+                              </td>
+                              <td>
+                                {a.userId?.nom} {a.userId?.prenom}
+                              </td>
+                              <td className="text-sm">
+                                {a.partenaireId?.nom || '-'}
+                              </td>
+                              <td className="text-right">{fmt(r.prixPatient)}</td>
+                              <td className="text-right text-success">
+                                {fmt(r.avance)}
+                              </td>
+                              <td className="text-right text-error font-semibold">
+                                {fmt(r.reliquat)}
+                              </td>
+                              <td className="text-right">
+                                {pct(r.avance, r.prixPatient)}%
+                              </td>
+                            </tr>
+                            {isOpen && (
+                              <tr className="bg-base-100">
+                                <td></td>
+                                <td colSpan={8} className="p-3">
+                                  <div className="text-xs font-semibold mb-2 opacity-70">
+                                    Historique des paiements
+                                  </div>
+                                  {r.paiements.length === 0 ? (
+                                    <div className="text-xs opacity-50 italic">
+                                      Aucun paiement détaillé enregistré
+                                      pour cette analyse. Le montant
+                                      «&nbsp;déjà payé&nbsp;» ({fmt(r.avance)})
+                                      provient de l&apos;avance globale.
+                                    </div>
+                                  ) : (
+                                    <table className="table table-xs">
+                                      <thead>
+                                        <tr>
+                                          <th>Date</th>
+                                          <th>Mode</th>
+                                          <th className="text-right">Montant</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {r.paiements.map((p, i) => (
+                                          <tr key={i}>
+                                            <td>
+                                              {p.date
+                                                ? new Date(p.date).toLocaleString(
+                                                    'fr-FR',
+                                                    {
+                                                      day: '2-digit',
+                                                      month: 'short',
+                                                      year: 'numeric',
+                                                    }
+                                                  )
+                                                : '-'}
+                                            </td>
+                                            <td>
+                                              <span className="badge badge-xs badge-outline">
+                                                {p.mode}
+                                              </span>
+                                            </td>
+                                            <td className="text-right">
+                                              {fmt(p.montant)}
+                                            </td>
+                                          </tr>
+                                        ))}
+                                        <tr className="font-semibold">
+                                          <td colSpan={2} className="text-right">
+                                            Total reçu
+                                          </td>
+                                          <td className="text-right text-success">
+                                            {fmt(r.avance)}
+                                          </td>
+                                        </tr>
+                                        <tr className="font-semibold">
+                                          <td colSpan={2} className="text-right">
+                                            Reste à percevoir
+                                          </td>
+                                          <td className="text-right text-error">
+                                            {fmt(r.reliquat)}
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  )}
+                                </td>
+                              </tr>
+                            )}
+                          </Fragment>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </Section>
 
           {/* === REDUCTIONS === */}
-          <div className="card bg-base-200 mt-4">
-            <div className="card-body p-3">
-              <h3 className="card-title text-base">Réductions accordées</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
+          <Section
+            title="Réductions accordées"
+            isOpen={openSections.reductions}
+            onToggle={() => toggleSection('reductions')}
+          >
+            <div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <KpiCard
                   label="Total réduit"
                   value={fmt(reductionsStats.totalMontantReduit)}
@@ -1109,51 +1389,117 @@ function Compta() {
                           <th>Partenaire</th>
                           <th>Type réduc.</th>
                           <th className="text-right">Valeur</th>
-                          <th className="text-right">CA</th>
+                          <th className="text-right">Part patient avant</th>
+                          <th className="text-right">Montant déduit</th>
                           <th className="text-right">Restant patient</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {reductionsStats.analyses.map((a) => (
-                          <tr key={a._id}>
-                            <td>
-                              {a.createdAt
-                                ? new Date(a.createdAt).toLocaleDateString('fr-FR')
-                                : '-'}
-                            </td>
-                            <td className="font-mono">{a.identifiant}</td>
-                            <td>
-                              {a.userId?.nom} {a.userId?.prenom}
-                            </td>
-                            <td>{a.partenaireId?.nom || '-'}</td>
-                            <td>
-                              <span className="badge badge-xs badge-outline">
-                                {a.typeReduction === 'pourcentage' ? '%' : 'CFA'}
-                              </span>
-                            </td>
-                            <td className="text-right">
-                              {a.typeReduction === 'pourcentage'
-                                ? a.reduction + '%'
-                                : fmt(a.reduction)}
-                            </td>
-                            <td className="text-right">{fmt(a.prixTotal)}</td>
-                            <td className="text-right">{fmt(a.prixPatient)}</td>
-                          </tr>
-                        ))}
+                        {reductionsStats.analyses.map((a) => {
+                          const r = num(a.reduction)
+                          let montantDeduit = 0
+                          let prixPatientAvant = num(a.prixPatient)
+                          if (a.typeReduction === 'pourcentage' && r > 0 && r < 100) {
+                            montantDeduit = (num(a.prixPatient) * r) / (100 - r)
+                            prixPatientAvant = num(a.prixPatient) + montantDeduit
+                          } else if (a.typeReduction === 'montant') {
+                            montantDeduit = r
+                            prixPatientAvant = num(a.prixPatient) + r
+                          }
+                          return (
+                            <tr key={a._id}>
+                              <td>
+                                {a.createdAt
+                                  ? new Date(a.createdAt).toLocaleDateString('fr-FR')
+                                  : '-'}
+                              </td>
+                              <td className="font-mono">{a.identifiant}</td>
+                              <td>
+                                {a.userId?.nom} {a.userId?.prenom}
+                              </td>
+                              <td>{a.partenaireId?.nom || '-'}</td>
+                              <td>
+                                <span className="badge badge-xs badge-outline">
+                                  {a.typeReduction === 'pourcentage' ? '%' : 'CFA'}
+                                </span>
+                              </td>
+                              <td className="text-right">
+                                {a.typeReduction === 'pourcentage'
+                                  ? a.reduction + '%'
+                                  : fmt(a.reduction)}
+                              </td>
+                              <td className="text-right">
+                                {fmt(prixPatientAvant)}
+                              </td>
+                              <td className="text-right text-warning">
+                                -{fmt(montantDeduit)}
+                              </td>
+                              <td className="text-right">{fmt(a.prixPatient)}</td>
+                            </tr>
+                          )
+                        })}
                       </tbody>
                     </table>
                   </div>
                 </details>
               )}
             </div>
-          </div>
+          </Section>
 
           {/* === DETAIL PAR GROUPE === */}
-          <div className="card bg-base-200 mt-4">
-            <div className="card-body p-3">
-              <h3 className="card-title text-base">
-                Détail par groupe de partenaires
-              </h3>
+          <Section
+            title="Détail par groupe de partenaires"
+            isOpen={openSections.detail}
+            onToggle={() => toggleSection('detail')}
+            headerExtra={
+              <div className="flex flex-wrap gap-2 items-center">
+                <input
+                  type="date"
+                  className="input input-bordered input-xs"
+                  value={detailDateDebut}
+                  onChange={(e) => setDetailDateDebut(e.target.value)}
+                  title="Date début"
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <input
+                  type="date"
+                  className="input input-bordered input-xs"
+                  value={detailDateFin}
+                  onChange={(e) => setDetailDateFin(e.target.value)}
+                  title="Date fin"
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <select
+                  className="select select-bordered select-xs"
+                  value={detailPartenaire}
+                  onChange={(e) => setDetailPartenaire(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <option value="">Tous partenaires</option>
+                  {partenaireOptions.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+                {(detailDateDebut || detailDateFin || detailPartenaire) && (
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-xs"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setDetailDateDebut('')
+                      setDetailDateFin('')
+                      setDetailPartenaire('')
+                    }}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            }
+          >
+            <div>
               <div className="overflow-x-auto">
                 <table className="table table-zebra table-sm">
                   <thead>
@@ -1250,7 +1596,7 @@ function Compta() {
                 </table>
               </div>
             </div>
-          </div>
+          </Section>
         </>
       )}
     </div>
@@ -1298,18 +1644,18 @@ function GroupDrawer({ groupe, hasFiliales, tab, setTab, analyses, etiquetteByAn
       {hasFiliales && (
         <div className="mb-3">
           <h4 className="font-semibold text-sm mb-2">
-            Filiales du groupe {groupe.key} ({groupe.nbFiliales})
+            Filiales du groupe {groupe.key} ({groupe.nbFiliales}) — vue
+            partenaire uniquement
           </h4>
           <div className="overflow-x-auto">
             <table className="table table-xs">
               <thead>
                 <tr>
                   <th>Filiale</th>
-                  <th className="text-right">Factures</th>
+                  <th className="text-right">Factures partenaire</th>
                   <th className="text-right">Payées</th>
                   <th className="text-right">Impayées</th>
-                  <th className="text-right">Reliquat</th>
-                  <th className="text-right">CA</th>
+                  <th className="text-right">Somme due au partenaire</th>
                   <th className="text-right">Encaissé</th>
                   <th className="text-right">Restant dû</th>
                   <th className="text-right">% encaissé</th>
@@ -1322,7 +1668,6 @@ function GroupDrawer({ groupe, hasFiliales, tab, setTab, analyses, etiquetteByAn
                     <td className="text-right">{f.nbFactures}</td>
                     <td className="text-right text-success">{f.nbPayees}</td>
                     <td className="text-right text-error">{f.nbImpayees}</td>
-                    <td className="text-right text-warning">{f.nbReliquat}</td>
                     <td className="text-right">{fmt(f.totalFacture)}</td>
                     <td className="text-right text-success">
                       {fmt(f.totalPaye)}
@@ -1461,6 +1806,28 @@ function GroupDrawer({ groupe, hasFiliales, tab, setTab, analyses, etiquetteByAn
             </tbody>
           </table>
         </div>
+      </div>
+    </div>
+  )
+}
+
+// Section pliable reutilisable : titre + chevron + contenu masquable.
+function Section({ title, isOpen, onToggle, children, headerExtra }) {
+  return (
+    <div className="card bg-base-200 mt-4 shadow-sm">
+      <div className="card-body p-3">
+        <div className="flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={onToggle}
+            className="flex items-center gap-2 text-left flex-1"
+          >
+            <span className="text-lg">{isOpen ? '▼' : '▶'}</span>
+            <h3 className="card-title text-base m-0">{title}</h3>
+          </button>
+          {headerExtra}
+        </div>
+        {isOpen && <div className="mt-3">{children}</div>}
       </div>
     </div>
   )

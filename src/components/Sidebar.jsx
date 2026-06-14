@@ -116,6 +116,7 @@ import {
   faFileInvoice,
   faFlask,
   faChartLine,
+  faClipboardCheck,
 } from '@fortawesome/free-solid-svg-icons'
 import logo from '../images/bioramlogo.png'
 
@@ -219,6 +220,13 @@ function Sidebar() {
       route: '/dash/compta',
       icon: faChartLine,
       allowedUserTypes: ['superadmin', 'medecin', 'docteur', 'acceuil', 'accueil'],
+    },
+    {
+      id: 12,
+      label: 'Logs',
+      route: '/dash/logs',
+      icon: faClipboardCheck,
+      allowedUserTypes: ['superadmin', 'medecin', 'docteur'],
     },
     {
       id: 10,
