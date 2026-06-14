@@ -26,6 +26,7 @@ import PartenaireList from './pages/PartenaireList'
 import PartenaireFacture from './pages/PartenaireFacture'
 import Compta from './pages/Compta'
 import Logs from './pages/Logs'
+import DemandePayement from './pages/DemandePayement'
 
 import KeyExpired from './components/KeyExpired'
 import Notifications from './components/Notifications'
@@ -111,6 +112,7 @@ function App() {
           <Route path="partenairefacture" element={<PartenaireFacture />} />
           <Route path="compta" element={<Compta />} />
           <Route path="logs" element={<Logs />} />
+          <Route path="demande-payement" element={<DemandePayement />} />
           <Route path="notification" element={<Notifications />} />
 
           <Route path="parametre" element={<Parametre />} />

@@ -84,7 +84,16 @@ const DEFAULT_OPEN = {
 function Compta() {
   const [analyses, setAnalyses] = useState([])
   const [etiquettes, setEtiquettes] = useState([])
-  const [openSections, setOpenSections] = useState(DEFAULT_OPEN)
+  const [demandes, setDemandes] = useState([])
+  const [openSections, setOpenSections] = useState({
+    ...DEFAULT_OPEN,
+    demandes: true,
+  })
+  // Filtres locaux pour la section Demandes de paiement
+  const [demDateDebut, setDemDateDebut] = useState('')
+  const [demDateFin, setDemDateFin] = useState('')
+  const [demPartenaire, setDemPartenaire] = useState('')
+  const [demStatut, setDemStatut] = useState('')
   const toggleSection = (k) =>
     setOpenSections((p) => ({ ...p, [k]: !p[k] }))
   // Filtres LOCAUX a la section Detail par groupe (en plus des
@@ -114,17 +123,19 @@ function Compta() {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         }
-        // Fetch parallele : analyses (part patient) + etiquettes
-        // partenaire (part partenaire avec son propre statusPayement).
-        const [aRes, eRes] = await Promise.all([
+        // Fetch parallele : analyses + etiquettes + demandes paiement
+        const [aRes, eRes, dRes] = await Promise.all([
           fetch(`${apiUrl}/api/analyse`, { headers, signal: ctrl.signal }),
           fetch(`${apiUrl}/api/eti`, { headers, signal: ctrl.signal }),
+          fetch(`${apiUrl}/api/demande-payement`, { headers, signal: ctrl.signal }),
         ])
         const aData = await aRes.json()
         const eData = await eRes.json()
+        const dData = await dRes.json()
         if (aData.success) setAnalyses(aData.data || [])
         else setErreur('Erreur lors du chargement des analyses')
         if (eData.success) setEtiquettes(eData.data || [])
+        if (dData.success) setDemandes(dData.data || [])
       } catch (e) {
         if (e.name !== 'AbortError') {
           console.error(e)
@@ -601,6 +612,37 @@ function Compta() {
   const [reliquatExpand, setReliquatExpand] = useState({})
   const toggleReliquat = (id) =>
     setReliquatExpand((prev) => ({ ...prev, [id]: !prev[id] }))
+
+  // === Demandes de paiement filtrees pour la section Compta ===
+  const demandesFiltrees = useMemo(() => {
+    const dDeb = demDateDebut ? new Date(demDateDebut) : null
+    const dFin = demDateFin
+      ? (() => { const d = new Date(demDateFin); d.setHours(23,59,59,999); return d })()
+      : null
+    return demandes.filter((d) => {
+      if (dDeb && new Date(d.createdAt) < dDeb) return false
+      if (dFin && new Date(d.createdAt) > dFin) return false
+      if (demPartenaire && (d.partenaireId?.nom || '') !== demPartenaire) return false
+      if (demStatut && d.statusPayement !== demStatut) return false
+      return true
+    })
+  }, [demandes, demDateDebut, demDateFin, demPartenaire, demStatut])
+
+  const demandesStats = useMemo(() => {
+    let total = 0, paye = 0, impaye = 0, nbPaye = 0, nbImpaye = 0
+    demandesFiltrees.forEach((d) => {
+      const s = num(d.sommeTotale)
+      total += s
+      if (d.statusPayement === 'Payée') { paye += s; nbPaye++ }
+      else { impaye += s; nbImpaye++ }
+    })
+    return { total, paye, impaye, nbPaye, nbImpaye, nb: demandesFiltrees.length }
+  }, [demandesFiltrees])
+
+  const partenairesDemandes = useMemo(() =>
+    Array.from(new Set(demandes.map(d => d.partenaireId?.nom).filter(Boolean)))
+      .sort((a, b) => a.localeCompare(b, 'fr'))
+  , [demandes])
 
   // === Reductions ===
   const reductionsStats = useMemo(() => {
@@ -1279,6 +1321,128 @@ function Compta() {
                           </Fragment>
                         )
                       })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </Section>
+
+          {/* === DEMANDES DE PAIEMENT === */}
+          <Section
+            title="Demandes de paiement"
+            isOpen={openSections.demandes}
+            onToggle={() => toggleSection('demandes')}
+            headerExtra={
+              <div className="flex flex-wrap gap-2 items-center">
+                <input
+                  type="date"
+                  className="input input-bordered input-xs"
+                  value={demDateDebut}
+                  onChange={(e) => setDemDateDebut(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  title="Date début"
+                />
+                <input
+                  type="date"
+                  className="input input-bordered input-xs"
+                  value={demDateFin}
+                  onChange={(e) => setDemDateFin(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  title="Date fin"
+                />
+                <select
+                  className="select select-bordered select-xs"
+                  value={demPartenaire}
+                  onChange={(e) => setDemPartenaire(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <option value="">Tous partenaires</option>
+                  {partenairesDemandes.map((p) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+                <select
+                  className="select select-bordered select-xs"
+                  value={demStatut}
+                  onChange={(e) => setDemStatut(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <option value="">Tous statuts</option>
+                  <option value="Payée">Payée</option>
+                  <option value="Impayée">Impayée</option>
+                </select>
+              </div>
+            }
+          >
+            <div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                <KpiCard
+                  label="Nb demandes"
+                  value={String(demandesStats.nb)}
+                  hint={`${demandesStats.nbPaye} payées / ${demandesStats.nbImpaye} impayées`}
+                  color="primary"
+                />
+                <KpiCard
+                  label="Montant total"
+                  value={fmt(demandesStats.total)}
+                  color="neutral"
+                />
+                <KpiCard
+                  label="Payé"
+                  value={fmt(demandesStats.paye)}
+                  hint={`${pct(demandesStats.paye, demandesStats.total)}%`}
+                  color="success"
+                />
+                <KpiCard
+                  label="Impayé"
+                  value={fmt(demandesStats.impaye)}
+                  hint={`${pct(demandesStats.impaye, demandesStats.total)}%`}
+                  color="error"
+                />
+              </div>
+
+              {demandesFiltrees.length === 0 ? (
+                <div className="text-sm opacity-50 italic">
+                  Aucune demande de paiement pour ces filtres.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="table table-zebra table-sm">
+                    <thead>
+                      <tr>
+                        <th>Référence</th>
+                        <th>Partenaire</th>
+                        <th>Période</th>
+                        <th className="text-right">Nb factures</th>
+                        <th className="text-right">Montant</th>
+                        <th>Statut</th>
+                        <th>Créée le</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {demandesFiltrees.map((d) => (
+                        <tr key={d._id}>
+                          <td className="font-mono text-xs">{d.reference || '-'}</td>
+                          <td>{d.partenaireId?.nom || '-'}</td>
+                          <td className="text-sm">
+                            {new Date(d.dateDebut).toLocaleDateString('fr-FR')} →{' '}
+                            {new Date(d.dateFin).toLocaleDateString('fr-FR')}
+                          </td>
+                          <td className="text-right">{d.nombreFactures}</td>
+                          <td className="text-right font-semibold">{fmt(d.sommeTotale)}</td>
+                          <td>
+                            <span
+                              className={`badge badge-sm ${d.statusPayement === 'Payée' ? 'badge-success' : 'badge-error'}`}
+                            >
+                              {d.statusPayement}
+                            </span>
+                          </td>
+                          <td className="text-sm">
+                            {new Date(d.createdAt).toLocaleDateString('fr-FR')}
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>

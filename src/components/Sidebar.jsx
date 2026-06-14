@@ -117,6 +117,7 @@ import {
   faFlask,
   faChartLine,
   faClipboardCheck,
+  faHandHoldingDollar,
 } from '@fortawesome/free-solid-svg-icons'
 import logo from '../images/bioramlogo.png'
 
@@ -219,6 +220,13 @@ function Sidebar() {
       label: 'Compta',
       route: '/dash/compta',
       icon: faChartLine,
+      allowedUserTypes: ['superadmin', 'medecin', 'docteur', 'acceuil', 'accueil'],
+    },
+    {
+      id: 13,
+      label: 'Demandes paiement',
+      route: '/dash/demande-payement',
+      icon: faHandHoldingDollar,
       allowedUserTypes: ['superadmin', 'medecin', 'docteur', 'acceuil', 'accueil'],
     },
     {
