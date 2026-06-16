@@ -24,7 +24,7 @@
     "html2canvas": "^1.4.1",
     "install": "^0.13.0",
     "jsbarcode": "^3.11.6",
-    "jspdf": "^2.5.1",
+    "jspdf": "^2.5.2",
     "npm": "^10.4.0",
     "pdfmake": "^0.2.10",
     "quill-better-table": "^1.2.10",
