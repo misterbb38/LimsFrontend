@@ -2979,7 +2979,10 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     doc.text('CONCLUSION', 20, currentY)
     currentY += 5
 
-    const maxLineWidth = 100
+    // Largeur max conclusion : 170mm (= largeur utile A4 entre les
+    // marges 20mm gauche et 190mm droite). Eviter le retour a la
+    // ligne premature tout en restant dans la zone imprimable.
+    const maxLineWidth = 170
     const conclusionLines = doc.splitTextToSize(test.conclusion, maxLineWidth)
     // Rendu ligne par ligne avec germes en italique (la conclusion
     // peut citer des binomes latins type "Escherichia coli").
