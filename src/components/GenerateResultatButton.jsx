@@ -2427,11 +2427,11 @@ const renderProteinurie24hException = (doc, test, excepY, invoice) => {
 // }
 const renderMacroscopicExam = (doc, test, currentY, positionX, invoice) => {
   currentY = checkNewPage(doc, currentY, invoice)
-  doc.setFontSize(11)
+  doc.setFontSize(9)
   doc.setFont('Times', 'bold')
   doc.text(`EXAMEN MACROSCOPIQUE`, 20, currentY)
-  currentY += 8
-  doc.setFontSize(11)
+  currentY += 6
+  doc.setFontSize(9)
   doc.setFont('Times', 'normal')
 
   // ✅ Joindre les éléments du tableau avec des virgules et "et" pour le dernier
@@ -2480,11 +2480,11 @@ const renderMacroscopicExam = (doc, test, currentY, positionX, invoice) => {
 
   const renderMicroscopicExam = (doc, test, currentY, positionX, invoice) => {
     currentY = checkNewPage(doc, currentY, invoice)
-    doc.setFontSize(11)
+    doc.setFontSize(9)
     doc.setFont('Times', 'bold')
     doc.text(`EXAMEN MICROSCOPIQUE APRES COLORATION`, 20, currentY)
-    currentY += 8
-    doc.setFontSize(11)
+    currentY += 6
+    doc.setFontSize(9)
     doc.setFont('Times', 'normal')
 
     // Helper local : verifie l'espace dispo AVANT chaque ligne et
@@ -2843,11 +2843,11 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
 
   const renderGramExam = (doc, test, currentY, positionX, invoice) => {
     currentY = checkNewPage(doc, currentY, invoice)
-    doc.setFontSize(11)
+    doc.setFontSize(9)
     doc.setFont('Times', 'bold')
     doc.text(`EXAMEN BACTERIOLOGIE DIRECT (Coloration de gram)`, 20, currentY)
-    currentY += 8
-    doc.setFontSize(11)
+    currentY += 6
+    doc.setFontSize(9)
     doc.setFont('Times', 'normal')
     doc.text(`Gram:`, 20, currentY)
     doc.text(`${test.gram}`, positionX, currentY)
@@ -2864,11 +2864,11 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     }
 
     currentY = checkNewPage(doc, currentY, invoice)
-    doc.setFontSize(11)
+    doc.setFontSize(9)
     doc.setFont('Times', 'bold')
     doc.text(`CULTURES SUR MILIEUX SPECIFIQUES:`, 20, currentY)
     currentY += 5
-    doc.setFontSize(11)
+    doc.setFontSize(9)
     doc.setFont('Times', 'normal')
 
     if (culture) {
@@ -2913,11 +2913,11 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     }
 
     currentY = checkNewPage(doc, currentY, invoice)
-    doc.setFontSize(11)
+    doc.setFontSize(9)
     doc.setFont('Times', 'bold')
     doc.text('RECHERCHE DE CHLAMYDIA', 20, currentY)
     currentY += 5
-    doc.setFontSize(11)
+    doc.setFontSize(9)
     doc.setFont('Times', 'normal')
 
     if (naturePrelevement) {
@@ -2944,11 +2944,11 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     }
 
     currentY = checkNewPage(doc, currentY, invoice)
-    doc.setFontSize(11)
+    doc.setFontSize(9)
     doc.setFont('Times', 'bold')
     doc.text('RECHERCHE DE MYCOPLASMES', 20, currentY)
     currentY += 5
-    doc.setFontSize(11)
+    doc.setFontSize(9)
     doc.setFont('Times', 'normal')
 
     if (naturePrelevement) {
