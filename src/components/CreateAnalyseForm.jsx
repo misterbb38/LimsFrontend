@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
@@ -45,6 +45,8 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
   const [reductionValue, setReductionValue] = useState('') // Pour la valeur de la réduction
   // Ajout d'un état pour la recherche
   const [searchTerm, setSearchTerm] = useState('')
+  const searchInputRef = useRef(null)
+  const dateRecupRef = useRef(null)
   const [searchTermPatient, setSearchTermPatient] = useState('')
   const [searchTermPartenaire, setSearchTermPartenaire] = useState('')
 
@@ -127,14 +129,19 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
   //   }
   // }
   const handleTestSelection = (testId) => {
-  if (!selectedTests.find((test) => test._id === testId)) {
-    const selectedTest = availableTests.find((test) => test._id === testId)
-    if (selectedTest) {
-      setSelectedTests([...selectedTests, selectedTest])
-      setSearchTerm('') // ✅ Efface le filtre après sélection
+    if (!selectedTests.find((test) => test._id === testId)) {
+      const selectedTest = availableTests.find((test) => test._id === testId)
+      if (selectedTest) {
+        setSelectedTests([...selectedTests, selectedTest])
+        setSearchTerm('')
+        // Remettre le focus sur le champ recherche pour permettre la
+        // saisie en chaine sans avoir a re-cliquer dedans.
+        setTimeout(() => {
+          if (searchInputRef.current) searchInputRef.current.focus()
+        }, 0)
+      }
     }
   }
-}
 
   const handleTestRemoval = (testId) => {
     setSelectedTests(selectedTests.filter((test) => test._id !== testId))
@@ -352,7 +359,12 @@ if (pc2Quantity > 0) formData.append('pc2', pc2Quantity * 4000)
       formData.append('paiements', JSON.stringify(paiements))
     }
     formData.append('deplacement', deplacement)
-    formData.append('dateDeRecuperation', dateDeRecuperation)
+    // Append 'Z' pour forcer l'interpretation UTC cote backend
+    // (sinon le serveur lit la string comme une heure locale).
+    formData.append(
+      'dateDeRecuperation',
+      dateDeRecuperation ? `${dateDeRecuperation}:00Z` : ''
+    )
 
     // Ajouter les données concernant l'assurance/IPM si l'utilisateur a répondu "oui"
     if (hasInsurance === 'oui') {
@@ -455,10 +467,12 @@ if (pc2Quantity > 0) formData.append('pc2', pc2Quantity * 4000)
               <span className="label-text">Filtre Parametre</span>
             </label>
             <input
+              ref={searchInputRef}
               type="text"
               placeholder="Rechercher des tests..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              autoFocus
               className="input input-bordered input-primary w-full max-w-xs"
             />
             <label className="label">
@@ -831,10 +845,17 @@ if (pc2Quantity > 0) formData.append('pc2', pc2Quantity * 4000)
               <span className="label-text">Date de récupération</span>
             </label>
             <input
+              ref={dateRecupRef}
               type="datetime-local"
-              className="input input-bordered"
+              className="input input-bordered cursor-pointer"
               value={dateDeRecuperation}
               onChange={(e) => setDateDeRecuperation(e.target.value)}
+              onClick={() => {
+                // Ouvre directement le calendrier au clic n'importe
+                // ou dans le champ (sinon il faut cliquer sur la
+                // petite icone calendrier a droite).
+                try { dateRecupRef.current?.showPicker?.() } catch (_) {}
+              }}
             />
           </div>
 

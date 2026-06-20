@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEdit, faTimes } from '@fortawesome/free-solid-svg-icons'
@@ -150,11 +150,20 @@ setPc2Quantity(data.data.pc2 > 0 ? Math.round(data.data.pc2 / 4000) : 0)
         setReliquat(data.data.reliquat || 0) // Récupération du reliquat
         setDeplacement(data.data.deplacement || 0)
 
-        // Initialisez la date de récupération
-        const parts = data.data.dateDeRecuperation.split('/')
-        if (parts.length === 3) {
-          const formattedDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}` // Conversion en format YYYY-MM-DD
-          setDateDeRecuperation(formattedDate)
+        // Date de recuperation en UTC (fuseau +00) : on lit les
+        // composantes UTC et on les passe au champ datetime-local
+        // pour que l'utilisateur voie la meme heure quel que soit
+        // son fuseau navigateur.
+        const raw = data.data.dateDeRecuperation
+        if (raw) {
+          const d = new Date(raw)
+          if (!isNaN(d)) {
+            const pad = (n) => String(n).padStart(2, '0')
+            const formatted = `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`
+            setDateDeRecuperation(formatted)
+          } else {
+            setDateDeRecuperation('')
+          }
         } else {
           setDateDeRecuperation('')
         }
@@ -167,11 +176,18 @@ setPc2Quantity(data.data.pc2 > 0 ? Math.round(data.data.pc2 / 4000) : 0)
     }
   }
 
+  const searchInputRef = useRef(null)
+  const dateRecupRef = useRef(null)
+
   const handleTestSelection = (testId) => {
     if (!selectedTests.find((test) => test._id === testId)) {
       const selectedTest = availableTests.find((test) => test._id === testId)
       if (selectedTest) {
         setSelectedTests([...selectedTests, selectedTest])
+        setSearchTerm('')
+        setTimeout(() => {
+          if (searchInputRef.current) searchInputRef.current.focus()
+        }, 0)
       }
     }
   }
@@ -247,7 +263,11 @@ setPc2Quantity(data.data.pc2 > 0 ? Math.round(data.data.pc2 / 4000) : 0)
     formData.append('pc1', pc1Quantity * 2000) // Calculer le montant total PC1
 formData.append('pc2', pc2Quantity * 4000) // Calculer le montant total PC2
     formData.append('deplacement', deplacement) // Envoyer la valeur de déplacemen
-    formData.append('dateDeRecuperation', dateDeRecuperation)
+    // Force interpretation UTC cote backend
+    formData.append(
+      'dateDeRecuperation',
+      dateDeRecuperation ? `${dateDeRecuperation}:00Z` : ''
+    )
 
     // Vérifie que selectedPartenaireId n'est pas une chaîne vide avant de l'ajouter
     if (hasInsurance === 'oui') {
@@ -317,10 +337,12 @@ formData.append('pc2', pc2Quantity * 4000) // Calculer le montant total PC2
                   <span className="label-text">Filtre Paramettre</span>
                 </label>
                 <input
+                  ref={searchInputRef}
                   type="text"
                   placeholder="Rechercher des tests..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  autoFocus
                   className="input input-bordered w-full mb-2"
                 />
                 <label className="label">
@@ -688,10 +710,14 @@ formData.append('pc2', pc2Quantity * 4000) // Calculer le montant total PC2
                   <span className="label-text">Date de récupération</span>
                 </label>
                 <input
+                  ref={dateRecupRef}
                   type="datetime-local"
-                  className="input input-bordered"
+                  className="input input-bordered cursor-pointer"
                   value={dateDeRecuperation}
                   onChange={(e) => setDateDeRecuperation(e.target.value)}
+                  onClick={() => {
+                    try { dateRecupRef.current?.showPicker?.() } catch (_) {}
+                  }}
                 />
               </div>
               <div className="modal-action">

@@ -143,7 +143,7 @@ const GenerateResultatButton = forwardRef(function GenerateResultatButton(
    * CONSTANTES DE PAGINATION SIMPLES
    */
   const FOOTER_Y = 277
-  const MARGIN_BEFORE_FOOTER = 15 // Reduit de 30 a 15 : la marge basse precedente
+  const MARGIN_BEFORE_FOOTER = 25 // Marge plus large pour eviter le chevauchement
   // gaspillait ~30mm en bas de chaque page, poussant inutilement le contenu
   // sur des pages suivantes a moitie vides.
   const MAX_CONTENT_Y = FOOTER_Y - MARGIN_BEFORE_FOOTER // 262mm
@@ -224,6 +224,79 @@ const GenerateResultatButton = forwardRef(function GenerateResultatButton(
    *
    * Retourne une string prete a etre affichee, ou '' si aucune ref.
    */
+  // Liste des germes/parasites/champignons reconnus. Les binomes
+  // latins doivent etre rendus en italique (convention medicale
+  // internationale) partout dans le PDF, y compris dans les zones de
+  // texte libre saisies par le validateur (conclusion, remarque...).
+  const GERMES = [
+    // Bacteries Gram negatif
+    'Escherichia coli', 'Klebsiella pneumoniae ssp pneumoniae I',
+    'Klebsiella pneumoniae ssp pneumoniae II', 'Klebsiella pneumoniae',
+    'Klebsiella oxytoca', 'Citrobacter freundii', 'Citrobacter koseri',
+    'Enterobacter cloacae', 'Enterobacter aerogenes', 'Proteus mirabilis',
+    'Proteus vulgaris', 'Pseudomonas aeruginosa', 'Acinetobacter baumannii',
+    'Salmonella typhi', 'Salmonella enterica', 'Salmonella paratyphi',
+    'Shigella flexneri', 'Shigella sonnei', 'Shigella dysenteriae',
+    'Haemophilus influenzae', 'Neisseria gonorrhoeae', 'Neisseria meningitidis',
+    'Helicobacter pylori', 'Moraxella catarrhalis', 'Serratia marcescens',
+    // Bacteries Gram positif
+    'Staphylococcus aureus', 'Staphylococcus epidermidis',
+    'Staphylococcus saprophyticus', 'Streptococcus pneumoniae',
+    'Streptococcus agalactiae', 'Streptococcus pyogenes',
+    'Streptococcus viridans', 'Enterococcus faecalis', 'Enterococcus faecium',
+    'Listeria monocytogenes', 'Bacillus cereus', 'Clostridium difficile',
+    'Clostridium perfringens',
+    // Mycobacteries / spirochetes
+    'Mycobacterium tuberculosis', 'Treponema pallidum', 'Borrelia burgdorferi',
+    'Leptospira interrogans',
+    // Mycoplasmes / chlamydies
+    'Mycoplasma hominis', 'Mycoplasma pneumoniae', 'Ureaplasma urealyticum',
+    'Chlamydia trachomatis', 'Chlamydiae trachomatis', 'Chlamydia pneumoniae',
+    'Gardnerella vaginalis', 'Mobiluncus spp', 'Mobiluncus',
+    // Champignons / levures
+    'Candida albicans', 'Candida tropicalis', 'Candida glabrata',
+    'Candida kefyr', 'Candida krusei', 'Candida parapsilosis',
+    'Candida spp', 'Cryptococcus neoformans', 'Aspergillus fumigatus',
+    'Aspergillus niger',
+    // Parasites
+    'Trichomonas vaginalis', 'Giardia lamblia', 'Giardia intestinalis',
+    'Entamoeba histolytica', 'Entamoeba coli',
+    'Plasmodium falciparum', 'Plasmodium vivax', 'Plasmodium ovale',
+    'Plasmodium malariae', 'Schistosoma mansoni', 'Schistosoma haematobium',
+    'Toxoplasma gondii', 'Leishmania donovani',
+  ]
+  // Tri par longueur decroissante : "Klebsiella pneumoniae ssp pneumoniae I"
+  // doit matcher avant "Klebsiella pneumoniae" qui doit matcher avant
+  // "Klebsiella". Sinon la regex prendrait le match court en premier.
+  const GERMES_SORTED = [...GERMES].sort((a, b) => b.length - a.length)
+  const GERMES_REGEX = new RegExp(
+    '(' +
+      GERMES_SORTED.map((g) => g.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') +
+      ')',
+    'g'
+  )
+
+  // Rendu d'une ligne avec les germes en italique. Peut etre utilise
+  // pour des textes libres (conclusion, remarque, observations).
+  // baseFont : 'normal' / 'bold' / 'italic'. Germe = italique si
+  // baseFont normal, bolditalic si baseFont bold.
+  const renderLineWithGermes = (doc, text, x, y, baseFont = 'normal') => {
+    if (!text) return
+    const parts = String(text).split(GERMES_REGEX)
+    let cx = x
+    parts.forEach((part) => {
+      if (!part) return
+      const isGerme = GERMES.includes(part)
+      const font = isGerme
+        ? baseFont === 'bold' ? 'bolditalic' : 'italic'
+        : baseFont
+      doc.setFont('Times', font)
+      doc.text(part, cx, y)
+      cx += doc.getTextWidth(part)
+    })
+    doc.setFont('Times', baseFont === 'bold' ? 'bold' : 'normal')
+  }
+
   const getReference = (cell, fallback = {}) => {
     let ref =
       (cell && cell.reference != null && cell.reference !== ''
@@ -234,9 +307,26 @@ const GenerateResultatButton = forwardRef(function GenerateResultatButton(
         ? String(cell.unite)
         : '') || String(fallback.unite || '')
 
+    // Normalisation pour comparaison robuste : enleve les accents, les
+    // exposants Unicode (m² -> m2), met en minuscules. Evite la
+    // duplication "mL/min/1,73m² mL/min/1,73m²" quand la ref contient
+    // deja l'unite sous une forme legerement differente.
+    const normalize = (s) =>
+      String(s || '')
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/²/g, '2')
+        .replace(/³/g, '3')
+        .replace(/\s+/g, ' ')
+        .toLowerCase()
+        .trim()
+    const refN = normalize(ref)
+    const uniteN = normalize(unite)
+    const refContientUnite = uniteN && refN.includes(uniteN)
+
     // Concatenation unite + ref pour une seule colonne lisible
     let out
-    if (unite && ref && !ref.includes(unite)) {
+    if (unite && ref && !refContientUnite) {
       out = `${ref} ${unite}`
     } else if (!ref && unite) {
       out = unite
@@ -470,7 +560,16 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
     }
 
     doc.text(`Âge: ${ageDisplay} ans`, 135, currentY + 17)
-    doc.text(`Tel: ${invoice.userId.telephone}`, 135, currentY + 22)
+    // Format telephone : enleve prefixe +221 et tout ce qui n'est pas
+    // un chiffre, puis groupe 2-3-2-2 (ex: 78 967 67 67).
+    const formatTel = (raw) => {
+      if (!raw) return ''
+      let digits = String(raw).replace(/\D/g, '')
+      if (digits.startsWith('221')) digits = digits.slice(3)
+      if (digits.length !== 9) return raw // format inconnu : on laisse
+      return `${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 7)} ${digits.slice(7, 9)}`
+    }
+    doc.text(`Tel: ${formatTel(invoice.userId.telephone)}`, 135, currentY + 22)
     doc.text(`NIP: ${invoice?.userId.nip}`, 35, currentY + 7)
     doc.setTextColor(0, 0, 0)
     doc.setFontSize(11)
@@ -485,7 +584,7 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
     doc.setFont('Times', 'normal')
   }
 
-  const renderMachineInfo = (doc, test, currentY) => {
+  const renderMachineInfo = (doc, test, currentY, opts = {}) => {
     doc.setFontSize(9)
     doc.setFont('Times', 'italic')
 
@@ -502,13 +601,21 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
       doc.text(`(${test.methode})`, 20 + machineTextWidth, currentY)
     }
 
+    // Reference globale du test (valeurMachineA/B). Si hideRef est
+    // passe a true (cas des tests avec exceptions qui rendent deja
+    // leur propre ref sur chaque ligne), on omet l'affichage pour
+    // eviter la redondance.
+    if (opts.hideRef) return
+
     let machineValue = test.statutMachine
       ? test.testId.valeurMachineA
       : test.testId.valeurMachineB
-    
+
     if (machineValue) {
       doc.setFont('Times', 'normal')
-      doc.text(`Réf: ${machineValue}`, 120, currentY)
+      // Aligne sur la colonne reference des lignes parametres (REF_X)
+      // pour un alignement vertical coherent dans le PDF entier.
+      doc.text(`Réf: ${machineValue}`, PDF_LAYOUT.REF_X, currentY)
     }
   }
 
@@ -519,8 +626,10 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
     // Vérifier qu'on a assez d'espace pour le titre ET le début du contenu (évite les titres orphelins)
     currentY = checkSpace(doc, currentY, MIN_SPACE_FOR_TITLE, invoice)
 
-    // Rendu du titre
-    const maxLineWidth = 100
+    // Rendu du titre : largeur 150mm pour eviter le wrap inutile
+    // (la page fait 170mm, on garde une marge a droite pour la zone
+    // antériorités). Le titre est colle au point puce (gain ~2mm).
+    const maxLineWidth = 150
     let nomTestLines = doc.splitTextToSize(`${test.testId.nom.toUpperCase()}`, maxLineWidth)
 
     doc.setFontSize(10)
@@ -531,14 +640,11 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
     doc.setFillColor(0, 0, 0)
     doc.circle(18, currentY - 1, 1, 'F')
 
-    if (test?.observations && test?.observations?.macroscopique?.length > 0) {
-      doc.setFontSize(10)
-      doc.setFont('Times', 'bold')
-      doc.text(nomTestLines, 60, currentY)
-    } else {
-      doc.setFontSize(10)
-      doc.text(nomTestLines, 20, currentY)
-    }
+    // Titre colle au point puce dans TOUS les cas (x=21), que le
+    // test ait des observations macroscopiques (ECBU/PVMC...) ou non.
+    doc.setFontSize(10)
+    doc.setFont('Times', 'bold')
+    doc.text(nomTestLines, 21, currentY)
 
     currentY += 5 * nomTestLines.length
     doc.setFont('Times', 'normal')
@@ -581,16 +687,52 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
         currentY += 5
       }
 
-      renderMachineInfo(doc, test, currentY)
+      // Detecte si le test a une exception REELLEMENT remplie (avec
+      // au moins un sous-champ ayant une valeur saisie). Sinon
+      // (cas Urée, Glycémie, etc.) on affiche la ref globale du
+      // testModel via "Réf: 0,15 - 0,45 g/L" comme avant.
+      // Mongoose peut initialiser les sous-schemas vides ({}), donc
+      // le simple "Object.keys().length > 0" est trop permissif.
+      const hasMeaningfulException = (obj) => {
+        if (!obj || typeof obj !== 'object') return false
+        for (const k of Object.keys(obj)) {
+          const v = obj[k]
+          if (v == null) continue
+          if (typeof v === 'object') {
+            if (
+              'valeur' in v &&
+              v.valeur != null &&
+              v.valeur !== '' &&
+              v.valeur !== 0
+            )
+              return true
+            if (hasMeaningfulException(v)) return true
+          } else if (v !== '' && v !== 0 && k === 'valeur') {
+            return true
+          }
+        }
+        return false
+      }
+      const hasExceptions = hasMeaningfulException(test?.exceptions)
+      renderMachineInfo(doc, test, currentY, { hideRef: hasExceptions })
       currentY += 2
 
       doc.setFont('Times', 'bold')
       doc.setFontSize(11)
-      doc.text(`${test?.valeur || ''}`, 90, currentY)
+      // Cas particulier CHOLESTEROL LDL : si l'utilisateur a saisi
+      // un LDL Dose explicite via l'exception (plus precis que le
+      // calcul de Friedewald), on cache la valeur principale calculee
+      // pour eviter d'afficher deux LDL dans la meme rubrique.
+      const ldlDoseValue = test?.exceptions?.cholesterolLdl?.ldl?.valeur
+      const isCholesterolLdl = /cholest[eé]rol\s*ldl/i.test(test?.testId?.nom || '')
+      const hideMainValue = isCholesterolLdl && ldlDoseValue !== undefined && ldlDoseValue !== '' && ldlDoseValue !== null
+      if (!hideMainValue) {
+        doc.text(`${test?.valeur || ''}`, 90, currentY)
 
-      if (test?.qualitatif) {
-        currentY += 5
-        doc.text(`(${test?.qualitatif})`, 86, currentY)
+        if (test?.qualitatif) {
+          currentY += 5
+          doc.text(`(${test?.qualitatif})`, 86, currentY)
+        }
       }
 
       currentY = Math.max(currentY + 5, anterioriteHeight > 0 ? currentY + anterioriteHeight - 10 : currentY)
@@ -638,8 +780,11 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
     const sortedResults = sortResultsByCategory(invoice?.resultat)
 
     for (const group of sortedResults) {
-      // Pour chaque catégorie, vérifier qu'on a au moins 20mm d'espace
-      currentY = checkSpace(doc, currentY, 20, invoice)
+      // Pour chaque categorie, garantir qu'il y a assez de place pour
+      // le bandeau de section + AU MOINS le titre du 1er test + sa
+      // valeur, sinon basculer sur la page suivante. Evite les titres
+      // "BIOCHIMIE URINAIRE" orphelins en bas de page.
+      currentY = checkSpace(doc, currentY, 50, invoice)
 
       doc.setFontSize(13)
       doc.setFont('Times', 'bold')
@@ -654,6 +799,10 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
       for (const test of group.results) {
         if (!test || !test.testId) continue
         currentY = await renderTest(doc, test, currentY, invoice)
+        // Espace vertical apres chaque test/exception pour aerer le
+        // PDF et separer visuellement chaque rubrique (avant le
+        // prochain point puce).
+        currentY += 4
       }
     }
 
@@ -1370,14 +1519,26 @@ const renderRapportAlbuminurieException = (doc, test, excepY, invoice) => {
   const renderCholesterolLdlException = (doc, test, excepY, invoice) => {
     const ldlCell = test.exceptions.cholesterolLdl?.ldl
     if (!ldlCell?.valeur) return excepY
-    excepY = drawParamRow(doc, excepY, invoice, 'LDL Dosé',
-      ldlCell.valeur, getReference(ldlCell),
-      { labelBold: true, valueBold: true })
+    // Pas de label "LDL Dosé" : redondant avec le titre CHOLESTÉROL
+    // LDL deja affiche au-dessus. On rend la valeur centree comme la
+    // valeur principale d'un test (police bold 11pt) avec l'unite
+    // a droite. Note en italique petit en-dessous.
+    excepY = checkNewPage(doc, excepY, invoice)
+    doc.setFont('Times', 'bold')
+    doc.setFontSize(11)
+    doc.text(String(ldlCell.valeur), PDF_LAYOUT.VALUE_X, excepY, { align: 'center' })
+    const ref = getReference(ldlCell)
+    if (ref) {
+      doc.setFont('Times', 'normal')
+      doc.setFontSize(9)
+      doc.text(ref, PDF_LAYOUT.REF_X, excepY)
+    }
+    excepY += PDF_LAYOUT.ROW_H
     // Note bas de page en italique petit
     excepY = checkNewPage(doc, excepY, invoice)
     doc.setFontSize(8)
     doc.setFont('Times', 'italic')
-    doc.text('* Valable si triglycérides < 3,5 g/L', PDF_LAYOUT.LABEL_X, excepY)
+    doc.text('* Méthode directe — valable si triglycérides < 3,5 g/L', PDF_LAYOUT.LABEL_X, excepY)
     doc.setFont('Times', 'normal')
     doc.setFontSize(10)
     return excepY + 5
@@ -2326,13 +2487,28 @@ const renderMacroscopicExam = (doc, test, currentY, positionX, invoice) => {
     doc.setFontSize(11)
     doc.setFont('Times', 'normal')
 
+    // Helper local : verifie l'espace dispo AVANT chaque ligne et
+    // bascule sur la page suivante si on s'approche du footer.
+    // Evite les chevauchements observes sur les blocs longs (PVMC).
+    const addLine = (label, value, useGermes = false) => {
+      currentY = checkNewPage(doc, currentY, invoice)
+      if (useGermes) {
+        renderLineWithGermes(doc, label, 20, currentY)
+      } else {
+        doc.text(label, 20, currentY)
+      }
+      doc.text(String(value), positionX, currentY)
+      currentY += 5
+    }
+
     const micro = test?.observations?.microscopique
 
     // ✅ CORRECTION: Utiliser les bons noms de champs (avec 's')
     if (micro?.leucocytes && micro.leucocytes.trim()) {
+      currentY = checkNewPage(doc, currentY, invoice)
       doc.text(`Leucocytes:`, 20, currentY)
       doc.text(String(micro.leucocytes), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.hematies && micro.hematies.trim()) {
@@ -2345,84 +2521,86 @@ const renderMacroscopicExam = (doc, test, currentY, positionX, invoice) => {
     if (micro?.monocytes && micro.monocytes.trim()) {
       doc.text(`Monocytes:`, 20, currentY)
       doc.text(String(micro.monocytes), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.polynucleairesNeutrophilesAlterees && micro.polynucleairesNeutrophilesAlterees.trim()) {
       doc.text(`Polynucléaires neutrophiles altérés:`, 20, currentY)
       doc.text(String(micro.polynucleairesNeutrophilesAlterees), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.polynucleairesNeutrophilesNonAlterees && micro.polynucleairesNeutrophilesNonAlterees.trim()) {
       doc.text(`Polynucléaires neutrophiles non altérés:`, 20, currentY)
       doc.text(String(micro.polynucleairesNeutrophilesNonAlterees), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.eosinophiles && micro.eosinophiles.trim()) {
       doc.text(`Éosinophiles:`, 20, currentY)
       doc.text(String(micro.eosinophiles), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.basophiles && micro.basophiles.trim()) {
       doc.text(`Basophiles:`, 20, currentY)
       doc.text(String(micro.basophiles), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.parasites && micro.parasites !== 'Absence') {
       doc.text(`Parasites:`, 20, currentY)
       doc.text(String(micro.parasites), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.filamentMucus && micro.filamentMucus.trim()) {
       doc.text(`Filaments mucus:`, 20, currentY)
       doc.text(String(micro.filamentMucus), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.cellulesEpitheliales && micro.cellulesEpitheliales.trim()) {
       doc.text(`Cellules épithéliales:`, 20, currentY)
       doc.text(String(micro.cellulesEpitheliales), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.cristaux && micro.cristaux !== 'Absence') {
       doc.text(`Cristaux:`, 20, currentY)
       doc.text(String(micro.cristaux), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.cylindres && micro.cylindres !== 'Absence') {
       doc.text(`Cylindres:`, 20, currentY)
       doc.text(String(micro.cylindres), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.levures && micro.levures.trim()) {
       doc.text(`Levures:`, 20, currentY)
       doc.text(String(micro.levures), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.spermatozoides && micro.spermatozoides.trim()) {
       doc.text(`Spermatozoïdes:`, 20, currentY)
       doc.text(String(micro.spermatozoides), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.bacterie && micro.bacterie.trim()) {
       doc.text(`Bactéries:`, 20, currentY)
       doc.text(String(micro.bacterie), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.germe && micro.germe.trim()) {
       doc.text(`Germes:`, 20, currentY)
+      doc.setFont('Times', 'italic')
       doc.text(String(micro.germe), positionX, currentY)
+      doc.setFont('Times', 'normal')
       currentY += 5
     }
 
@@ -2430,55 +2608,56 @@ const renderMacroscopicExam = (doc, test, currentY, positionX, invoice) => {
     if (micro?.elementsLevuriforme && micro.elementsLevuriforme !== 'Absence') {
       doc.text(`Éléments levuriformes:`, 20, currentY)
       doc.text(String(micro.elementsLevuriforme), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.filamentsMyceliens && micro.filamentsMyceliens !== 'Absence') {
       doc.text(`Filaments mycéliens:`, 20, currentY)
       doc.text(String(micro.filamentsMyceliens), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.trichomonasVaginalis && micro.trichomonasVaginalis !== 'Absence') {
       doc.text(`Trichomonas vaginalis:`, 20, currentY)
       doc.text(String(micro.trichomonasVaginalis), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.oeufsDeBilharzies && micro.oeufsDeBilharzies !== 'Absence') {
       doc.text(`Œufs de bilharzies:`, 20, currentY)
       doc.text(String(micro.oeufsDeBilharzies), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.clueCells && micro.clueCells !== 'Absence') {
       doc.text(`Clue cells:`, 20, currentY)
       doc.text(String(micro.clueCells), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.gardnerellaVaginalis && micro.gardnerellaVaginalis !== 'Absence') {
       doc.text(`Gardnerella vaginalis:`, 20, currentY)
       doc.text(String(micro.gardnerellaVaginalis), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.bacillesDeDoderlein && micro.bacillesDeDoderlein !== 'Absence') {
       doc.text(`Bacilles de Döderlein:`, 20, currentY)
       doc.text(String(micro.bacillesDeDoderlein), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.typeDeFlore && micro.typeDeFlore.trim()) {
       doc.text(`Type de flore:`, 20, currentY)
       doc.text(String(micro.typeDeFlore), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.rechercheDeStreptocoqueB && micro.rechercheDeStreptocoqueB.trim()) {
+      currentY = checkNewPage(doc, currentY, invoice)
       doc.text(`Recherche de Streptocoque B:`, 20, currentY)
       doc.text(String(micro.rechercheDeStreptocoqueB), positionX, currentY)
-      currentY += 5
+      currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     currentY += 3
@@ -2703,9 +2882,11 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
       const maxWidth = 95
       const splitText = doc.splitTextToSize(germeIdentifieText, maxWidth)
 
-      doc.setFont('Times', 'italic')
+      // Convention medicale : nom du germe en italique, label en normal
+      doc.setFont('Times', 'normal')
       doc.text(`Germe(s) Identifié(s):`, 20, currentY)
 
+      doc.setFont('Times', 'italic')
       splitText.forEach((line, index) => {
         doc.text(line, positionX, currentY + index * 5)
       })
@@ -2746,7 +2927,8 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     }
 
     if (rechercheAntigeneChlamydiaTrochomatis) {
-      doc.text("Recherche d'antigène de Chlamydia trachomatis:", 20, currentY)
+      // Le label contient un germe (Chlamydia trachomatis) -> italique auto
+      renderLineWithGermes(doc, "Recherche d'antigène de Chlamydia trachomatis:", 20, currentY)
       doc.text(rechercheAntigeneChlamydiaTrochomatis, positionX, currentY)
       currentY += 7
     }
@@ -2776,13 +2958,13 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     }
 
     if (rechercheUreaplasmaUrealyticum) {
-      doc.text("Recherche d'Ureaplasma urealyticum:", 20, currentY)
+      renderLineWithGermes(doc, "Recherche d'Ureaplasma urealyticum:", 20, currentY)
       doc.text(rechercheUreaplasmaUrealyticum, positionX, currentY)
       currentY += 5
     }
 
     if (rechercheMycoplasmaHominis) {
-      doc.text('Recherche de Mycoplasma hominis:', 20, currentY)
+      renderLineWithGermes(doc, 'Recherche de Mycoplasma hominis:', 20, currentY)
       doc.text(rechercheMycoplasmaHominis, positionX, currentY)
       currentY += 7
     }
@@ -2799,7 +2981,11 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
 
     const maxLineWidth = 100
     const conclusionLines = doc.splitTextToSize(test.conclusion, maxLineWidth)
-    doc.text(conclusionLines, 20, currentY)
+    // Rendu ligne par ligne avec germes en italique (la conclusion
+    // peut citer des binomes latins type "Escherichia coli").
+    conclusionLines.forEach((line, idx) => {
+      renderLineWithGermes(doc, line, 20, currentY + idx * 5, 'bold')
+    })
 
     currentY += conclusionLines.length * 5
     doc.setFontSize(11)
@@ -2815,18 +3001,27 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
         continue
       }
 
-      // Hauteur estimee : titre (7) + entete tableau (7) + lignes (7 chacune)
-      // + legende (10). On n'ajoute une nouvelle page QUE si l'antibiogramme
-      // ne tient pas sur la page courante. L'ancien comportement forcait
-      // une page par germe, generant des pages a moitie vides.
-      const lineCount = Object.keys(germe.antibiogramme).length
-      const neededHeight = 7 + 7 + lineCount * 7 + 10 + 5
+      // Hauteur minimale pour commencer le bloc : titre + entete +
+      // au moins 3 lignes (eviter le titre orphelin avec juste 1-2
+      // antibiotiques). Le reste des lignes du tableau a deja son
+      // propre checkNewPage qui basculera page suivante si besoin.
+      // Avant on demandait 162mm pour 19 lignes -> grand espace
+      // blanc force en bas de page. Desormais on demande juste
+      // 40mm minimum, le tableau peut commencer en bas de page et
+      // continuer en page suivante sans laisser de vide inutile.
+      const neededHeight = 7 + 7 + 3 * 7 + 5
       currentY = checkSpace(doc, currentY, neededHeight, invoice)
       currentY += 5 // petit espacement avant le bloc antibiogramme
 
       doc.setFontSize(11)
       doc.setFont('Times', 'bold')
-      doc.text(`ANTIBIOGRAMME : ${germe.nom}`, 42, currentY)
+      const prefixe = 'ANTIBIOGRAMME : '
+      doc.text(prefixe, 42, currentY)
+      // Nom du germe en bold-italique (convention medicale)
+      const prefixWidth = doc.getTextWidth(prefixe)
+      doc.setFont('Times', 'bolditalic')
+      doc.text(String(germe.nom || ''), 42 + prefixWidth, currentY)
+      doc.setFont('Times', 'normal')
       currentY += 7
 
       doc.setFont('Times', 'normal')
