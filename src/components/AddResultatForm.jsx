@@ -4781,7 +4781,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   }
                 >
                   <option value="">Sélectionnez</option>
-                  <option value="cervical">Cervical</option>
+                  <option value="Cervical">Cervical</option>
                   <option value="urine">Urine</option>
                   <option value="sperme">Sperme</option>
                   <option value="uretral">Urétral</option>
@@ -4804,8 +4804,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   }
                 >
                   <option value="">Sélectionnez</option>
-                  <option value="négative">Négative</option>
-                  <option value="positive">Positive</option>
+                  <option value="Négative">Négative</option>
+                  <option value="Positive">Positive</option>
                 </select>
               </div>
 
@@ -4825,7 +4825,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   }
                 >
                   <option value="">Sélectionnez</option>
-                  <option value="cervical">Cervical</option>
+                  <option value="Cervical">Cervical</option>
                   <option value="urine">Urine</option>
                   <option value="sperme">Sperme</option>
                   <option value="uretral">Urétral</option>
@@ -4846,8 +4846,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   }
                 >
                   <option value="">Sélectionnez</option>
-                  <option value="négative">Négative</option>
-                  <option value="positive">Positive</option>
+                  <option value="Négative">Négative</option>
+                  <option value="Positive">Positive</option>
                 </select>
               </div>
               <div>
@@ -4863,8 +4863,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   }
                 >
                   <option value="">Sélectionnez</option>
-                  <option value="négative">Négative</option>
-                  <option value="positive">Positive</option>
+                  <option value="Négative">Négative</option>
+                  <option value="Positive">Positive</option>
                 </select>
               </div>
             </div>
