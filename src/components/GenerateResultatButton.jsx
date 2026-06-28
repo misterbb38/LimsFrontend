@@ -3281,455 +3281,360 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
   }
 
   // ============================================================
-  // EXPORT WORD (.doc) — version EDITABLE du resultat (Phase 1)
+  // EXPORT WORD (.docx) — voir generateWord plus bas (librairie docx).
+  // L'ancienne approche HTML/MHTML a ete remplacee : elle dupliquait
+  // l'en-tete/pied en bas de la derniere page dans Word.
   // ============================================================
-  // Le PDF est genere imperativement avec jsPDF (positionnement
-  // absolu) : non editable. Pour permettre a l'utilisateur de
-  // corriger un compte-rendu, on produit en parallele un document
-  // Word qui reproduit la mise en page du PDF via du HTML — Word
-  // ouvre ce HTML en .doc editable. Police Courier + colonnes pour
-  // imiter le rendu monospace du PDF.
-  //
-  // PHASE 1 couvre : en-tete labo, infos patient, parametres
-  // standards (valeur principale + ref machine), interpretation
-  // (texte + tableau), observations bacterio (Gram / Chlamydia /
-  // Mycoplasmes / culture + antibiogrammes), conclusion, validation.
-  // PHASE 2 (a venir) : les ~25 tableaux d'exceptions specialises
-  // (NFS, DFG, LDL, ionogramme, gaz du sang, spermogramme...) et les
-  // examens macroscopiques/microscopiques/chimie (ECBU...).
 
-  const escHtml = (v) =>
-    String(v ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-
-  // Idem sanitization PDF : decimaux a la francaise + symboles Unicode.
-  const sanitizeForWord = (v) => {
-    if (v == null) return ''
-    return String(v)
-      .replace(/≥/g, '>=')
-      .replace(/≤/g, '<=')
-      .replace(/(\d)\.(\d)/g, '$1,$2')
-  }
-
-  // Echappe le HTML puis met les germes latins en italique (convention
-  // medicale), comme renderLineWithGermes le fait dans le PDF.
-  const germesHtml = (text) =>
-    escHtml(sanitizeForWord(text)).replace(GERMES_REGEX, '<i>$1</i>')
-
-  const safeStr = (v) => {
-    if (v === null || v === undefined) return ''
-    const s = String(v).trim()
-    if (s === '' || s === 'null' || s === 'undefined') return ''
-    return s
-  }
-
-  // Convertit une image (asset bundle ou URL serveur) en { contentType,
-  // base64 }. Word n'affiche PAS les <img src="data:..."> inline : on
-  // embarque donc les images comme parties MIME separees (MHTML) et on
-  // les reference par Content-Location. D'ou le besoin du base64 brut.
-  const imageToBase64 = async (src) => {
-    try {
-      const res = await fetch(src)
-      const blob = await res.blob()
-      const dataUrl = await new Promise((resolve, reject) => {
-        const fr = new FileReader()
-        fr.onload = () => resolve(fr.result)
-        fr.onerror = reject
-        fr.readAsDataURL(blob)
-      })
-      const m = /^data:([^;]+);base64,(.*)$/.exec(dataUrl)
-      if (!m) return null
-      return { contentType: m[1], base64: m[2] }
-    } catch {
-      return null
-    }
-  }
-
-  // Encode une string UTF-8 en base64 (btoa ne gere pas l'UTF-8 seul).
-  const toB64Utf8 = (str) => btoa(unescape(encodeURIComponent(str)))
-  // Decoupe le base64 en lignes de 76 caracteres (norme MIME).
-  const wrap76 = (b64) => b64.replace(/.{1,76}/g, '$&\r\n')
-
-  // Assemble un document MHTML (multipart/related) : partie HTML + une
-  // partie par image. Word ouvre ce .doc et affiche les images.
-  const buildMht = (html, images) => {
-    const CRLF = '\r\n'
-    const boundary = '----=_NextPart_Bioram_Resultat'
-    const htmlLoc = 'file:///C:/bioram/resultat.htm'
-    let out = ''
-    out += 'MIME-Version: 1.0' + CRLF
-    out += `Content-Type: multipart/related; boundary="${boundary}"; type="text/html"` + CRLF
-    out += CRLF
-    out += `--${boundary}` + CRLF
-    out += 'Content-Type: text/html; charset="utf-8"' + CRLF
-    out += 'Content-Transfer-Encoding: base64' + CRLF
-    out += `Content-Location: ${htmlLoc}` + CRLF
-    out += CRLF
-    out += wrap76(toB64Utf8(html))
-    for (const img of images) {
-      out += `--${boundary}` + CRLF
-      out += `Content-Type: ${img.contentType}` + CRLF
-      out += 'Content-Transfer-Encoding: base64' + CRLF
-      out += `Content-Location: ${img.location}` + CRLF
-      out += CRLF
-      out += wrap76(img.base64)
-    }
-    out += `--${boundary}--` + CRLF
-    return out
-  }
-
-  // --- Rendu HTML d'un examen bacterio (observations) ---
-  const observationsHtml = (test) => {
-    let html = ''
-
-    if (test?.gram) {
-      html += `<div class="bact-title">EXAMEN APRES COLORATION DE GRAM</div>`
-      html += `<div class="kv"><span class="k">Gram:</span><span class="v">${escHtml(sanitizeForWord(test.gram))}</span></div>`
-    }
-
-    if (test?.culture) {
-      const { culture, germeIdentifie, description } = test.culture
-      const hasCulture =
-        culture ||
-        (Array.isArray(germeIdentifie) && germeIdentifie.length > 0) ||
-        description
-      if (hasCulture) {
-        html += `<div class="bact-title">CULTURES SUR MILIEUX SPECIFIQUES:</div>`
-        if (culture)
-          html += `<div class="kv"><span class="k">Cultures:</span><span class="v">${escHtml(sanitizeForWord(culture))}</span></div>`
-        if (Array.isArray(germeIdentifie) && germeIdentifie.length > 0) {
-          const germesTxt = germeIdentifie.map((g) => g.nom).join(', ')
-          html += `<div class="kv"><span class="k">Germe(s) Identifié(s):</span><span class="v"><i>${escHtml(germesTxt)}</i></span></div>`
-        }
-        if (description)
-          html += `<div class="kv"><span class="k">Numeration:</span><span class="v">${escHtml(sanitizeForWord(description))}</span></div>`
-      }
-    }
-
-    const chlam = test?.observations?.rechercheChlamydia
-    if (chlam && (chlam.naturePrelevement || chlam.rechercheAntigeneChlamydiaTrochomatis)) {
-      html += `<div class="bact-title">RECHERCHE DE CHLAMYDIA</div>`
-      if (chlam.naturePrelevement)
-        html += `<div class="kv"><span class="k">Nature du prélèvement:</span><span class="v">${escHtml(sanitizeForWord(chlam.naturePrelevement))}</span></div>`
-      if (chlam.rechercheAntigeneChlamydiaTrochomatis)
-        html += `<div class="kv"><span class="k">${germesHtml("Recherche d'antigène de Chlamydia trachomatis:")}</span><span class="v">${escHtml(sanitizeForWord(chlam.rechercheAntigeneChlamydiaTrochomatis))}</span></div>`
-    }
-
-    const myco = test?.observations?.rechercheMycoplasmes
-    if (myco && (myco.naturePrelevement || myco.rechercheUreaplasmaUrealyticum || myco.rechercheMycoplasmaHominis)) {
-      html += `<div class="bact-title">RECHERCHE DE MYCOPLASMES</div>`
-      if (myco.naturePrelevement)
-        html += `<div class="kv"><span class="k">Nature du prélèvement:</span><span class="v">${escHtml(sanitizeForWord(myco.naturePrelevement))}</span></div>`
-      if (myco.rechercheUreaplasmaUrealyticum)
-        html += `<div class="kv"><span class="k">${germesHtml("Recherche d'Ureaplasma urealyticum:")}</span><span class="v">${escHtml(sanitizeForWord(myco.rechercheUreaplasmaUrealyticum))}</span></div>`
-      if (myco.rechercheMycoplasmaHominis)
-        html += `<div class="kv"><span class="k">${germesHtml('Recherche de Mycoplasma hominis:')}</span><span class="v">${escHtml(sanitizeForWord(myco.rechercheMycoplasmaHominis))}</span></div>`
-    }
-
-    if (test?.conclusion) {
-      html += `<div class="concl-title">CONCLUSION</div>`
-      html += `<div class="concl">${germesHtml(test.conclusion)}</div>`
-    }
-
-    // Antibiogrammes (tableau par germe)
-    const germes = test?.culture?.germeIdentifie
-    if (Array.isArray(germes)) {
-      germes.forEach((germe) => {
-        const abg = germe?.antibiogramme || {}
-        const entries = Object.entries(abg)
-        if (entries.length === 0) return
-        html += `<div class="abg-title">ANTIBIOGRAMME : <i>${escHtml(germe.nom || '')}</i></div>`
-        html += `<table class="abg"><tr><th>Antibiotique</th><th>Sensibilité</th></tr>`
-        entries.forEach(([atb, sens]) => {
-          html += `<tr><td>${escHtml(atb)}</td><td class="center">${escHtml(sens)}</td></tr>`
-        })
-        html += `</table>`
-        html += `<div class="abg-legend">S : Sensible    I : Intermédiaire     R : Résistant</div>`
-      })
-    }
-
-    return html
-  }
-
-  // --- Rendu HTML de l'interpretation (texte + tableau) ---
-  const interpretationHtml = (test) => {
-    if (!test?.statutInterpretation) return ''
-    const interpretation = test.statutMachine
-      ? test.testId.interpretationA
-      : test.testId.interpretationB
-    if (!interpretation) return ''
-    const content = interpretation.content || {}
-    const isStringContent = typeof content === 'string'
-    const textBody = isStringContent ? content : content.text || ''
-    const hasText = typeof textBody === 'string' && textBody.trim() !== ''
-    const cols = Array.isArray(content.columns) ? content.columns : []
-    const rows = Array.isArray(content.rows) ? content.rows : []
-    const hasTable =
-      cols.length > 0 &&
-      rows.length > 0 &&
-      (cols.some((c) => c && String(c).trim() !== '') ||
-        rows.some((r) => Array.isArray(r) && r.some((c) => c && String(c).trim() !== '')))
-
-    if (!hasText && !hasTable) return ''
-
-    let html = `<div class="interp-title">Interprétation:</div>`
-    if (hasTable) {
-      html += `<table class="interp"><tr>`
-      cols.forEach((c) => (html += `<th>${escHtml(sanitizeForWord(c))}</th>`))
-      html += `</tr>`
-      rows.forEach((r) => {
-        html += `<tr>`
-        ;(Array.isArray(r) ? r : []).forEach(
-          (c) => (html += `<td>${escHtml(sanitizeForWord(c))}</td>`)
-        )
-        html += `</tr>`
-      })
-      html += `</table>`
-    }
-    if (hasText) {
-      html += `<div class="interp-text">${germesHtml(textBody).replace(/\n/g, '<br/>')}</div>`
-    }
-    return html
-  }
-
-  // --- Rendu HTML d'un test standard (sans examen macroscopique) ---
-  const standardTestHtml = (test) => {
-    let html = ''
-    const formattedDate = formatDateAndTime(test?.datePrelevement)
-
-    if (test?.typePrelevement) {
-      html += `<div class="prelev">Prélèvement : ${escHtml(formattedDate)}, ${escHtml(sanitizeForWord(test.typePrelevement))}</div>`
-    }
-
-    const machineText = test?.statutMachine
-      ? test?.testId?.machineA
-      : test?.testId?.machineB
-    const machineValue = test?.statutMachine
-      ? test?.testId?.valeurMachineA
-      : test?.testId?.valeurMachineB
-    let machineLine = ''
-    if (machineText) machineLine += `<i>${escHtml(sanitizeForWord(machineText))}</i>`
-    if (test?.methode) machineLine += ` <i>(${escHtml(sanitizeForWord(test.methode))})</i>`
-    const refTxt = safeStr(machineValue) ? `Réf: ${escHtml(sanitizeForWord(machineValue))}` : ''
-    if (machineLine || refTxt) {
-      html += `<div class="machine"><span class="m-left">${machineLine}</span><span class="m-ref">${refTxt}</span></div>`
-    }
-
-    if (safeStr(test?.valeur)) {
-      html += `<div class="valeur-principale">${escHtml(sanitizeForWord(test.valeur))}`
-      if (safeStr(test?.qualitatif)) html += ` (${escHtml(sanitizeForWord(test.qualitatif))})`
-      html += `</div>`
-    }
-
-    if (safeStr(test?.remarque)) {
-      html += `<div class="commentaire">Commentaires: ${germesHtml(test.remarque)}</div>`
-    }
-
-    html += interpretationHtml(test)
-    return html
-  }
-
-  // --- Bloc validation (technicien / biologiste) ---
-  const validationHtml = async (invoice, images) => {
-    const finalValidation = invoice.historiques?.find((h) => h.status === 'Validé')
-    const techValidation = invoice.historiques?.find(
-      (h) => h.status === 'Validation technique'
-    )
-    const validation = finalValidation || techValidation
-    if (!validation || !validation.updatedBy) return ''
-
-    if (!finalValidation && techValidation) {
-      return `<div class="validation"><span class="valid-tech">Validation technique</span></div>`
-    }
-
-    const validator = validation.updatedBy
-    const fullName = `${validator.prenom || ''} ${validator.nom || ''}`.trim()
-    const profilLines = String(validator.profil || '')
-      .split(/\r?\n/)
-      .filter((l) => l.trim() !== '')
-
-    let sigImg = ''
-    if (validator.logo) {
-      const rawPath = String(validator.logo).replace(/\\/g, '/')
-      const fullLogoPath = rawPath.startsWith('http')
-        ? rawPath
-        : `${import.meta.env.VITE_APP_API_BASE_URL}/${rawPath}`
-      const img = await imageToBase64(fullLogoPath)
-      if (img) {
-        const loc = 'file:///C:/bioram/signature.png'
-        images.push({ location: loc, ...img })
-        sigImg = `<div><img src="${loc}" width="70" height="70"/></div>`
-      }
-    }
-
-    return `<div class="validation">
-      <div class="valid-nom">${escHtml(fullName)}</div>
-      ${profilLines.map((l) => `<div class="valid-profil">${escHtml(l.trim())}</div>`).join('')}
-      ${sigImg}
-    </div>`
-  }
-
-  // Construit le document Word complet (HTML) du resultat.
-  const buildResultatHtml = async () => {
-    const userColor = getColorValue('gris')
-    const u = invoice.userId
-    const nomComplet = `${(u.prenom || '').toUpperCase()} ${(u.nom || '').toUpperCase()}`.trim()
-
-    let ageDisplay = 'Non disponible'
-    if (u.age) {
-      ageDisplay = u.age.toString()
-    } else if (u.dateNaissance) {
-      const birthDate = new Date(u.dateNaissance)
-      const today = new Date()
-      let age = today.getFullYear() - birthDate.getFullYear()
-      const m = today.getMonth() - birthDate.getMonth()
-      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--
-      ageDisplay = age.toString()
-    }
-    const formatTel = (raw) => {
-      if (!raw) return ''
-      let digits = String(raw).replace(/\D/g, '')
-      if (digits.startsWith('221')) digits = digits.slice(3)
-      if (digits.length !== 9) return raw
-      return `${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 7)} ${digits.slice(7, 9)}`
-    }
-    const dateDossier = formatDate(invoice?.createdAt)
-    // Collecte des images embarquees (logo + signature) en parties MHTML.
-    const images = []
-    const logo = await imageToBase64(logoLeft)
-    let logoTag = ''
-    if (logo) {
-      const loc = 'file:///C:/bioram/logo.png'
-      images.push({ location: loc, ...logo })
-      // width/height en ATTRIBUTS (Word ignore le width CSS sur <img>).
-      logoTag = `<img src="${loc}" width="70" height="70"/>`
-    }
-
-    // Corps : categories -> tests
-    const sortedResults = sortResultsByCategory(invoice?.resultat || [])
-    let body = ''
-    for (const group of sortedResults) {
-      body += `<div class="section-banner">${escHtml(upperNoAccent(group.category))}</div>`
-      for (const test of group.results) {
-        if (!test || !test.testId) continue
-        body += `<div class="test">`
-        body += `<div class="test-title">&#9679; ${escHtml(upperNoAccent(test.testId.nom))}</div>`
-        // Test standard (pas d'examen macroscopique) -> valeur + interpretation
-        const hasMacro = test?.observations?.macroscopique?.length > 0
-        if (!hasMacro) body += standardTestHtml(test)
-        // Observations bacterio / conclusion / antibiogrammes
-        body += observationsHtml(test)
-        body += `</div>`
-      }
-    }
-
-    const validation = await validationHtml(invoice, images)
-
-    const html = `<!DOCTYPE html>
-<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
-<head>
-<meta charset="utf-8"/>
-<title>Résultat ${escHtml(nomComplet)}</title>
-<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
-<style>
-  /* En-tete (h1) et pied (f1) Word REPETES sur chaque page. Contenu
-     UNIQUEMENT inline dans le <p class=MsoHeader/MsoFooter> (pas de div
-     imbrique : c'est ce qui faisait planter Word). */
-  @page Section1 {
-    size: 21cm 29.7cm;
-    margin: 4.6cm 1.8cm 2.2cm 1.8cm;
-    mso-header-margin: 0.7cm;
-    mso-footer-margin: 0.7cm;
-    mso-header: h1;
-    mso-footer: f1;
-  }
-  div.Section1 { page: Section1; }
-  p.MsoHeader, div.MsoHeader { margin: 0; text-align: center; font-family: 'Times New Roman', serif; }
-  p.MsoFooter, div.MsoFooter { margin: 0; text-align: center; font-family: 'Times New Roman', serif; }
-  .head-l1 { font-size: 12pt; font-weight: bold; }
-  .head-l2 { font-size: 7pt; }
-  .foot { font-size: 7pt; }
-  body { font-family: 'Courier New', monospace; font-size: 9pt; color: #000; }
-  .entete { display: table; width: 100%; }
-  .entete-logo { display: table-cell; width: 75px; vertical-align: middle; }
-  .entete-txt { display: table-cell; vertical-align: middle; text-align: center; font-family: 'Times New Roman', serif; }
-  .entete-txt .l1 { font-size: 12pt; }
-  .entete-txt .l2 { font-size: 7pt; }
-  .hr { border-top: 1.5px solid ${userColor}; margin: 3px 0 0 0; }
-  table.patient { width: 100%; font-weight: bold; font-size: 10pt; }
-  table.patient td { vertical-align: top; }
-  table.patient td.right { text-align: left; padding-left: 30%; }
-  .section-banner { font-weight: bold; font-size: 12pt; text-align: center; border-bottom: 1px solid #000; margin: 10px 0 6px 0; padding-bottom: 2px; }
-  .test { margin-bottom: 8px; }
-  .test-title { font-weight: bold; font-size: 10pt; }
-  .prelev { margin: 1px 0; }
-  .machine { display: table; width: 100%; font-style: italic; }
-  .machine .m-left { display: table-cell; }
-  .machine .m-ref { display: table-cell; text-align: right; font-style: normal; }
-  .valeur-principale { font-weight: bold; font-size: 11pt; text-align: center; margin: 3px 0; }
-  .commentaire { font-family: 'Times New Roman', serif; font-style: italic; margin: 2px 0; }
-  .interp-title { font-weight: bold; font-size: 11pt; margin-top: 4px; }
-  table.interp { border-collapse: collapse; margin: 3px 0; }
-  table.interp th, table.interp td { border: 1px solid #000; padding: 2px 6px; font-size: 9pt; }
-  .interp-text { font-family: 'Times New Roman', serif; font-size: 10pt; margin: 3px 0; }
-  .bact-title { font-weight: bold; margin-top: 5px; }
-  .kv { display: table; width: 100%; margin: 1px 0; }
-  .kv .k { display: table-cell; }
-  .kv .v { display: table-cell; padding-left: 8px; }
-  .concl-title { font-weight: bold; font-size: 11pt; margin-top: 5px; }
-  .concl { font-family: 'Times New Roman', serif; font-weight: bold; font-size: 11pt; }
-  .abg-title { font-weight: bold; font-size: 11pt; margin-top: 6px; text-align: center; }
-  table.abg { border-collapse: collapse; margin: 3px auto; width: 80%; }
-  table.abg th, table.abg td { border: 1px solid #000; padding: 2px 6px; }
-  table.abg td.center { text-align: center; }
-  .abg-legend { text-align: center; margin: 2px 0; }
-  .validation { text-align: center; margin-top: 30px; }
-  .valid-tech { font-weight: bold; font-size: 12pt; text-decoration: underline; }
-  .valid-nom { font-family: 'Times New Roman', serif; font-weight: bold; font-size: 10pt; }
-  .valid-profil { font-family: 'Times New Roman', serif; font-style: italic; font-size: 10pt; }
-  .signature { width: 110px; }
-  .footer { border-top: 1.5px solid ${userColor}; margin-top: 25px; padding-top: 3px; font-family: 'Times New Roman', serif; font-size: 7pt; text-align: center; }
-</style>
-</head>
-<body>
-  <div class="Section1">
-    <table class="patient">
-      <tr>
-        <td class="left">NIP: ${escHtml(u.nip || '')}<br/>Date: ${escHtml(dateDossier)}</td>
-        <td class="right">Nº Dossier: ${escHtml(invoice?.identifiant || '')}<br/>Nom: ${escHtml(nomComplet)}<br/>Âge: ${escHtml(ageDisplay)} ans<br/>Tel: ${escHtml(formatTel(u.telephone))}</td>
-      </tr>
-    </table>
-    ${body}
-    ${validation}
-  </div>
-
-  <div style='mso-element:header' id='h1'>
-    <p class='MsoHeader'>${logoTag} <span class="head-l1">LABORATOIRE D'ANALYSES MEDICALES</span><br/><span class="head-l2">Hématologie – Immuno-Hématologie – Biochimie – Immunologie – Bactériologie – Virologie – Parasitologie</span><br/><span class="head-l2">24H/24 7J/7 — Prélèvement à domicile sur rendez-vous</span><br/><span class="head-l2">Tel. 78 601 09 09 / 33 836 99 98 — email : contact@bioram.org</span></p>
-  </div>
-
-  <div style='mso-element:footer' id='f1'>
-    <p class='MsoFooter'><span class="foot">Rufisque Ouest, rond-point SOCABEG vers cité SIPRES - Sortie 9 autoroute à péage Dakar Sénégal Aut. minist. n° 013545-28/03/19<br/>Site web : www.bioram.org &nbsp; Tel. 78 601 09 09 &nbsp; email : contact@bioram.org<br/>RC/SN-DKR-2019 B 13431 - NINEA 0073347059 2E2</span></p>
-  </div>
-</body>
-</html>`
-
-    return { html, images }
-  }
-
-  // Telecharge le resultat au format Word (.doc editable).
+  // Telecharge le resultat au format Word (.docx) genere avec la
+  // librairie docx : VRAI document Word, avec en-tete et pied de page
+  // repetes sur chaque page SANS duplication (contrairement au MHTML),
+  // et images embarquees proprement.
   const generateWord = async () => {
     try {
       await ensureUserLoaded()
-      const { html, images } = await buildResultatHtml()
-      const mht = buildMht(html, images)
-      const blob = new Blob([mht], { type: 'application/msword' })
+      const {
+        Document, Packer, Paragraph, TextRun, ImageRun, Header, Footer,
+        Table, TableRow, TableCell, AlignmentType, BorderStyle, WidthType,
+        PageNumber, TabStopType, UnderlineType, convertMillimetersToTwip,
+      } = await import('docx')
+
+      const FONT = 'Courier New'
+      const SERIF = 'Times New Roman'
+      const CENTER = AlignmentType.CENTER
+      const RIGHT_TAB = convertMillimetersToTwip(174) // largeur utile
+
+      const sanitize = (v) =>
+        v == null ? '' : String(v).replace(/≥/g, '>=').replace(/≤/g, '<=').replace(/(\d)\.(\d)/g, '$1,$2')
+      const safe = (v) => {
+        if (v == null) return ''
+        const s = String(v).trim()
+        return s === '' || s === 'null' || s === 'undefined' ? '' : s
+      }
+
+      // Decoupe un texte et met les germes latins en italique (comme le PDF).
+      const runs = (text, opts = {}) =>
+        String(sanitize(text))
+          .split(GERMES_REGEX)
+          .filter((p) => p !== '')
+          .map(
+            (p) =>
+              new TextRun({
+                text: p,
+                italics: opts.italics || GERMES.includes(p),
+                bold: opts.bold,
+                font: opts.font || FONT,
+                size: opts.size || 18,
+              })
+          )
+      const tr = (text, opts = {}) =>
+        new TextRun({
+          text: String(text),
+          bold: opts.bold,
+          italics: opts.italics,
+          font: opts.font || FONT,
+          size: opts.size || 18,
+          underline: opts.underline,
+        })
+      const par = (children, opts = {}) =>
+        new Paragraph({
+          children,
+          alignment: opts.align,
+          spacing: opts.spacing,
+          border: opts.border,
+          tabStops: opts.tabStops,
+        })
+
+      // Recupere une image -> { data, type, width, height } en gardant le ratio.
+      const fetchImg = async (src, targetW) => {
+        try {
+          const res = await fetch(src)
+          const blob = await res.blob()
+          const data = new Uint8Array(await blob.arrayBuffer())
+          const objUrl = URL.createObjectURL(blob)
+          const im = await loadImage(objUrl)
+          URL.revokeObjectURL(objUrl)
+          const ratio = im.height && im.width ? im.height / im.width : 1
+          const type = /png/i.test(blob.type) ? 'png' : /jpe?g/i.test(blob.type) ? 'jpg' : 'png'
+          return { data, type, width: targetW, height: Math.max(1, Math.round(targetW * ratio)) }
+        } catch {
+          return null
+        }
+      }
+      const imgPara = (img, align) =>
+        new Paragraph({
+          alignment: align,
+          children: [
+            new ImageRun({ data: img.data, type: img.type, transformation: { width: img.width, height: img.height } }),
+          ],
+        })
+
+      // ---- EN-TETE (repete sur chaque page) ----
+      // Espacement de paragraphe a 0 (HSP) pour compacter l'en-tete :
+      // sinon les espacements par defaut le rendent haut et il remplit
+      // toute la marge, ne laissant aucun espace avant le contenu.
+      const HSP = { before: 0, after: 0 }
+      const logoImg = await fetchImg(logoLeft, 62)
+      const headLine = (text, opts) =>
+        new Paragraph({ alignment: CENTER, spacing: HSP, children: [tr(text, opts)] })
+      const headerChildren = []
+      if (logoImg)
+        headerChildren.push(
+          new Paragraph({
+            alignment: CENTER,
+            spacing: HSP,
+            children: [new ImageRun({ data: logoImg.data, type: logoImg.type, transformation: { width: logoImg.width, height: logoImg.height } })],
+          })
+        )
+      headerChildren.push(headLine("LABORATOIRE D'ANALYSES MEDICALES", { bold: true, font: SERIF, size: 24 }))
+      headerChildren.push(headLine('Hématologie – Immuno-Hématologie – Biochimie – Immunologie – Bactériologie – Virologie – Parasitologie', { font: SERIF, size: 14 }))
+      headerChildren.push(headLine('24H/24 7J/7 — Prélèvement à domicile sur rendez-vous', { font: SERIF, size: 14 }))
+      headerChildren.push(headLine('Tel. 78 601 09 09 / 33 836 99 98 — email : contact@bioram.org', { font: SERIF, size: 14 }))
+
+      // ---- PIED (repete) avec numero de page ----
+      const footerChildren = [
+        par([tr('Rufisque Ouest, rond-point SOCABEG vers cité SIPRES - Sortie 9 autoroute à péage Dakar Sénégal Aut. minist. n° 013545-28/03/19', { font: SERIF, size: 14 })], { align: CENTER }),
+        par([tr('Site web : www.bioram.org   Tel. 78 601 09 09   email : contact@bioram.org', { font: SERIF, size: 14 })], { align: CENTER }),
+        new Paragraph({
+          alignment: CENTER,
+          children: [
+            tr('RC/SN-DKR-2019 B 13431 - NINEA 0073347059 2E2   —   Page ', { font: SERIF, size: 14 }),
+            new TextRun({ children: [PageNumber.CURRENT], font: SERIF, size: 14 }),
+          ],
+        }),
+      ]
+
+      // ---- DONNEES PATIENT ----
+      const u = invoice.userId
+      const nomComplet = `${(u.prenom || '').toUpperCase()} ${(u.nom || '').toUpperCase()}`.trim()
+      let ageDisplay = 'Non disponible'
+      if (u.age) ageDisplay = u.age.toString()
+      else if (u.dateNaissance) {
+        const b = new Date(u.dateNaissance)
+        const t = new Date()
+        let age = t.getFullYear() - b.getFullYear()
+        const m = t.getMonth() - b.getMonth()
+        if (m < 0 || (m === 0 && t.getDate() < b.getDate())) age--
+        ageDisplay = age.toString()
+      }
+      const formatTel = (raw) => {
+        if (!raw) return ''
+        let d = String(raw).replace(/\D/g, '')
+        if (d.startsWith('221')) d = d.slice(3)
+        if (d.length !== 9) return raw
+        return `${d.slice(0, 2)} ${d.slice(2, 5)} ${d.slice(5, 7)} ${d.slice(7, 9)}`
+      }
+      const dateDossier = formatDate(invoice?.createdAt)
+
+      const NO_BORDER = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }
+      const noBorders = { top: NO_BORDER, bottom: NO_BORDER, left: NO_BORDER, right: NO_BORDER, insideHorizontal: NO_BORDER, insideVertical: NO_BORDER }
+      const infoCell = (lines, w) =>
+        new TableCell({
+          width: { size: w, type: WidthType.PERCENTAGE },
+          borders: noBorders,
+          children: lines.map((ln) => par([tr(ln, { bold: true, size: 20 })])),
+        })
+
+      const children = []
+      children.push(
+        new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          borders: noBorders,
+          rows: [
+            new TableRow({
+              children: [
+                infoCell([`NIP: ${safe(u.nip)}`, `Date: ${dateDossier}`], 50),
+                infoCell([`Nº Dossier: ${safe(invoice?.identifiant)}`, `Nom: ${nomComplet}`, `Âge: ${ageDisplay} ans`, `Tel: ${formatTel(u.telephone)}`], 50),
+              ],
+            }),
+          ],
+        })
+      )
+
+      // ---- helpers de rendu ----
+      const sectionBanner = (txt) =>
+        par([tr(upperNoAccent(txt), { bold: true, size: 24 })], {
+          align: CENTER,
+          spacing: { before: 200, after: 80 },
+          border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: '000000' } },
+        })
+      const kv = (k, v) => par([tr(k + ' ', { size: 18 }), tr(sanitize(v), { size: 18 })])
+      const kvGermes = (label, v) => par([...runs(label, { size: 18 }), tr(' ' + sanitize(v), { size: 18 })])
+      const bactTitle = (txt) => par([tr(txt, { bold: true, size: 18 })], { spacing: { before: 100 } })
+      const tCell = (txt, opts = {}) =>
+        new TableCell({ children: [par([tr(txt, { bold: opts.bold, size: 18 })], { align: opts.align })] })
+
+      const interpretationParas = (test) => {
+        const out = []
+        if (!test?.statutInterpretation) return out
+        const it = test.statutMachine ? test.testId.interpretationA : test.testId.interpretationB
+        if (!it) return out
+        const content = it.content || {}
+        const textBody = typeof content === 'string' ? content : content.text || ''
+        const hasText = typeof textBody === 'string' && textBody.trim() !== ''
+        const cols = Array.isArray(content.columns) ? content.columns : []
+        const rows = Array.isArray(content.rows) ? content.rows : []
+        const hasTable =
+          cols.length > 0 && rows.length > 0 &&
+          (cols.some((c) => c && String(c).trim() !== '') || rows.some((r) => Array.isArray(r) && r.some((c) => c && String(c).trim() !== '')))
+        if (!hasText && !hasTable) return out
+        out.push(par([tr('Interprétation:', { bold: true, size: 22 })], { spacing: { before: 60 } }))
+        if (hasTable) {
+          out.push(
+            new Table({
+              rows: [
+                new TableRow({ children: cols.map((c) => tCell(sanitize(c), { bold: true })) }),
+                ...rows.map((r) => new TableRow({ children: (Array.isArray(r) ? r : []).map((c) => tCell(sanitize(c))) })),
+              ],
+            })
+          )
+        }
+        if (hasText) String(textBody).split(/\n/).forEach((line) => out.push(par(runs(line, { font: SERIF, size: 20 }))))
+        return out
+      }
+
+      const observationParas = (test) => {
+        const out = []
+        if (test?.gram) {
+          out.push(bactTitle('EXAMEN APRES COLORATION DE GRAM'))
+          out.push(par([tr('Gram: ', { size: 18 }), tr(sanitize(test.gram), { size: 18 })]))
+        }
+        if (test?.culture) {
+          const { culture, germeIdentifie, description } = test.culture
+          const hasC = culture || (Array.isArray(germeIdentifie) && germeIdentifie.length > 0) || description
+          if (hasC) {
+            out.push(bactTitle('CULTURES SUR MILIEUX SPECIFIQUES:'))
+            if (culture) out.push(kv('Cultures:', culture))
+            if (Array.isArray(germeIdentifie) && germeIdentifie.length > 0)
+              out.push(par([tr('Germe(s) Identifié(s): ', { size: 18 }), tr(germeIdentifie.map((g) => g.nom).join(', '), { italics: true, size: 18 })]))
+            if (description) out.push(kv('Numeration:', description))
+          }
+        }
+        const ch = test?.observations?.rechercheChlamydia
+        if (ch && (ch.naturePrelevement || ch.rechercheAntigeneChlamydiaTrochomatis)) {
+          out.push(bactTitle('RECHERCHE DE CHLAMYDIA'))
+          if (ch.naturePrelevement) out.push(kv('Nature du prélèvement:', ch.naturePrelevement))
+          if (ch.rechercheAntigeneChlamydiaTrochomatis) out.push(kvGermes("Recherche d'antigène de Chlamydia trachomatis:", ch.rechercheAntigeneChlamydiaTrochomatis))
+        }
+        const my = test?.observations?.rechercheMycoplasmes
+        if (my && (my.naturePrelevement || my.rechercheUreaplasmaUrealyticum || my.rechercheMycoplasmaHominis)) {
+          out.push(bactTitle('RECHERCHE DE MYCOPLASMES'))
+          if (my.naturePrelevement) out.push(kv('Nature du prélèvement:', my.naturePrelevement))
+          if (my.rechercheUreaplasmaUrealyticum) out.push(kvGermes("Recherche d'Ureaplasma urealyticum:", my.rechercheUreaplasmaUrealyticum))
+          if (my.rechercheMycoplasmaHominis) out.push(kvGermes('Recherche de Mycoplasma hominis:', my.rechercheMycoplasmaHominis))
+        }
+        if (test?.conclusion) {
+          out.push(par([tr('CONCLUSION', { bold: true, size: 22 })], { spacing: { before: 100 } }))
+          out.push(par(runs(test.conclusion, { bold: true, font: SERIF, size: 22 })))
+        }
+        const germes = test?.culture?.germeIdentifie
+        if (Array.isArray(germes)) {
+          germes.forEach((g) => {
+            const entries = Object.entries(g?.antibiogramme || {})
+            if (!entries.length) return
+            out.push(par([tr('ANTIBIOGRAMME : ', { bold: true, size: 22 }), tr(g.nom || '', { bold: true, italics: true, size: 22 })], { align: CENTER, spacing: { before: 120 } }))
+            out.push(
+              new Table({
+                width: { size: 80, type: WidthType.PERCENTAGE },
+                rows: [
+                  new TableRow({ children: [tCell('Antibiotique', { bold: true }), tCell('Sensibilité', { bold: true, align: CENTER })] }),
+                  ...entries.map(([a, s]) => new TableRow({ children: [tCell(String(a)), tCell(String(s), { align: CENTER })] })),
+                ],
+              })
+            )
+            out.push(par([tr('S : Sensible    I : Intermédiaire     R : Résistant', { size: 18 })], { align: CENTER }))
+          })
+        }
+        return out
+      }
+
+      // ---- CORPS : categories -> tests ----
+      for (const group of sortResultsByCategory(invoice?.resultat || [])) {
+        children.push(sectionBanner(group.category))
+        for (const test of group.results) {
+          if (!test || !test.testId) continue
+          children.push(par([tr('● ' + upperNoAccent(test.testId.nom), { bold: true, size: 20 })], { spacing: { before: 80 } }))
+          const hasMacro = test?.observations?.macroscopique?.length > 0
+          if (!hasMacro) {
+            const fd = formatDateAndTime(test?.datePrelevement)
+            if (test?.typePrelevement) children.push(par([tr(`Prélèvement : ${fd}, ${sanitize(test.typePrelevement)}`, { size: 18 })]))
+            const machineText = test?.statutMachine ? test?.testId?.machineA : test?.testId?.machineB
+            const machineValue = test?.statutMachine ? test?.testId?.valeurMachineA : test?.testId?.valeurMachineB
+            const mr = []
+            if (machineText) mr.push(tr(sanitize(machineText), { italics: true, size: 18 }))
+            if (test?.methode) mr.push(tr(` (${sanitize(test.methode)})`, { italics: true, size: 18 }))
+            if (safe(machineValue)) {
+              mr.push(tr('\t', { size: 18 }))
+              mr.push(tr(`Réf: ${sanitize(machineValue)}`, { size: 18 }))
+            }
+            if (mr.length) children.push(new Paragraph({ children: mr, tabStops: [{ type: TabStopType.RIGHT, position: RIGHT_TAB }] }))
+            if (safe(test?.valeur)) {
+              let vt = sanitize(test.valeur)
+              if (safe(test?.qualitatif)) vt += ` (${sanitize(test.qualitatif)})`
+              children.push(par([tr(vt, { bold: true, size: 22 })], { align: CENTER, spacing: { before: 40, after: 40 } }))
+            }
+            if (safe(test?.remarque)) children.push(par([tr(`Commentaires: ${sanitize(test.remarque)}`, { italics: true, font: SERIF, size: 18 })]))
+            interpretationParas(test).forEach((x) => children.push(x))
+          }
+          observationParas(test).forEach((x) => children.push(x))
+        }
+      }
+
+      // ---- VALIDATION ----
+      const finalV = invoice.historiques?.find((h) => h.status === 'Validé')
+      const techV = invoice.historiques?.find((h) => h.status === 'Validation technique')
+      const validation = finalV || techV
+      if (validation && validation.updatedBy) {
+        if (!finalV && techV) {
+          children.push(par([tr('Validation technique', { bold: true, size: 24, underline: { type: UnderlineType.SINGLE } })], { align: CENTER, spacing: { before: 400 } }))
+        } else {
+          const val = validation.updatedBy
+          children.push(par([tr(`${val.prenom || ''} ${val.nom || ''}`.trim(), { bold: true, font: SERIF, size: 20 })], { align: CENTER, spacing: { before: 500 } }))
+          String(val.profil || '')
+            .split(/\r?\n/)
+            .filter((l) => l.trim() !== '')
+            .forEach((l) => children.push(par([tr(l.trim(), { italics: true, font: SERIF, size: 20 })], { align: CENTER })))
+          if (val.logo) {
+            const raw = String(val.logo).replace(/\\/g, '/')
+            const full = raw.startsWith('http') ? raw : `${import.meta.env.VITE_APP_API_BASE_URL}/${raw}`
+            const sig = await fetchImg(full, 110)
+            if (sig) children.push(imgPara(sig, CENTER))
+          }
+        }
+      }
+
+      // ---- DOCUMENT : en-tete/pied repetes via headers/footers ----
+      const doc = new Document({
+        sections: [
+          {
+            properties: {
+              page: {
+                size: { width: convertMillimetersToTwip(210), height: convertMillimetersToTwip(297) },
+                margin: {
+                  // Marge haute large : laisse un espace net entre l'en-tete
+                  // (logo + labo) et le debut du contenu, sur chaque page.
+                  top: convertMillimetersToTwip(46),
+                  bottom: convertMillimetersToTwip(22),
+                  left: convertMillimetersToTwip(18),
+                  right: convertMillimetersToTwip(18),
+                  header: convertMillimetersToTwip(8),
+                  footer: convertMillimetersToTwip(8),
+                },
+              },
+            },
+            headers: { default: new Header({ children: headerChildren }) },
+            footers: { default: new Footer({ children: footerChildren }) },
+            children,
+          },
+        ],
+      })
+
+      const blob = await Packer.toBlob(doc)
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       const nom = `${invoice?.userId?.nom || 'patient'}`.replace(/\s+/g, '_')
       a.href = url
-      a.download = `Resultat_${nom}_${invoice?.identifiant || ''}.doc`
+      a.download = `Resultat_${nom}_${invoice?.identifiant || ''}.docx`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
