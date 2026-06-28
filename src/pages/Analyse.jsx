@@ -10,7 +10,7 @@ import DeleteAnalyseButton from '../components/DeleteAnalyseButton'
 import NavigationBreadcrumb from '../components/NavigationBreadcrumb'
 import Chatbot from '../components/Chatbot'
 import { Card, SectionHeader, StatusBadge } from '../components/ui'
-import { faDownload } from '@fortawesome/free-solid-svg-icons'
+import { faDownload, faFileArrowDown } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 function Facture() {
@@ -315,29 +315,54 @@ function Facture() {
                     </td>
 
                     <td>
-                      {/* Largeur d'un bouton btn-sm carre (icone) :
-                          ~36px = w-9. On reserve cet emplacement meme
-                          quand le bouton est absent pour que Vue / Edit /
-                          Delete restent toujours alignes verticalement
-                          entre les lignes du tableau. */}
+                      {/* Chaque emplacement optionnel (resultat genere
+                          PDF+Word, et resultat externe) est TOUJOURS rendu :
+                          soit le vrai bouton, soit un placeholder invisible
+                          de meme taille. Ainsi Vue / Edit / Delete restent
+                          parfaitement alignes verticalement entre toutes
+                          les lignes, quel que soit le contenu. */}
                       <div className="flex flex-row items-center gap-1">
-                        {facture.resultat.length > 0 ? (
-                          <GenerateResultatButton invoice={facture} />
-                        ) : (
-                          <span className="w-9 h-8 inline-block" aria-hidden="true" />
-                        )}
-
+                        {/* Resultat externe (fichier importe) : RARE, donc
+                            place en premier -> quand il manque, le trou
+                            (placeholder invisible) est a gauche et passe
+                            quasi inapercu. Couleur + icone DIFFERENTES du
+                            bouton PDF pour ne pas les confondre. */}
                         {facture.fileResultat &&
                         facture.fileResultat.length > 0 ? (
                           <a
                             href={facture.fileResultat[0].path}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="btn btn-primary btn-sm"
+                            className="btn btn-accent btn-sm"
+                            title="Résultat externe"
+                          >
+                            <FontAwesomeIcon icon={faFileArrowDown} />
+                          </a>
+                        ) : (
+                          <span
+                            className="btn btn-sm invisible pointer-events-none"
+                            aria-hidden="true"
                           >
                             <FontAwesomeIcon icon={faDownload} />
-                          </a>
-                        ) : null}
+                          </span>
+                        )}
+
+                        {/* Resultat genere : bouton PDF + bouton Word */}
+                        {facture.resultat.length > 0 ? (
+                          <GenerateResultatButton invoice={facture} />
+                        ) : (
+                          <div
+                            className="flex flex-row items-center gap-1"
+                            aria-hidden="true"
+                          >
+                            <span className="btn btn-sm invisible pointer-events-none">
+                              <FontAwesomeIcon icon={faDownload} />
+                            </span>
+                            <span className="btn btn-sm invisible pointer-events-none">
+                              <FontAwesomeIcon icon={faDownload} />
+                            </span>
+                          </div>
+                        )}
 
                         <ViewAnalyseButton
                           analyseId={facture._id}
