@@ -295,6 +295,9 @@ const GenerateResultatButton = forwardRef(function GenerateResultatButton(
       cx += doc.getTextWidth(part)
     })
     doc.setFont(fontFamily, baseFont === 'bold' ? 'bold' : 'normal')
+    // Renvoie la position X de fin du texte, pour permettre a l'appelant de
+    // placer une valeur juste apres un label long sans chevauchement.
+    return cx
   }
 
   // Convertit un texte en MAJUSCULES SANS ACCENT (convention du
@@ -2506,7 +2509,7 @@ const renderMacroscopicExam = (doc, test, currentY, positionX, invoice) => {
     currentY = checkNewPage(doc, currentY, invoice)
     doc.setFontSize(9)
     doc.setFont('Courier', 'bold')
-    doc.text(`EXAMEN MICROSCOPIQUE APRES COLORATION`, 20, currentY)
+    doc.text(`EXAMEN MICROSCOPIQUE`, 20, currentY)
     currentY += 6
     doc.setFontSize(9)
     doc.setFont('Courier', 'normal')
@@ -2869,7 +2872,7 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     currentY = checkNewPage(doc, currentY, invoice)
     doc.setFontSize(9)
     doc.setFont('Courier', 'bold')
-    doc.text(`EXAMEN BACTERIOLOGIE DIRECT (Coloration de gram)`, 20, currentY)
+    doc.text(`EXAMEN apres Coloration de Gram`, 20, currentY)
     currentY += 6
     doc.setFontSize(9)
     doc.setFont('Courier', 'normal')
@@ -2952,8 +2955,12 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
 
     if (rechercheAntigeneChlamydiaTrochomatis) {
       // Le label contient un germe (Chlamydia trachomatis) -> italique auto
-      renderLineWithGermes(doc, "Recherche d'antigène de Chlamydia trachomatis:", 20, currentY)
-      doc.text(rechercheAntigeneChlamydiaTrochomatis, positionX, currentY)
+      const labelEndX = renderLineWithGermes(doc, "Recherche d'antigène de Chlamydia trachomatis:", 20, currentY)
+      // Le label est plus long que positionX : on place la valeur juste apres
+      // le label (+ marge) pour eviter le chevauchement, tout en gardant
+      // l'alignement sur positionX quand le label est plus court.
+      const valeurX = Math.max(positionX, labelEndX + 3)
+      doc.text(rechercheAntigeneChlamydiaTrochomatis, valeurX, currentY)
       currentY += 7
     }
 
@@ -2982,14 +2989,14 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
     }
 
     if (rechercheUreaplasmaUrealyticum) {
-      renderLineWithGermes(doc, "Recherche d'Ureaplasma urealyticum:", 20, currentY)
-      doc.text(rechercheUreaplasmaUrealyticum, positionX, currentY)
+      const labelEndX = renderLineWithGermes(doc, "Recherche d'Ureaplasma urealyticum:", 20, currentY)
+      doc.text(rechercheUreaplasmaUrealyticum, Math.max(positionX, labelEndX + 3), currentY)
       currentY += 5
     }
 
     if (rechercheMycoplasmaHominis) {
-      renderLineWithGermes(doc, 'Recherche de Mycoplasma hominis:', 20, currentY)
-      doc.text(rechercheMycoplasmaHominis, positionX, currentY)
+      const labelEndX = renderLineWithGermes(doc, 'Recherche de Mycoplasma hominis:', 20, currentY)
+      doc.text(rechercheMycoplasmaHominis, Math.max(positionX, labelEndX + 3), currentY)
       currentY += 7
     }
 

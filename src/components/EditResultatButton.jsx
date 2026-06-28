@@ -1576,6 +1576,22 @@ if (data.data.exceptions) {
         ...prevFormData,
         [name]: value === 'true',
       }))
+    } else if (name === 'statutMachine') {
+      // Changement de machine A/B : on recalcule le statut d'interpretation.
+      // Si l'interpretation de la machine choisie est de type 'mixed'
+      // (tableau + texte), on active automatiquement le statut (Oui).
+      // On ne touche pas a la valeur sauvegardee au chargement : seule une
+      // action utilisateur (ce handler) declenche le recalcul.
+      const useMachineA = value === 'true'
+      const selectedTest = tests.find((test) => test._id === formData.testId)
+      const interpretation = useMachineA
+        ? selectedTest?.interpretationA
+        : selectedTest?.interpretationB
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        statutMachine: useMachineA,
+        statutInterpretation: interpretation?.type === 'mixed',
+      }))
     } else {
       setFormData((prevFormData) => ({
         ...prevFormData,

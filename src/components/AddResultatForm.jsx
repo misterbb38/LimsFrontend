@@ -478,8 +478,16 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
       setMachineB(selectedTest.machineB || 'Pas de machine B')
       setConclusion(selectedTest.conclusions)
       setSelectedConclusion('')
+
+      // Si l'interpretation du parametre (selon la machine choisie A/B) est
+      // de type 'mixed' (tableau + texte), on active automatiquement le
+      // statut d'interpretation (Oui). Sinon on revient a Non par defaut.
+      const interpretation = statutMachine
+        ? selectedTest.interpretationA
+        : selectedTest.interpretationB
+      setStatutInterpretation(interpretation?.type === 'mixed')
     }
-  }, [testId, tests])
+  }, [testId, tests, statutMachine])
 
   const fetchTests = async (analyseId) => {
     try {
