@@ -23,6 +23,10 @@ function CreateAnalyseForm({ onAnalyseChange, preselectedUserId }) {
   const [searchTermClinique, setSearchTermClinique] = useState('')
   const [statusPayement, setStatusPayement] = useState('')
   const [typeAnalyse, setTypeAnalyse] = useState('Interne')
+  // Mode test : si active, l'utilisateur saisit lui-meme le numero
+  // d'analyse (dossier) au lieu de la generation automatique.
+  const [modeTest, setModeTest] = useState(false)
+  const [numeroTest, setNumeroTest] = useState('')
   const [pourcentageCouverture, setPourcentageCouverture] = useState('')
   // const [pc1, setPc1] = useState(false)
   // const [pc2, setPc2] = useState(false)
@@ -348,6 +352,12 @@ if (pc2Quantity > 0) formData.append('pc2', pc2Quantity * 4000)
     formData.append('statusPayement', statusPayement || 'Impayée')
     formData.append('typeAnalyse', typeAnalyse || 'Interne')
 
+    // Mode test : envoyer le numero d'analyse saisi manuellement.
+    if (modeTest && numeroTest.trim() !== '') {
+      formData.append('modeTest', 'true')
+      formData.append('identifiantManuel', numeroTest.trim())
+    }
+
     if (statusPayement === 'Reliquat') {
       formData.append('avance', avance) // Ajouter l'avance au formData
       console.log('Avance ajoutée au formData:', avance) // Vérification
@@ -433,6 +443,39 @@ if (pc2Quantity > 0) formData.append('pc2', pc2Quantity * 4000)
         <h3 className="font-bold text-lg">Ajouter l'analyse</h3>
 
         <form onSubmit={handleSubmit}>
+          {/* Mode test : numero d'analyse saisi manuellement */}
+          <div className="mb-3 rounded-lg border border-warning/40 bg-warning/10 p-3">
+            <label className="label cursor-pointer justify-start gap-3">
+              <input
+                type="checkbox"
+                className="checkbox checkbox-warning"
+                checked={modeTest}
+                onChange={(e) => {
+                  setModeTest(e.target.checked)
+                  if (!e.target.checked) setNumeroTest('')
+                }}
+              />
+              <span className="label-text font-medium">
+                Mode test (saisir le numéro d&apos;analyse manuellement)
+              </span>
+            </label>
+            {modeTest && (
+              <div className="mt-2">
+                <label className="label">
+                  <span className="label-text">Numéro d&apos;analyse</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex : 260701053"
+                  value={numeroTest}
+                  onChange={(e) => setNumeroTest(e.target.value)}
+                  required
+                  className="input input-bordered input-warning w-full max-w-xs"
+                />
+              </div>
+            )}
+          </div>
+
           <div>
             <label className="label">
               <span className="label-text">Filtre Patient</span>

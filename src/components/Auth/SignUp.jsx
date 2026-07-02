@@ -264,8 +264,7 @@ const SignUp = ({ onUser }) => {
                     type="text"
                     value={telephone}
                     onChange={handleChange}
-                    placeholder="Entrez votre telephone"
-                    required
+                    placeholder="Entrez votre telephone (optionnel)"
                     className="input input-bordered input-primary w-full max-w-xs"
                   />
                 </div>
