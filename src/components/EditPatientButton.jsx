@@ -503,6 +503,7 @@ function EditPatientButton({ userId, onuserUpdated }) {
                   <option value="">Sélectionnez le sexe</option>
                   <option value="homme">Homme</option>
                   <option value="femme">Femme</option>
+                  <option value="inconnu">Inconnu</option>
                 </select>
               </div>
               <div className="mb-4">

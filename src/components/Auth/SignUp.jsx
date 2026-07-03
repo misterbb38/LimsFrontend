@@ -445,6 +445,7 @@ const SignUp = ({ onUser }) => {
                       <option value="">Sélectionnez</option>
                       <option value="homme">homme</option>
                       <option value="femme">femme</option>
+                      <option value="inconnu">Inconnu</option>
                     </select>
                   </div>
                 )}
