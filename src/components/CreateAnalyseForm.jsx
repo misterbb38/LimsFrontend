@@ -272,15 +272,21 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
   // ce que le patient doit payer pendant la saisie du formulaire.
   // La reduction est appliquee EXCLUSIVEMENT sur la part patient.
   const liveCalc = useMemo(() => {
+    // Type qui pilote la tarification : assurance/ipm/sococim (bloc
+    // Assurance) ou 'clinique' quand une clinique partenaire est choisie.
+    // Priorite a l'assurance si les deux sont renseignes.
+    const effectiveType =
+      selectedPartenaireType ||
+      (hasCliniquePartenaire === 'oui' && selectedCliniqueId ? 'clinique' : '')
     let prixTotal = 0
     selectedTests.forEach((t) => {
-      if (selectedPartenaireType === 'assurance')
+      if (effectiveType === 'assurance')
         prixTotal += (Number(t.coeficiantB) || 0) * (Number(t.prixAssurance) || 0)
-      else if (selectedPartenaireType === 'ipm')
+      else if (effectiveType === 'ipm')
         prixTotal += (Number(t.coeficiantB) || 0) * (Number(t.prixIpm) || 0)
-      else if (selectedPartenaireType === 'sococim')
+      else if (effectiveType === 'sococim')
         prixTotal += (Number(t.coeficiantB) || 0) * (Number(t.prixSococim) || 0)
-      else if (selectedPartenaireType === 'clinique')
+      else if (effectiveType === 'clinique')
         prixTotal += Number(t.prixClinique) || 0
       else
         prixTotal += (Number(t.coeficiantB) || 0) * (Number(t.prixPaf) || 0)
@@ -292,8 +298,8 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
 
     let prixPartenaire = 0
     let prixPatient = prixTotal
-    if (selectedPartenaireType) {
-      if (selectedPartenaireType === 'clinique') {
+    if (effectiveType) {
+      if (effectiveType === 'clinique') {
         prixPartenaire = prixTotal
         prixPatient = prixTotal
       } else {
@@ -318,6 +324,8 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
   }, [
     selectedTests,
     selectedPartenaireType,
+    hasCliniquePartenaire,
+    selectedCliniqueId,
     pourcentageCouverture,
     pc1Quantity,
     pc2Quantity,

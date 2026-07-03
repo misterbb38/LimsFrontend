@@ -587,7 +587,7 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
       return `${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 7)} ${digits.slice(7, 9)}`
     }
     doc.text(`Tel: ${formatTel(invoice.userId.telephone)}`, 135, currentY + 22)
-    doc.text(`NIP: ${invoice?.userId.nip}`, 35, currentY + 7)
+    doc.text(`NIP: ${invoice?.userId.nip || ''}`, 35, currentY + 7)
     doc.setTextColor(0, 0, 0)
     doc.setFontSize(11)
     doc.setFont('Times')

@@ -400,7 +400,7 @@ function GenerateTicketButton({ invoice }) {
           doc.setFont('helvetica', 'normal')
 
           const barcodeData = generateBarcode(
-            `${invoice.userId.nom} ${invoice.userId.prenom} ${invoice.identifiant} ${invoice.userId.age} ${invoice.userId.sexe}`
+            `${invoice.userId.nom} ${invoice.userId.prenom} ${invoice.identifiant} ${invoice.userId.age || ''} ${invoice.userId.sexe || ''}`
           )
           // doc.addImage(barcodeData, 'PNG', x + 5, y + 16, 25, 5); // Position adjusted to fit barcode
         }
@@ -451,8 +451,8 @@ function GenerateTicketButton({ invoice }) {
       }
 
       doc.text(`Âge: ${ageDisplay} ans`, 5, newY + 10)
-      doc.text(`sexe: ${invoice.userId.sexe}`, 5, newY + 15)
-      doc.text(`Tel: ${invoice.userId.telephone}`, 5, newY + 20)
+      doc.text(`sexe: ${invoice.userId.sexe || ''}`, 5, newY + 15)
+      doc.text(`Tel: ${invoice.userId.telephone || ''}`, 5, newY + 20)
 
       doc.setFontSize(9)
       doc.setFont('helvetica', 'bold')

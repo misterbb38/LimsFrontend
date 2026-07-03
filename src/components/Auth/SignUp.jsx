@@ -282,8 +282,7 @@ const SignUp = ({ onUser }) => {
                     type="text"
                     value={adresse}
                     onChange={handleChange}
-                    placeholder="Entrez votre adresse"
-                    required
+                    placeholder="Entrez votre adresse (optionnel)"
                     className="input input-bordered input-primary w-full max-w-xs"
                   />
                 </div>

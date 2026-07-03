@@ -220,7 +220,7 @@ function GeneratePDFButton({ invoice }) {
       // Affiche l'âge ou la date de naissance calculée
       doc.text(`Âge: ${ageDisplay} ans`, 135, currentY + 17)
 
-      doc.text(`Tel: ${invoice.userId.telephone}`, 135, currentY + 22)
+      doc.text(`Tel: ${invoice.userId.telephone || ''}`, 135, currentY + 22)
 
       // En-tête de la facture
       doc.setFontSize(9)
@@ -228,7 +228,7 @@ function GeneratePDFButton({ invoice }) {
       // doc.text(`${user.nomEntreprise}`, 30, currentY)
       // doc.text(`Informations generale`, 30, currentY)
 
-      doc.text(`NIP: ${invoice?.userId.nip}`, 35, currentY + 7)
+      doc.text(`NIP: ${invoice?.userId.nip || ''}`, 35, currentY + 7)
       doc.setTextColor(0, 0, 0)
       doc.setFontSize(8)
       doc.setFont('helvetica')

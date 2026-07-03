@@ -12,6 +12,9 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
   const [ordonnancePdf, setOrdonnancePdf] = useState(null)
   const [statusPayement, setStatusPayement] = useState('')
   const [typeAnalyse, setTypeAnalyse] = useState('')
+  // Mode test : permet de modifier manuellement le numero d'analyse.
+  const [modeTest, setModeTest] = useState(false)
+  const [numeroTest, setNumeroTest] = useState('')
   // const [pc1, setPc1] = useState(false)
   // const [pc2, setPc2] = useState(false)
 
@@ -116,6 +119,7 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
         console.log(data)
         setSelectedTests(Array.isArray(data.data.tests) ? data.data.tests : [])
         setOrdonnancePdf(data.data.ordonnancePdf || null)
+        setNumeroTest(data.data.identifiant || '')
         const partenaireId =
           data.data.partenaireId && data.data.partenaireId._id
             ? data.data.partenaireId._id
@@ -290,6 +294,12 @@ formData.append('pc2', pc2Quantity * 4000) // Calculer le montant total PC2
     }
     formData.append('statusPayement', statusPayement)
     formData.append('typeAnalyse', typeAnalyse)
+
+    // Mode test : modifier le numero d'analyse (identifiant).
+    if (modeTest && numeroTest.trim() !== '') {
+      formData.append('modeTest', 'true')
+      formData.append('identifiantManuel', numeroTest.trim())
+    }
     if (statusPayement === 'Reliquat') {
       formData.append('avance', avance) // Ajouter l'avance au formData
       console.log('Avance ajoutée au formData:', avance) // Vérification
@@ -329,9 +339,39 @@ formData.append('pc2', pc2Quantity * 4000) // Calculer le montant total PC2
       </button>
       {showModal && (
         <div className="modal modal-open">
-          <div className="modal-box">
+          <div className="modal-box w-11/12 max-w-3xl">
             <h3 className="font-bold text-lg">Modifier l'analyse</h3>
             <form onSubmit={handleSubmit}>
+              {/* Mode test : modifier manuellement le numero d'analyse */}
+              <div className="mb-3 rounded-lg border border-warning/40 bg-warning/10 p-3">
+                <label className="label cursor-pointer justify-start gap-3">
+                  <input
+                    type="checkbox"
+                    className="checkbox checkbox-warning"
+                    checked={modeTest}
+                    onChange={(e) => setModeTest(e.target.checked)}
+                  />
+                  <span className="label-text font-medium">
+                    Mode test (modifier le numéro d&apos;analyse)
+                  </span>
+                </label>
+                {modeTest && (
+                  <div className="mt-2">
+                    <label className="label">
+                      <span className="label-text">Numéro d&apos;analyse</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ex : 260701053"
+                      value={numeroTest}
+                      onChange={(e) => setNumeroTest(e.target.value)}
+                      required
+                      className="input input-bordered input-warning w-full max-w-xs"
+                    />
+                  </div>
+                )}
+              </div>
+
               <div className="form-control">
                 <label className="label">
                   <span className="label-text">Filtre Paramettre</span>
