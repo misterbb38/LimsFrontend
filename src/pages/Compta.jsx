@@ -88,10 +88,14 @@ function Compta() {
   const [openSections, setOpenSections] = useState({
     ...DEFAULT_OPEN,
     demandes: true,
+    tarifs: true,
   })
   // Filtres locaux pour la section Demandes de paiement
   const [demDateDebut, setDemDateDebut] = useState('')
   const [demDateFin, setDemDateFin] = useState('')
+  // Filtres de date pour la section "Total par type de tarif"
+  const [tarifDateDebut, setTarifDateDebut] = useState('')
+  const [tarifDateFin, setTarifDateFin] = useState('')
   const [demPartenaire, setDemPartenaire] = useState('')
   const [demStatut, setDemStatut] = useState('')
   const toggleSection = (k) =>
@@ -289,6 +293,36 @@ function Compta() {
     })
     return Array.from(map.entries()).map(([statut, count]) => ({ statut, count }))
   }, [filtered])
+
+  // Sommes du montant facture (prixTotal) par TYPE DE TARIF applique, avec
+  // un filtre de date independant (createdAt). PAF = analyses sans
+  // partenaire ; la clinique est detectee via partenaireId OU
+  // cliniquePartenaireId (facturation au prixClinique).
+  const parTypeTarif = useMemo(() => {
+    const deb = tarifDateDebut ? new Date(tarifDateDebut) : null
+    const fin = tarifDateFin ? new Date(tarifDateFin) : null
+    if (fin) fin.setHours(23, 59, 59, 999)
+    const t = { paf: 0, assurance: 0, ipm: 0, sococim: 0, clinique: 0, nb: 0 }
+    analyses.forEach((a) => {
+      const d = a.createdAt ? new Date(a.createdAt) : null
+      if (deb && (!d || d < deb)) return
+      if (fin && (!d || d > fin)) return
+      const type = a.partenaireId?.typePartenaire
+      const montant = num(a.prixTotal)
+      if (type === 'assurance') t.assurance += montant
+      else if (type === 'ipm') t.ipm += montant
+      else if (type === 'sococim') t.sococim += montant
+      else if (
+        type === 'clinique' ||
+        a.cliniquePartenaireId?.typePartenaire === 'clinique'
+      )
+        t.clinique += montant
+      else t.paf += montant
+      t.nb += 1
+    })
+    t.total = t.paf + t.assurance + t.ipm + t.sococim + t.clinique
+    return t
+  }, [analyses, tarifDateDebut, tarifDateFin])
 
   // Top 10 partenaires (montant CA)
   const topPartenaires = useMemo(() => {
@@ -884,6 +918,47 @@ function Compta() {
               color="neutral"
             />
           </div>
+          </Section>
+
+          {/* === TOTAL PAR TYPE DE TARIF === */}
+          <Section
+            title="Total par type de tarif"
+            isOpen={openSections.tarifs}
+            onToggle={() => toggleSection('tarifs')}
+            headerExtra={
+              <div className="flex flex-wrap gap-2 items-center">
+                <input
+                  type="date"
+                  className="input input-bordered input-xs"
+                  value={tarifDateDebut}
+                  onChange={(e) => setTarifDateDebut(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  title="Date début"
+                />
+                <input
+                  type="date"
+                  className="input input-bordered input-xs"
+                  value={tarifDateFin}
+                  onChange={(e) => setTarifDateFin(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  title="Date fin"
+                />
+              </div>
+            }
+          >
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              <KpiCard label="Prix PAF" value={fmt(parTypeTarif.paf)} color="primary" />
+              <KpiCard label="Prix Assurance" value={fmt(parTypeTarif.assurance)} color="info" />
+              <KpiCard label="Prix IPM" value={fmt(parTypeTarif.ipm)} color="warning" />
+              <KpiCard label="Prix Sococim" value={fmt(parTypeTarif.sococim)} color="success" />
+              <KpiCard label="Prix Clinique" value={fmt(parTypeTarif.clinique)} color="error" />
+              <KpiCard
+                label="Total facturé"
+                value={fmt(parTypeTarif.total)}
+                hint={`${parTypeTarif.nb} analyses`}
+                color="neutral"
+              />
+            </div>
           </Section>
 
           {/* === GRAPHIQUES === */}
