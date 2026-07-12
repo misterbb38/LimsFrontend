@@ -177,7 +177,7 @@ function PatientList() {
 
       <dialog id="my_modal_4" className="modal">
         <div className="modal-box modal-xl max-h-[90vh] overflow-y-auto">
-          <SignUp onUser={handlePatientCreated} />
+          <SignUp onUser={handlePatientCreated} fixedUserType="patient" />
           <div className="modal-action">
             <form method="dialog">
               <button className="btn">Fermer</button>

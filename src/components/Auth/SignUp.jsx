@@ -3,7 +3,10 @@ import PropTypes from 'prop-types'
 
 import LogoText from '../../images/bioramlogo.png'
 
-const SignUp = ({ onUser }) => {
+const SignUp = ({ onUser, fixedUserType }) => {
+  // fixedUserType : quand fourni (ex. "patient" depuis la page Patient), le
+  // type est impose et le select "Type d'Utilisateur" est masque. Sinon
+  // (page Personnel), l'utilisateur choisit le type.
   const [formData, setFormData] = useState({
     nom: '',
     prenom: '',
@@ -14,7 +17,7 @@ const SignUp = ({ onUser }) => {
     sexe: '',
     dateNaissance: '',
     age: '',
-    userType: '',
+    userType: fixedUserType || '',
     adresse: '',
     partenaireId: '', // Ajouter partenaireId
   })
@@ -162,7 +165,7 @@ const SignUp = ({ onUser }) => {
           password: '',
           confirmPassword: '',
           dateNaissance: '',
-          userType: '',
+          userType: fixedUserType || '',
           adresse: '',
           age: '',
           sexe: '',
@@ -368,7 +371,8 @@ const SignUp = ({ onUser }) => {
                   </select>
                 </div> */}
 
-                {usertype !== 'accueil' &&
+                {!fixedUserType &&
+                  usertype !== 'accueil' &&
                   usertype !== 'technicien' &&
                   usertype !== 'preleveur' && (
                     <div className="mb-4">
@@ -472,6 +476,7 @@ const SignUp = ({ onUser }) => {
 
 SignUp.propTypes = {
   onUser: PropTypes.func.isRequired,
+  fixedUserType: PropTypes.string,
 }
 
 export default SignUp

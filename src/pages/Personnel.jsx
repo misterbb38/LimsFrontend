@@ -169,7 +169,9 @@ function Personnel() {
           <table className="table w-full">
             <thead>
               <tr>
-                <th className="font-bold text-lg text-base-content">Nom</th>
+                <th className="font-bold text-lg text-base-content">
+                  Nom &amp; Prénom
+                </th>
                 <th className="font-bold text-lg text-base-content">Email</th>
                 <th className="font-bold text-lg text-base-content">Profile</th>
                 <th className="font-bold text-lg text-base-content">
@@ -182,7 +184,9 @@ function Personnel() {
             <tbody>
               {personnel.map((patient) => (
                 <tr key={patient._id}>
-                  <td>{patient.nom}</td>
+                  <td>
+                    {patient.nom} {patient.prenom}
+                  </td>
                   <td>{patient.email}</td>
                   <td>{patient.userType}</td>
                   <td>{patient.telephone}</td>

@@ -349,12 +349,8 @@ function EditPatientButton({ userId, onuserUpdated }) {
   const validateForm = () => {
     let errors = {}
 
-    if (!formData.prenom.trim()) errors.prenom = 'Le prénom est obligatoire.'
-    if (!formData.nom.trim()) errors.nom = 'Le nom est obligatoire.'
-    if (!formData.adresse.trim()) errors.adresse = "L'adresse est obligatoire."
-    if (!formData.telephone.trim())
-      errors.telephone = 'Le numéro de téléphone est obligatoire.'
-    // Email optionnel mais doit etre valide si saisi
+    // Aucun champ obligatoire a l'edition. Seul l'email, s'il est saisi,
+    // doit avoir un format valide.
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
       errors.email = "Format d'email invalide."
     }
@@ -518,7 +514,6 @@ function EditPatientButton({ userId, onuserUpdated }) {
                   name="userType"
                   value={formData.userType}
                   onChange={handleChange}
-                  required
                   className="input input-bordered"
                 >
                   <option value="">Sélectionnez un type</option>
