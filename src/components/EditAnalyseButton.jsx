@@ -31,14 +31,15 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
 
   const [avancePatient, setAvancePatient] = useState(0) // Nouvel état pour l'avance
 
-  const [hasInsurance, setHasInsurance] = useState('')
+  // Partenaire unique : 1 question + 3 selects exclusifs (Assurance /
+  // IPM+Sococim / Clinique). Un seul partenaire choisi pilote le prix.
+  const [hasPartenaire, setHasPartenaire] = useState('')
   const [selectedPartenaireId, setSelectedPartenaireId] = useState('')
+  const [selectedPartenaireType, setSelectedPartenaireType] = useState('')
   const [pourcentageCouverture, setPourcentageCouverture] = useState(0)
-
-  // Clinique partenaire (separe d'assurance/IPM, juste informationnel).
-  const [hasCliniquePartenaire, setHasCliniquePartenaire] = useState('')
   const [selectedCliniqueId, setSelectedCliniqueId] = useState('')
   const [searchTermClinique, setSearchTermClinique] = useState('')
+  const [searchTermIpm, setSearchTermIpm] = useState('')
 
   const [hasReduction, setHasReduction] = useState('')
   const [reductionType, setReductionType] = useState('pourcentage')
@@ -96,9 +97,19 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
     }
   }
 
-  useEffect(() => {
-    setHasInsurance(selectedPartenaireId ? 'oui' : 'non')
-  }, [selectedPartenaireId])
+  // Selection assurance/ipm/sococim : id + type reel, vide la clinique.
+  const handleSelectPartenaire = (id) => {
+    setSelectedPartenaireId(id)
+    const p = partenaires.find((x) => x._id === id)
+    setSelectedPartenaireType(p ? p.typePartenaire : '')
+    setSelectedCliniqueId('')
+  }
+  // Selection clinique : vide le partenaire assurance/ipm/sococim.
+  const handleSelectClinique = (id) => {
+    setSelectedCliniqueId(id)
+    setSelectedPartenaireId('')
+    setSelectedPartenaireType('')
+  }
 
   useEffect(() => {
     setHasReduction(reductionValue > 0 ? 'oui' : 'non')
@@ -124,8 +135,8 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
           data.data.partenaireId && data.data.partenaireId._id
             ? data.data.partenaireId._id
             : ''
-        setHasInsurance(!!partenaireId ? 'oui' : 'non')
         setSelectedPartenaireId(partenaireId)
+        setSelectedPartenaireType(data.data.partenaireId?.typePartenaire || '')
         setPourcentageCouverture(data.data.pourcentageCouverture || 0)
 
         // Pre-remplit la clinique partenaire si l'analyse en a une.
@@ -133,8 +144,10 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
           data.data.cliniquePartenaireId && data.data.cliniquePartenaireId._id
             ? data.data.cliniquePartenaireId._id
             : ''
-        setHasCliniquePartenaire(cliniqueId ? 'oui' : 'non')
         setSelectedCliniqueId(cliniqueId)
+        // Un seul partenaire (assurance/ipm/sococim OU clinique) -> question
+        // unique "a-t-il un partenaire ?"
+        setHasPartenaire(partenaireId || cliniqueId ? 'oui' : 'non')
         setHasReduction(data.data.reduction > 0 ? 'oui' : 'non')
         setReductionType(data.data.typeReduction || 'pourcentage')
         setReductionValue(data.data.reduction || 0)
@@ -219,32 +232,19 @@ setPc2Quantity(data.data.pc2 > 0 ? Math.round(data.data.pc2 / 4000) : 0)
           .sort((a, b) => a.nom.localeCompare(b.nom)) // Ajout du tri alphabétique
       : availableTests.sort((a, b) => a.nom.localeCompare(b.nom))
 
-  // Le bloc Assurance/IPM ne liste QUE assurance/ipm/sococim.
-  const partenairesAssurance = partenaires.filter((p) =>
-    ['assurance', 'ipm', 'sococim'].includes(p.typePartenaire)
-  )
-  const filteredPartenaires =
-    searchTermPartenaire.length > 0
-      ? partenairesAssurance
-          .filter((partenaire) =>
-            partenaire.nom
-              .toLowerCase()
-              .includes(searchTermPartenaire.toLowerCase())
-          )
-          .sort((a, b) => a.nom.localeCompare(b.nom))
-      : partenairesAssurance.sort((a, b) => a.nom.localeCompare(b.nom))
-
-  const cliniquesPartenaires = partenaires.filter(
-    (p) => p.typePartenaire === 'clinique'
-  )
-  const filteredCliniques =
-    searchTermClinique.length > 0
-      ? cliniquesPartenaires
-          .filter((c) =>
-            c.nom.toLowerCase().includes(searchTermClinique.toLowerCase())
-          )
-          .sort((a, b) => a.nom.localeCompare(b.nom))
-      : cliniquesPartenaires.sort((a, b) => a.nom.localeCompare(b.nom))
+  // 3 categories de partenaires (choix exclusif d'un seul) : Assurance,
+  // IPM+Sococim, Clinique. Chaque partenaire garde son type reel.
+  const partenairesByType = (types, term) => {
+    const list = partenaires
+      .filter((p) => types.includes(p.typePartenaire))
+      .sort((a, b) => a.nom.localeCompare(b.nom))
+    return term
+      ? list.filter((p) => p.nom.toLowerCase().includes(term.toLowerCase()))
+      : list
+  }
+  const filteredAssurances = partenairesByType(['assurance'], searchTermPartenaire)
+  const filteredIpmSococim = partenairesByType(['ipm', 'sococim'], searchTermIpm)
+  const filteredCliniques = partenairesByType(['clinique'], searchTermClinique)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -273,19 +273,22 @@ formData.append('pc2', pc2Quantity * 4000) // Calculer le montant total PC2
       dateDeRecuperation ? `${dateDeRecuperation}:00Z` : ''
     )
 
-    // Vérifie que selectedPartenaireId n'est pas une chaîne vide avant de l'ajouter
-    if (hasInsurance === 'oui') {
+    // Partenaire unique. On envoie toujours les cles pour permettre au
+    // backend de basculer/vider correctement :
+    // - assurance/ipm/sococim : partenaireId + couverture, clinique videe
+    // - clinique : cliniquePartenaireId + couverture 0 (vide l'ancien
+    //   partenaire cote backend), facturee au prixClinique
+    // - aucun (PAF) : les deux videes
+    if (selectedPartenaireId) {
       formData.append('partenaireId', selectedPartenaireId)
-      // Assumer que pourcentageCouverture a une valeur valide si selectedPartenaireId est présent
       formData.append('pourcentageCouverture', pourcentageCouverture.toString())
-    }
-
-    // Clinique partenaire (informationnel). On envoie toujours la cle
-    // pour permettre au backend de la vider si "non" est selectionne.
-    if (hasCliniquePartenaire === 'oui' && selectedCliniqueId) {
-      formData.append('cliniquePartenaireId', selectedCliniqueId)
-    } else if (hasCliniquePartenaire === 'non') {
       formData.append('cliniquePartenaireId', '')
+    } else if (selectedCliniqueId) {
+      formData.append('cliniquePartenaireId', selectedCliniqueId)
+      formData.append('pourcentageCouverture', '0')
+    } else {
+      formData.append('cliniquePartenaireId', '')
+      formData.append('pourcentageCouverture', '0')
     }
     // De même, pour la réduction, vérifie que reductionType n'est pas vide
     if (reductionType && reductionValue > 0) {
@@ -439,55 +442,118 @@ formData.append('pc2', pc2Quantity * 4000) // Calculer le montant total PC2
                 </select>
               </div>
 
-              {/* Bloc Clinique partenaire (separe, informationnel). */}
+              {/* === PARTENAIRE : une seule question, 3 selects exclusifs ===
+                  Assurance / IPM+Sococim / Clinique. Un seul partenaire
+                  choisi pilote la tarification. */}
               <div className="form-control">
                 <label className="cursor-pointer label">
                   <span className="label-text">
-                    Le patient vient-il d&apos;une clinique partenaire ?
+                    Le patient a-t-il un partenaire ?
                   </span>
                   <div className="flex mt-2">
                     <input
                       type="radio"
-                      name="hasCliniquePartenaire"
+                      name="hasPartenaire"
                       className="radio radio-primary"
                       value="oui"
-                      checked={hasCliniquePartenaire === 'oui'}
-                      onChange={() => setHasCliniquePartenaire('oui')}
+                      checked={hasPartenaire === 'oui'}
+                      onChange={() => setHasPartenaire('oui')}
                     />{' '}
                     <span className="ml-2">Oui</span>
                     <input
                       type="radio"
-                      name="hasCliniquePartenaire"
+                      name="hasPartenaire"
                       className="radio radio-primary ml-4"
                       value="non"
-                      checked={hasCliniquePartenaire === 'non'}
+                      checked={hasPartenaire === 'non'}
                       onChange={() => {
-                        setHasCliniquePartenaire('non')
+                        setHasPartenaire('non')
+                        setSelectedPartenaireId('')
+                        setSelectedPartenaireType('')
                         setSelectedCliniqueId('')
                       }}
                     />{' '}
                     <span className="ml-2">Non</span>
                   </div>
                 </label>
-                {hasCliniquePartenaire === 'oui' && (
+
+                {hasPartenaire === 'oui' && (
                   <>
-                    <div>
-                      <label className="label">
-                        <span className="label-text">Filtre Clinique</span>
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Rechercher une clinique..."
-                        value={searchTermClinique}
-                        onChange={(e) => setSearchTermClinique(e.target.value)}
-                        className="input input-bordered w-full max-w-xs"
-                      />
-                    </div>
+                    <p className="text-sm text-warning mb-1">
+                      Choisissez UN seul partenaire parmi les trois listes.
+                    </p>
+
+                    {/* 1) Assurance */}
+                    <label className="label">
+                      <span className="label-text">Assurance</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Filtrer les assurances..."
+                      value={searchTermPartenaire}
+                      onChange={(e) => setSearchTermPartenaire(e.target.value)}
+                      className="input input-bordered w-full max-w-xs mb-1"
+                    />
                     <select
-                      className="select select-primary w-full max-w-xs mt-2"
+                      className="select select-primary w-full max-w-xs mb-2"
+                      value={
+                        selectedPartenaireType === 'assurance'
+                          ? selectedPartenaireId
+                          : ''
+                      }
+                      onChange={(e) => handleSelectPartenaire(e.target.value)}
+                    >
+                      <option value="">Sélectionner une assurance</option>
+                      {filteredAssurances.map((p) => (
+                        <option key={p._id} value={p._id}>
+                          {p.nom}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* 2) IPM / Sococim */}
+                    <label className="label">
+                      <span className="label-text">IPM / Sococim</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Filtrer IPM / Sococim..."
+                      value={searchTermIpm}
+                      onChange={(e) => setSearchTermIpm(e.target.value)}
+                      className="input input-bordered w-full max-w-xs mb-1"
+                    />
+                    <select
+                      className="select select-primary w-full max-w-xs mb-2"
+                      value={
+                        ['ipm', 'sococim'].includes(selectedPartenaireType)
+                          ? selectedPartenaireId
+                          : ''
+                      }
+                      onChange={(e) => handleSelectPartenaire(e.target.value)}
+                    >
+                      <option value="">Sélectionner IPM / Sococim</option>
+                      {filteredIpmSococim.map((p) => (
+                        <option key={p._id} value={p._id}>
+                          {p.nom}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* 3) Clinique */}
+                    <label className="label">
+                      <span className="label-text">Clinique partenaire</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Filtrer les cliniques..."
+                      value={searchTermClinique}
+                      onChange={(e) => setSearchTermClinique(e.target.value)}
+                      className="input input-bordered w-full max-w-xs mb-1"
+                    />
+                    <select
+                      className="select select-primary w-full max-w-xs mb-2"
                       value={selectedCliniqueId}
-                      onChange={(e) => setSelectedCliniqueId(e.target.value)}
-                      required
+                      onChange={(e) => handleSelectClinique(e.target.value)}
                     >
                       <option value="">Sélectionner une clinique</option>
                       {filteredCliniques.map((c) => (
@@ -496,96 +562,21 @@ formData.append('pc2', pc2Quantity * 4000) // Calculer le montant total PC2
                         </option>
                       ))}
                     </select>
-                  </>
-                )}
-              </div>
 
-              <div className="form-control">
-                <label className="cursor-pointer label">
-                  <span className="label-text">
-                    Avez-vous une assurance ou êtes-vous sous IPM ?
-                  </span>
-                  <div className="flex mt-2">
-                    <input
-                      type="radio"
-                      name="hasInsurance"
-                      className="radio radio-primary"
-                      value="oui"
-                      checked={hasInsurance === 'oui'}
-                      onChange={() => setHasInsurance('oui')}
-                    />{' '}
-                    <span className="ml-2">Oui</span>
-                    <input
-                      type="radio"
-                      name="hasInsurance"
-                      className="radio radio-primary ml-4"
-                      value="non"
-                      checked={hasInsurance === 'non'}
-                      onChange={() => setHasInsurance('non')}
-                    />{' '}
-                    <span className="ml-2">Non</span>
-                  </div>
-                </label>
-                {hasInsurance === 'oui' && (
-                  <>
-                    {/* <select
-                      className="select select-primary w-full max-w-xs mt-2"
-                      value={selectedPartenaireId}
-                      onChange={(e) => {
-                        setSelectedPartenaireId(e.target.value)
-                        // Si aucun partenaire n'est sélectionné (valeur vide), réinitialiser pourcentageCouverture à 0
-                        if (e.target.value === '') {
-                          setPourcentageCouverture(0)
-                        }
-                      }}
-                    >
-                      <option value="">Sélectionner un partenaire</option>
-                      {partenaires.map((partenaire) => (
-                        <option key={partenaire._id} value={partenaire._id}>
-                          {partenaire.nom}
-                        </option>
-                      ))}
-                    </select> */}
-
-                    <div>
-                      <label className="label">
-                        <span className="label-text">Filtre Partenaire</span>
-                      </label>
+                    {/* Couverture : uniquement assurance / ipm / sococim */}
+                    {['ipm', 'assurance', 'sococim'].includes(
+                      selectedPartenaireType
+                    ) && (
                       <input
-                        type="text"
-                        placeholder="Rechercher un partenaire..."
-                        value={searchTermPartenaire}
+                        type="number"
+                        placeholder="Pourcentage de couverture"
+                        className="input input-primary w-full max-w-xs mt-2"
+                        value={pourcentageCouverture}
                         onChange={(e) =>
-                          setSearchTermPartenaire(e.target.value)
+                          setPourcentageCouverture(e.target.value)
                         }
-                        className="input input-bordered w-full max-w-xs"
                       />
-                    </div>
-
-                    <select
-                      className="select select-primary w-full max-w-xs mt-2"
-                      value={selectedPartenaireId}
-                      onChange={(e) => {
-                        setSelectedPartenaireId(e.target.value)
-                        if (e.target.value === '') {
-                          setPourcentageCouverture(0) // Réinitialise le pourcentage de couverture si aucun partenaire n'est sélectionné
-                        }
-                      }}
-                    >
-                      <option value="">Sélectionner un partenaire</option>
-                      {filteredPartenaires.map((partenaire) => (
-                        <option key={partenaire._id} value={partenaire._id}>
-                          {partenaire.nom}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      type="number"
-                      placeholder="Pourcentage de couverture"
-                      className="input input-primary w-full max-w-xs mt-2"
-                      value={pourcentageCouverture}
-                      onChange={(e) => setPourcentageCouverture(e.target.value)}
-                    />
+                    )}
                   </>
                 )}
               </div>
