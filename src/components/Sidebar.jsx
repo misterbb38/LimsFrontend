@@ -254,9 +254,21 @@ function Sidebar() {
     },
   ]
 
-  const filteredMenuItems = menuItems.filter((item) =>
-    item.allowedUserTypes.includes(userType)
-  )
+  // Pour le moment : TOUS les employes voient TOUTES les pages. Les clients
+  // (patient) et les partenaires n'ont pas acces a ce menu (ils ont leur
+  // propre tableau de bord). On ignore donc allowedUserTypes par item et on
+  // se base uniquement sur "est-ce un employe ?".
+  const EMPLOYEE_TYPES = [
+    'superadmin',
+    'medecin',
+    'docteur',
+    'technicien',
+    'preleveur',
+    'accueil',
+    'acceuil',
+  ]
+  const isEmployee = EMPLOYEE_TYPES.includes(userType)
+  const filteredMenuItems = isEmployee ? menuItems : []
 
   const handleMenuItemClick = (id) => {
     setSelectedMenuItem(id)

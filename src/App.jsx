@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { themeChange } from 'theme-change'
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom'
 
 import TopBar from './components/TopBar'
 import Sidebar from './components/Sidebar'
@@ -35,6 +35,15 @@ function AppLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen)
+
+  // Seuls les EMPLOYES accedent au tableau de bord /dash. Les clients
+  // (patient) et les partenaires sont rediriges vers leur propre espace.
+  const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null')
+  if (!userInfo) return <Navigate to="/" replace />
+  if (userInfo.userType === 'patient')
+    return <Navigate to="/patient-dash" replace />
+  if (userInfo.userType === 'partenaire')
+    return <Navigate to="/partenaire-dash" replace />
 
   return (
     <div className="flex h-screen bg-base-200">
