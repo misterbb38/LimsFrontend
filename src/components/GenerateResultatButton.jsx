@@ -562,7 +562,7 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
       currentY + 12
     )
 
-    let ageDisplay = 'Non disponible'
+    let ageDisplay = ''
     if (invoice.userId.age) {
       ageDisplay = invoice.userId.age.toString()
     } else if (invoice.userId.dateNaissance) {
@@ -576,7 +576,7 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
       ageDisplay = age.toString()
     }
 
-    doc.text(`Âge: ${ageDisplay} ans`, 135, currentY + 17)
+    doc.text(`Âge: ${ageDisplay}${ageDisplay ? ' ans' : ''}`, 135, currentY + 17)
     // Format telephone : enleve prefixe +221 et tout ce qui n'est pas
     // un chiffre, puis groupe 2-3-2-2 (ex: 78 967 67 67).
     const formatTel = (raw) => {
@@ -3407,7 +3407,7 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
       // ---- DONNEES PATIENT ----
       const u = invoice.userId
       const nomComplet = `${(u.prenom || '').toUpperCase()} ${(u.nom || '').toUpperCase()}`.trim()
-      let ageDisplay = 'Non disponible'
+      let ageDisplay = ''
       if (u.age) ageDisplay = u.age.toString()
       else if (u.dateNaissance) {
         const b = new Date(u.dateNaissance)
@@ -3444,7 +3444,7 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
             new TableRow({
               children: [
                 infoCell([`NIP: ${safe(u.nip)}`, `Date: ${dateDossier}`], 50),
-                infoCell([`Nº Dossier: ${safe(invoice?.identifiant)}`, `Nom: ${nomComplet}`, `Âge: ${ageDisplay} ans`, `Tel: ${formatTel(u.telephone)}`], 50),
+                infoCell([`Nº Dossier: ${safe(invoice?.identifiant)}`, `Nom: ${nomComplet}`, `Âge: ${ageDisplay}${ageDisplay ? ' ans' : ''}`, `Tel: ${formatTel(u.telephone)}`], 50),
               ],
             }),
           ],

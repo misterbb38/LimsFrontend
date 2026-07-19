@@ -127,7 +127,7 @@
 
 //           ageDisplay = age.toString();
 //         } else {
-//           ageDisplay = 'Non disponible';
+//           ageDisplay = '';
 //         }
 
 //         for (let col = 0; col < stickersPerRow; col++) {
@@ -196,10 +196,10 @@
 
 //         ageDisplay = age.toString();
 //       } else {
-//         ageDisplay = 'Non disponible';
+//         ageDisplay = '';
 //       }
 
-//       doc.text(`Âge: ${ageDisplay} ans`, 5, newY + 10);
+//       doc.text(`Âge: ${ageDisplay}${ageDisplay ? ' ans' : ''}`, 5, newY + 10);
 //       doc.text(`sexe: ${invoice.userId.sexe}`, 5, newY + 15);
 //       doc.text(`Tel: ${invoice.userId.telephone}`, 5, newY + 20);
 
@@ -373,7 +373,7 @@ function GenerateTicketButton({ invoice }) {
 
           ageDisplay = age.toString()
         } else {
-          ageDisplay = 'Non disponible'
+          ageDisplay = ''
         }
 
         for (let col = 0; col < stickersPerRow; col++) {
@@ -447,10 +447,10 @@ function GenerateTicketButton({ invoice }) {
 
         ageDisplay = age.toString()
       } else {
-        ageDisplay = 'Non disponible'
+        ageDisplay = ''
       }
 
-      doc.text(`Âge: ${ageDisplay} ans`, 5, newY + 10)
+      doc.text(`Âge: ${ageDisplay}${ageDisplay ? ' ans' : ''}`, 5, newY + 10)
       doc.text(
         `sexe: ${invoice.userId.sexe && invoice.userId.sexe !== 'inconnu' ? invoice.userId.sexe : ''}`,
         5,

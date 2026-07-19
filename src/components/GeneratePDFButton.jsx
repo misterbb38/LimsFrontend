@@ -194,31 +194,35 @@ function GeneratePDFButton({ invoice }) {
         currentY + 12
       )
 
-      let ageDisplay
+      // Type de tarif EFFECTIF : partenaire assurance/ipm/sococim, ou
+      // 'clinique' si l'analyse est rattachee a une clinique partenaire
+      // (sinon paf). Corrige la facture qui affichait "paf" et le tarif PAF
+      // pour une analyse clinique.
+      const effectiveType =
+        invoice.partenaireId?.typePartenaire ||
+        (invoice.cliniquePartenaireId ? 'clinique' : null)
 
+      // Age : age direct, sinon calcule depuis la date de naissance, sinon
+      // VIDE (pas de "Non disponible ans").
+      let ageDisplay = ''
       if (invoice.userId.age) {
-        // Si l'âge est directement disponible, utilisez-le
         ageDisplay = invoice.userId.age.toString()
       } else if (invoice.userId.dateNaissance) {
-        // Sinon, calculez l'âge à partir de la date de naissance
         const birthDate = new Date(invoice.userId.dateNaissance)
         const today = new Date()
         let age = today.getFullYear() - birthDate.getFullYear()
         const m = today.getMonth() - birthDate.getMonth()
-
-        // Si l'anniversaire de cette année n'est pas encore passé, soustrayez 1
         if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
           age--
         }
-
         ageDisplay = age.toString()
-      } else {
-        // Si ni l'âge ni la date de naissance ne sont disponibles, affichez un placeholder
-        ageDisplay = 'Non disponible'
       }
 
-      // Affiche l'âge ou la date de naissance calculée
-      doc.text(`Âge: ${ageDisplay} ans`, 135, currentY + 17)
+      doc.text(
+        `Âge: ${ageDisplay}${ageDisplay ? ' ans' : ''}`,
+        135,
+        currentY + 17
+      )
 
       doc.text(`Tel: ${invoice.userId.telephone || ''}`, 135, currentY + 22)
 
@@ -252,7 +256,7 @@ function GeneratePDFButton({ invoice }) {
       doc.text(formattedDate, 35 + dateLabelWidth, currentY + 12)
 
       doc.text(
-        `Nature: ${invoice.partenaireId?.typePartenaire || 'paf'} `,
+        `Nature: ${effectiveType || 'paf'} `,
         35,
         currentY + 17
       )
@@ -264,9 +268,9 @@ function GeneratePDFButton({ invoice }) {
       doc.rect(20, currentY, 170, 6, 'F')
       // Vérifie si 'typePartenaire' est 'ipm' ou 'assurance'
       if (
-        invoice.partenaireId?.typePartenaire === 'ipm' ||
-        invoice.partenaireId?.typePartenaire === 'assurance' ||
-        invoice.partenaireId?.typePartenaire === 'sococim'
+        effectiveType === 'ipm' ||
+        effectiveType === 'assurance' ||
+        effectiveType === 'sococim'
       ) {
         doc.setTextColor(255, 255, 255)
         doc.text('Analyse', 42, currentY + 4)
@@ -295,7 +299,7 @@ function GeneratePDFButton({ invoice }) {
         // Additionner les coeficiantB si le type de partenaire est "ipm" ou "assurance"....
         if (
           ['ipm', 'assurance', 'sococim'].includes(
-            invoice.partenaireId?.typePartenaire
+            effectiveType
           )
         ) {
           totalCoefB += test.coeficiantB || 0 // Ajouter le coeficiantB à totalCoefB, en assumant 0 si non spécifié
@@ -317,25 +321,25 @@ function GeneratePDFButton({ invoice }) {
         let afficherCoefB = false // Détermine si le coefficient B doit être affiché
 
         if (
-          invoice.partenaireId?.typePartenaire === 'assurance' &&
+          effectiveType === 'assurance' &&
           test.prixAssurance !== undefined
         ) {
           prixChoisi = test.prixAssurance
           afficherCoefB = true // Afficher CoefB pour 'assurance'
         } else if (
-          invoice.partenaireId?.typePartenaire === 'ipm' &&
+          effectiveType === 'ipm' &&
           test.prixIpm !== undefined
         ) {
           prixChoisi = test.prixIpm
           afficherCoefB = true // Afficher CoefB pour 'ipm'
         } else if (
-          invoice.partenaireId?.typePartenaire === 'sococim' &&
+          effectiveType === 'sococim' &&
           test.prixSococim !== undefined
         ) {
           prixChoisi = test.prixSococim
           afficherCoefB = true // Afficher CoefB pour 'ipm'
         } else if (
-          invoice.partenaireId?.typePartenaire === 'clinique' &&
+          effectiveType === 'clinique' &&
           test.prixClinique !== undefined
         ) {
           prixChoisi = test.prixClinique
@@ -357,9 +361,9 @@ function GeneratePDFButton({ invoice }) {
         // Calculer et afficher total
         if (
           ['ipm', 'assurance', 'sococim'].includes(
-            invoice.partenaireId?.typePartenaire
+            effectiveType
           ) ||
-          invoice.partenaireId?.typePartenaire == null
+          effectiveType == null
         ) {
           const total = prixChoisi * (test.coeficiantB || 1) // Assumer coeficiantB de 1 si non spécifié
           doc.text(`${total.toFixed(0)}`, 166, textY)
@@ -393,9 +397,9 @@ function GeneratePDFButton({ invoice }) {
       const pc2Count = invoice.pc2 > 0 ? Math.round(invoice.pc2 / 4000) : 0
       const hasDeplacement = invoice.deplacement > 0
       const isPartenaireB = (
-        invoice.partenaireId?.typePartenaire === 'ipm' ||
-        invoice.partenaireId?.typePartenaire === 'assurance' ||
-        invoice.partenaireId?.typePartenaire === 'sococim'
+        effectiveType === 'ipm' ||
+        effectiveType === 'assurance' ||
+        effectiveType === 'sococim'
       )
       const showTotalB = isPartenaireB
       const showMontantHT = !isPartenaireB
@@ -480,9 +484,9 @@ function GeneratePDFButton({ invoice }) {
 
       // Vérifie si 'typePartenaire' est 'ipm' ou 'assurance'
       if (
-        invoice.partenaireId?.typePartenaire === 'ipm' ||
-        invoice.partenaireId?.typePartenaire === 'assurance' ||
-        invoice.partenaireId?.typePartenaire === 'sococim'
+        effectiveType === 'ipm' ||
+        effectiveType === 'assurance' ||
+        effectiveType === 'sococim'
       ) {
         // Coordonnées initiales
         let startX = 25 // Position de départ X
@@ -630,7 +634,7 @@ function GeneratePDFButton({ invoice }) {
 
       let miseEnGarde = `Facture à ramener au retrait des résultats. `
       // Vérifier si le type de partenaire est différent de "clinique"
-      if (invoice.partenaireId?.typePartenaire !== 'clinique') {
+      if (effectiveType !== 'clinique') {
         // Vérifier si la date de récupération est définie
         if (invoice.dateDeRecuperation) {
           const dateDeRecuperation = new Date(invoice.dateDeRecuperation)
