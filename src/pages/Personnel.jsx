@@ -104,7 +104,7 @@ function Personnel() {
 
   // Vérifier si le type d'utilisateur est autorisé
   if (
-    !['superadmin', 'medecin', 'technicien', 'preleveur'].includes(
+    !['superadmin', 'medecin', 'technicien', 'preleveur', 'docteur', 'acceuil', 'accueil'].includes(
       userInfo?.userType
     )
   ) {

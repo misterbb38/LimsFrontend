@@ -42,10 +42,10 @@ function DemandePayement() {
       })
       const data = await res.json()
       if (data.success) {
-        // Cliniques exclues (n'ont pas de facturation classique)
-        setPartenaires(
-          (data.data || []).filter((p) => p.typePartenaire !== 'clinique')
-        )
+        // Tous les partenaires facturables : assurance, IPM, sococim ET
+        // clinique (les cliniques generent aussi des etiquettes/factures
+        // rattachees via partenaireId).
+        setPartenaires(data.data || [])
       }
     } catch (e) {
       console.error(e)

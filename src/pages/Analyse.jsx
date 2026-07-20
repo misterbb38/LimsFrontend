@@ -169,6 +169,7 @@ function Facture() {
       'preleveur',
       'docteur',
       'accueil',
+      'acceuil',
     ].includes(userInfo?.userType)
   ) {
     // Si l'utilisateur n'est pas autorisé, retourner un message d'erreur ou un composant spécifique

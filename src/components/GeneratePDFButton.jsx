@@ -202,6 +202,13 @@ function GeneratePDFButton({ invoice }) {
         invoice.partenaireId?.typePartenaire ||
         (invoice.cliniquePartenaireId ? 'clinique' : null)
 
+      // Nom du partenaire a afficher dans "Nature" : nom de la clinique,
+      // de l'assurance ou de l'IPM. 'paf' si aucun partenaire (patient direct).
+      const partenaireNom =
+        invoice.partenaireId?.nom ||
+        invoice.cliniquePartenaireId?.nom ||
+        'paf'
+
       // Age : age direct, sinon calcule depuis la date de naissance, sinon
       // VIDE (pas de "Non disponible ans").
       let ageDisplay = ''
@@ -256,7 +263,7 @@ function GeneratePDFButton({ invoice }) {
       doc.text(formattedDate, 35 + dateLabelWidth, currentY + 12)
 
       doc.text(
-        `Nature: ${effectiveType || 'paf'} `,
+        `Nature: ${partenaireNom} `,
         35,
         currentY + 17
       )
