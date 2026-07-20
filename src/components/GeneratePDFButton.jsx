@@ -410,6 +410,12 @@ function GeneratePDFButton({ invoice }) {
       )
       const showTotalB = isPartenaireB
       const showMontantHT = !isPartenaireB
+      // Montant HT affiche : pour une clinique, le patient ne paie rien au
+      // guichet (prixPatient = 0), c'est la clinique qui regle la totalite.
+      // On affiche donc le prix total. Sinon (patient direct/paf) on garde
+      // la part patient.
+      const montantHT =
+        effectiveType === 'clinique' ? invoice.prixTotal : invoice.prixPatient
       const hasReduction = invoice.reduction > 0
 
       const hasAjustements =
@@ -462,7 +468,7 @@ function GeneratePDFButton({ invoice }) {
         if (showMontantHT) {
           doc.setFont('helvetica', 'bold')
           doc.text(
-            `MONTANT TOTAL HT: ${invoice.prixPatient.toFixed(0)} `,
+            `MONTANT TOTAL HT: ${montantHT.toFixed(0)} `,
             122,
             currentY
           )
