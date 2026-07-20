@@ -128,8 +128,10 @@ const SignUp = ({ onUser, fixedUserType }) => {
     //   return
     // }
 
-    try {
-      const response = await fetch(`${apiUrl}/api/user/signup`, {
+    // Envoie la requete d'inscription. forcePhone = true => on accepte de
+    // creer un patient avec un numero deja utilise par un autre patient.
+    const doSignup = (forcePhone) =>
+      fetch(`${apiUrl}/api/user/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -145,10 +147,25 @@ const SignUp = ({ onUser, fixedUserType }) => {
           adresse,
           sexe,
           partenaireId: userType === 'partenaire' ? partenaireId : undefined, // Inclure partenaireId si userType est partenaire
+          forcePhone,
         }),
       })
 
-      const data = await response.json()
+    try {
+      let response = await doSignup(false)
+      let data = await response.json()
+
+      // Numero deja enregistre : demander confirmation puis reessayer en
+      // forcant la creation du doublon si l'utilisateur accepte.
+      if (response.status === 409 && data.phoneExists) {
+        const confirmer = window.confirm(data.message)
+        if (!confirmer) {
+          setLoading(false)
+          return
+        }
+        response = await doSignup(true)
+        data = await response.json()
+      }
 
       if (!response.ok) {
         throw new Error(
