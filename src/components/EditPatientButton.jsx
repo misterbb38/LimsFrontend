@@ -289,15 +289,28 @@ function EditPatientButton({ userId, onuserUpdated }) {
     sexe: '',
     dateNaissance: '',
     age: '',
+    partenaireId: '',
   })
   const [formErrors, setFormErrors] = useState({})
+  const [partenaires, setPartenaires] = useState([]) // pour type = partenaire
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
 
   useEffect(() => {
     if (showModal && userId) {
       fetchuserData(userId)
+      fetchPartenaires()
     }
   }, [showModal, userId])
+
+  const fetchPartenaires = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/api/partenaire`)
+      const data = await response.json()
+      if (data.success) setPartenaires(data.data)
+    } catch (error) {
+      console.error('Erreur lors de la récupération des partenaires:', error)
+    }
+  }
 
   const fetchuserData = async (userId) => {
     try {
@@ -326,6 +339,9 @@ function EditPatientButton({ userId, onuserUpdated }) {
             ? new Date(data.data.dateNaissance).toISOString().slice(0, 10)
             : '',
           age: data.data.age || '',
+          // partenaireId : peut etre un objet peuple ou un id brut
+          partenaireId:
+            data.data.partenaireId?._id || data.data.partenaireId || '',
         })
       }
     } catch (error) {
@@ -393,6 +409,11 @@ function EditPatientButton({ userId, onuserUpdated }) {
             formData.age === '' || formData.age === null
               ? null
               : Number(formData.age),
+          // partenaireId uniquement pour un utilisateur de type partenaire
+          partenaireId:
+            formData.userType === 'partenaire'
+              ? formData.partenaireId || null
+              : null,
         }
 
         const response = await fetch(`${apiUrl}/api/user/${userId}`, {
@@ -637,6 +658,32 @@ function EditPatientButton({ userId, onuserUpdated }) {
                   <option value="partenaire">Partenaire</option>
                 </select>
               </div>
+
+              {/* Partenaire : uniquement si le type est "partenaire" */}
+              {formData.userType === 'partenaire' && (
+                <div className="mb-4">
+                  <label
+                    htmlFor="partenaireId"
+                    className="mb-2.5 block font-medium base-content"
+                  >
+                    Partenaire
+                  </label>
+                  <select
+                    id="partenaireId"
+                    name="partenaireId"
+                    value={formData.partenaireId}
+                    onChange={handleChange}
+                    className="select select-primary w-full max-w-xs"
+                  >
+                    <option value="">Sélectionnez un partenaire</option>
+                    {partenaires.map((p) => (
+                      <option key={p._id} value={p._id}>
+                        {p.nom}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Sexe */}
               <div className="mb-4">

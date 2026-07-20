@@ -292,8 +292,9 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
     let prixPatient = prixTotal
     if (effectiveType) {
       if (effectiveType === 'clinique') {
+        // Clinique : tout facture a la clinique, le patient ne paie rien.
         prixPartenaire = prixTotal
-        prixPatient = prixTotal
+        prixPatient = 0
       } else {
         prixPartenaire =
           (prixTotal * (Number(pourcentageCouverture) || 0)) / 100
