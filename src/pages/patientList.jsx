@@ -16,6 +16,8 @@ function PatientList() {
   const [phoneSearchTerm, setPhoneSearchTerm] = useState('')
   const [nipSearchTerm, setNipSearchTerm] = useState('')
   const [newPatientId, setNewPatientId] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 20
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
 
   useEffect(() => {
@@ -59,17 +61,27 @@ function PatientList() {
   }
 
   const filterPatients = (phoneTerm, nipTerm) => {
-    let filtered = patients
+    let filtered = [...patients]
     if (phoneTerm) {
       const phoneTermLower = phoneTerm.toLowerCase()
       filtered = filtered.filter((patient) =>
-        patient.telephone.toLowerCase().includes(phoneTermLower)
+        (patient.telephone || '').toLowerCase().includes(phoneTermLower)
       )
     }
     if (nipTerm) {
-      filtered = filtered.filter((patient) => patient.nip.includes(nipTerm))
+      filtered = filtered.filter((patient) =>
+        (patient.nip || '').includes(nipTerm)
+      )
     }
+    // Tri : patients les plus recents en haut (createdAt desc, sinon _id desc)
+    filtered.sort((a, b) => {
+      const da = new Date(a.createdAt || 0).getTime()
+      const db = new Date(b.createdAt || 0).getTime()
+      if (db !== da) return db - da
+      return String(b._id).localeCompare(String(a._id))
+    })
     setFilteredPatients(filtered)
+    setCurrentPage(1)
   }
 
   useEffect(() => {
@@ -125,6 +137,14 @@ function PatientList() {
       setLoading(false) // Désactiver l'indicateur de chargement
     }
   }
+
+  // Pagination : 20 patients par page (deja tries du plus recent au plus ancien)
+  const totalPages = Math.max(1, Math.ceil(filteredPatients.length / pageSize))
+  const pageSafe = Math.min(currentPage, totalPages)
+  const paginatedPatients = filteredPatients.slice(
+    (pageSafe - 1) * pageSize,
+    pageSafe * pageSize
+  )
 
   return (
     <div className="max-w-screen-2xl mx-auto px-6 py-6">
@@ -224,7 +244,7 @@ function PatientList() {
               </tr>
             </thead>
             <tbody>
-              {filteredPatients.map((patient) => (
+              {paginatedPatients.map((patient) => (
                 <tr key={patient._id}>
                   <td className="font-mono text-sm">{patient.nip}</td>
                   <td>{patient.nom}</td>
@@ -236,7 +256,7 @@ function PatientList() {
                     <div className="flex space-x-1">
                       <EditPatientButton
                         userId={patient._id}
-                        onUserUpdated={refreshPatients}
+                        onuserUpdated={refreshPatients}
                       />
                       <button
                         className="btn btn-error"
@@ -251,6 +271,33 @@ function PatientList() {
             </tbody>
           </table>
           </div>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+              <span className="text-sm opacity-70">
+                {filteredPatients.length} patient(s) — page {pageSafe}/
+                {totalPages}
+              </span>
+              <div className="join">
+                <button
+                  className="join-item btn btn-sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={pageSafe <= 1}
+                >
+                  «
+                </button>
+                <button className="join-item btn btn-sm">Page {pageSafe}</button>
+                <button
+                  className="join-item btn btn-sm"
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  disabled={pageSafe >= totalPages}
+                >
+                  »
+                </button>
+              </div>
+            </div>
+          )}
         </Card>
       )}
     </div>

@@ -11,7 +11,19 @@ function Personnel() {
 
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [typeFilter, setTypeFilter] = useState('') // filtre par profil
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
+
+  // Personnel = employes uniquement (on exclut patients et partenaires).
+  const EMPLOYEE_TYPES = [
+    'superadmin',
+    'medecin',
+    'docteur',
+    'technicien',
+    'preleveur',
+    'accueil',
+    'acceuil',
+  ]
 
   // Fonction pour charger les personnel
   const fetchpersonnel = async () => {
@@ -27,7 +39,6 @@ function Personnel() {
       const data = await response.json()
       if (data.success) {
         setpersonnel(data.data)
-        setFilteredpersonnel(data.data)
       } else {
         console.error('Failed to fetch personnel')
       }
@@ -38,22 +49,21 @@ function Personnel() {
     }
   }
   const handleSearchTermChange = (event) => {
-    const { value } = event.target
-    setSearchTerm(value)
-    filterpersonnel(value) // Applique le filtre dès que le terme de recherche change
+    setSearchTerm(event.target.value)
   }
 
-  const filterpersonnel = (searchTerm) => {
-    if (!searchTerm) {
-      fetchpersonnel() // Si le champ de recherche est vide, réaffiche tous les personnel
-      return
-    }
-    const searchTermLower = searchTerm.toLowerCase()
-    const filtered = personnel.filter((patient) =>
-      patient.telephone.toLowerCase().includes(searchTermLower)
+  // Liste affichee : on part de la liste brute (personnel) et on applique
+  // - exclusion des non-employes (patients / partenaires / cliniques)
+  // - filtre par profil (typeFilter)
+  // - recherche par telephone
+  const displayedPersonnel = personnel
+    .filter((p) => EMPLOYEE_TYPES.includes(p.userType))
+    .filter((p) => !typeFilter || p.userType === typeFilter)
+    .filter(
+      (p) =>
+        !searchTerm ||
+        (p.telephone || '').toLowerCase().includes(searchTerm.toLowerCase())
     )
-    setpersonnel(filtered) // Met à jour l'état `personnel` avec les personnel filtrés
-  }
 
   // Utilisez useEffect pour charger les personnel au montage du composant
   useEffect(() => {
@@ -140,13 +150,28 @@ function Personnel() {
       </button>
       <br></br>
 
-      <input
-        type="text"
-        placeholder="Rechercher par téléphone..."
-        value={searchTerm}
-        onChange={handleSearchTermChange}
-        className="input input-bordered input-primary w-full max-w-xs my-4"
-      />
+      <div className="flex flex-wrap gap-3 my-4">
+        <input
+          type="text"
+          placeholder="Rechercher par téléphone..."
+          value={searchTerm}
+          onChange={handleSearchTermChange}
+          className="input input-bordered input-primary w-full max-w-xs"
+        />
+        <select
+          className="select select-bordered select-primary w-full max-w-xs"
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+        >
+          <option value="">Tous les profils</option>
+          <option value="medecin">Médecin</option>
+          <option value="technicien">Technicien</option>
+          <option value="preleveur">Préleveur</option>
+          <option value="accueil">Accueil</option>
+          <option value="acceuil">Accueil (acceuil)</option>
+          <option value="superadmin">Superadmin</option>
+        </select>
+      </div>
 
       <dialog id="my_modal_4" className="modal">
         <div className="modal-box modal-xl max-h-[90vh] overflow-y-auto">
@@ -182,7 +207,7 @@ function Personnel() {
               </tr>
             </thead>
             <tbody>
-              {personnel.map((patient) => (
+              {displayedPersonnel.map((patient) => (
                 <tr key={patient._id}>
                   <td>
                     {patient.nom} {patient.prenom}

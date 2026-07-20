@@ -96,7 +96,7 @@
 //           setShowToast(true)
 //           setTimeout(() => setShowToast(false), 3000)
 //           setShowModal(false)
-//           onuserUpdated() // Rappel pour actualiser la liste des users
+//           onuserUpdated?.() // Rappel pour actualiser la liste des users
 //         } else {
 //           console.error('La mise à jour a échoué.')
 //         }
@@ -272,6 +272,7 @@ import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEdit } from '@fortawesome/free-solid-svg-icons'
+import LogoText from '../images/bioramlogo.png'
 
 function EditPatientButton({ userId, onuserUpdated }) {
   const [showModal, setShowModal] = useState(false)
@@ -286,6 +287,8 @@ function EditPatientButton({ userId, onuserUpdated }) {
     password: '',
     userType: '',
     sexe: '',
+    dateNaissance: '',
+    age: '',
   })
   const [formErrors, setFormErrors] = useState({})
   const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
@@ -318,6 +321,11 @@ function EditPatientButton({ userId, onuserUpdated }) {
           password: '', // Ne pas remplir pour des raisons de sécurité
           userType: data.data.userType,
           sexe: data.data.sexe, // Assurez-vous que cette ligne est présente
+          // Date de naissance au format input date (YYYY-MM-DD)
+          dateNaissance: data.data.dateNaissance
+            ? new Date(data.data.dateNaissance).toISOString().slice(0, 10)
+            : '',
+          age: data.data.age || '',
         })
       }
     } catch (error) {
@@ -326,7 +334,8 @@ function EditPatientButton({ userId, onuserUpdated }) {
   }
 
   const formatPhoneNumber = (phoneNumber) => {
-    const digits = phoneNumber.replace(/\D/g, '')
+    const digits = (phoneNumber || '').replace(/\D/g, '')
+    if (!digits) return '' // telephone vide : ne pas ajouter "+221"
     if (digits.startsWith('221')) {
       return `+${digits}`
     } else if (digits.startsWith('77') || digits.startsWith('78')) {
@@ -368,13 +377,31 @@ function EditPatientButton({ userId, onuserUpdated }) {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'))
         const token = userInfo?.token
 
+        // Nettoyage du payload : eviter les CastError backend (runValidators)
+        // - dateNaissance vide -> null (sinon "Cast to date failed for ''")
+        // - age vide -> null, sinon Number
+        // - telephone vide -> '' (ne pas envoyer "+221" qui declenche un
+        //   faux conflit d'unicite)
+        const payload = {
+          ...formData,
+          telephone:
+            formData.telephone && formData.telephone !== '+221'
+              ? formData.telephone
+              : '',
+          dateNaissance: formData.dateNaissance || null,
+          age:
+            formData.age === '' || formData.age === null
+              ? null
+              : Number(formData.age),
+        }
+
         const response = await fetch(`${apiUrl}/api/user/${userId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(payload),
         })
 
         const data = await response.json()
@@ -382,7 +409,7 @@ function EditPatientButton({ userId, onuserUpdated }) {
           setShowToast(true)
           setTimeout(() => setShowToast(false), 3000)
           setShowModal(false)
-          onuserUpdated() // Rappel pour actualiser la liste des users
+          onuserUpdated?.() // Rappel pour actualiser la liste des users
         } else {
           console.error('La mise à jour a échoué.')
         }
@@ -410,78 +437,208 @@ function EditPatientButton({ userId, onuserUpdated }) {
       </button>
       {showModal && (
         <div className="modal modal-open">
-          <div className="modal-box">
-            <form onSubmit={handleSubmit}>
-              <div className="form-control">
-                <label className="label">Nom</label>
-                <input
-                  className="input input-bordered"
-                  type="text"
-                  name="nom"
-                  value={formData.nom}
-                  onChange={handleChange}
-                />
-                {renderError('nom')}
+          <div className="modal-box max-w-5xl">
+            {/* Meme design que l'inscription : logo a gauche, form a droite */}
+            <div className="flex flex-wrap items-center">
+              <div className="hidden w-full xl:block xl:w-1/2">
+                <div className="py-8 px-6 text-center">
+                  <p className="2xl:px-20">
+                    Modifiez les informations de l&apos;utilisateur.
+                  </p>
+                  <img src={LogoText} alt="Logo Laboratoire" />
+                </div>
               </div>
-              <div className="form-control">
-                <label className="label">Prénom</label>
-                <input
-                  className="input input-bordered"
-                  type="text"
-                  name="prenom"
-                  value={formData.prenom}
-                  onChange={handleChange}
-                />
-                {renderError('prenom')}
+              <div className="w-full xl:w-1/2 xl:border-l-2">
+                <div className="w-full p-4">
+                  <form onSubmit={handleSubmit}>
+              {/* Nom + Prénom (meme ligne) */}
+              <div className="mb-4">
+                <div className="flex space-x-4">
+                  <div>
+                    <label
+                      htmlFor="nom"
+                      className="mb-2.5 block font-medium base-content"
+                    >
+                      Nom
+                    </label>
+                    <input
+                      id="nom"
+                      name="nom"
+                      type="text"
+                      value={formData.nom}
+                      onChange={handleChange}
+                      placeholder="Entrez le nom"
+                      className="input input-bordered input-primary w-full max-w-xs"
+                    />
+                    {renderError('nom')}
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="prenom"
+                      className="mb-2.5 block font-medium base-content"
+                    >
+                      Prénom
+                    </label>
+                    <input
+                      id="prenom"
+                      name="prenom"
+                      type="text"
+                      value={formData.prenom}
+                      onChange={handleChange}
+                      placeholder="Entrez le prénom"
+                      className="input input-bordered input-primary w-full max-w-xs"
+                    />
+                    {renderError('prenom')}
+                  </div>
+                </div>
               </div>
-              <div className="form-control">
-                <label className="label">Mot de passe</label>
+
+              {/* Mot de passe */}
+              <div className="mb-4">
+                <label
+                  htmlFor="password"
+                  className="mb-2.5 block font-medium base-content"
+                >
+                  Mot de passe
+                </label>
                 <input
-                  className="input input-bordered"
-                  type="text"
+                  id="password"
                   name="password"
+                  type="text"
                   value={formData.password}
                   onChange={handleChange}
+                  placeholder="Laisser vide pour ne pas changer"
+                  className="input input-bordered input-primary w-full max-w-xs"
                 />
-                <p>
-                  Si l'utilisateur a oublié son mot de passe, il faut lui en
-                  créer un nouveau
+                <p className="mt-1 text-sm">
+                  Si l&apos;utilisateur a oublié son mot de passe, il faut lui
+                  en créer un nouveau
                 </p>
               </div>
-              <div className="form-control">
-                <label className="label">Téléphone</label>
+
+              {/* Telephone */}
+              <div className="mb-4">
+                <label
+                  htmlFor="telephone"
+                  className="mb-2.5 block font-medium base-content"
+                >
+                  Telephone
+                </label>
                 <input
-                  className="input input-bordered"
-                  type="text"
+                  id="telephone"
                   name="telephone"
+                  type="text"
                   value={formData.telephone}
                   onChange={handleChange}
+                  placeholder="Entrez le telephone (optionnel)"
+                  className="input input-bordered input-primary w-full max-w-xs"
                 />
                 {renderError('telephone')}
               </div>
-              <div className="form-control">
-                <label className="label">Email</label>
+
+              {/* Adresse */}
+              <div className="mb-4">
+                <label
+                  htmlFor="adresse"
+                  className="mb-2.5 block font-medium base-content"
+                >
+                  Adresse
+                </label>
                 <input
-                  className="input input-bordered"
-                  type="email"
-                  name="email"
-                  placeholder="patient@example.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-                {renderError('email')}
-              </div>
-              <div className="form-control">
-                <label className="label">Adresse</label>
-                <textarea
-                  className="input input-bordered"
-                  type="text"
+                  id="adresse"
                   name="adresse"
+                  type="text"
                   value={formData.adresse}
                   onChange={handleChange}
+                  placeholder="Entrez l'adresse (optionnel)"
+                  className="input input-bordered input-primary w-full max-w-xs"
                 />
                 {renderError('adresse')}
               </div>
+
+              {/* Date de Naissance */}
+              <div className="mb-4">
+                <label
+                  htmlFor="dateNaissance"
+                  className="mb-2.5 block font-medium base-content"
+                >
+                  Date de Naissance
+                </label>
+                <input
+                  id="dateNaissance"
+                  name="dateNaissance"
+                  type="date"
+                  value={formData.dateNaissance}
+                  onChange={handleChange}
+                  className="input input-bordered input-primary w-full max-w-xs"
+                />
+              </div>
+
+              {/* Age */}
+              <div className="mb-4">
+                <label
+                  htmlFor="age"
+                  className="mb-2.5 block font-medium base-content"
+                >
+                  Age (si la date de la naissance est inconnue)
+                </label>
+                <input
+                  id="age"
+                  name="age"
+                  type="number"
+                  value={formData.age}
+                  onChange={handleChange}
+                  className="input input-bordered input-primary w-full max-w-xs"
+                />
+              </div>
+
+              {/* Email */}
+              <div className="mb-4">
+                <label
+                  htmlFor="email"
+                  className="mb-2.5 block font-medium base-content"
+                >
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Entrez l'email"
+                  className="input input-bordered input-primary w-full max-w-xs"
+                />
+                {renderError('email')}
+              </div>
+
+              {/* Type d'Utilisateur */}
+              <div className="mb-4">
+                <label
+                  htmlFor="userType"
+                  className="mb-2.5 block font-medium base-content"
+                >
+                  Type d&apos;Utilisateur
+                </label>
+                <select
+                  id="userType"
+                  name="userType"
+                  value={formData.userType}
+                  onChange={handleChange}
+                  className="select select-primary w-full max-w-xs"
+                >
+                  <option value="">Sélectionnez un type</option>
+                  <option value="patient">Patient</option>
+                  <option value="medecin">Medecin</option>
+                  <option value="technicien">Technicien</option>
+                  <option value="preleveur">Preleveur</option>
+                  <option value="acceuil">Accueil</option>
+                  <option value="superadmin">Superadmin</option>
+                  <option value="partenaire">Partenaire</option>
+                </select>
+              </div>
+
+              {/* Sexe */}
               <div className="mb-4">
                 <label
                   htmlFor="sexe"
@@ -494,38 +651,15 @@ function EditPatientButton({ userId, onuserUpdated }) {
                   name="sexe"
                   value={formData.sexe}
                   onChange={handleChange}
-                  className="input input-bordered"
+                  className="select select-primary w-full max-w-xs"
                 >
-                  <option value="">Sélectionnez le sexe</option>
-                  <option value="homme">Homme</option>
-                  <option value="femme">Femme</option>
+                  <option value="">Sélectionnez</option>
+                  <option value="homme">homme</option>
+                  <option value="femme">femme</option>
                   <option value="inconnu">Inconnu</option>
                 </select>
               </div>
-              <div className="mb-4">
-                <label
-                  htmlFor="userType"
-                  className="mb-2.5 block font-medium base-content"
-                >
-                  Type d'Utilisateur
-                </label>
-                <select
-                  id="userType"
-                  name="userType"
-                  value={formData.userType}
-                  onChange={handleChange}
-                  className="input input-bordered"
-                >
-                  <option value="">Sélectionnez un type</option>
-                  <option value="patient">Patient</option>
-                  <option value="medecin">Médecin</option>
-                  <option value="technicien">Technicien</option>
-                  <option value="preleveur">Préleveur</option>
-                  <option value="acceuil">Accueil</option>
-                  <option value="superadmin">Superadmin</option>
-                  <option value="partenaire">Partenaire</option>
-                </select>
-              </div>
+
               <div className="modal-action">
                 <button
                   className="btn btn-primary"
@@ -541,7 +675,10 @@ function EditPatientButton({ userId, onuserUpdated }) {
                   Annuler
                 </button>
               </div>
-            </form>
+                  </form>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
