@@ -157,6 +157,21 @@ function Facture() {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber)
 
+  // Pagination fenetree : au plus 10 numeros de page affiches a la fois,
+  // centres autour de la page courante (evite le debordement quand il y a
+  // beaucoup de pages). Boutons precedent/suivant en plus.
+  const PAGE_WINDOW = 10
+  const windowStart = Math.max(
+    1,
+    Math.min(
+      currentPage - Math.floor(PAGE_WINDOW / 2),
+      totalPageCount - PAGE_WINDOW + 1
+    )
+  )
+  const windowEnd = Math.min(totalPageCount, windowStart + PAGE_WINDOW - 1)
+  const pageNumbers = []
+  for (let p = windowStart; p <= windowEnd; p++) pageNumbers.push(p)
+
   // Récupérer les informations de l'utilisateur stockées localement
   const userInfo = JSON.parse(localStorage.getItem('userInfo'))
 
@@ -386,18 +401,39 @@ function Facture() {
             </table>
           </div>
           {totalPageCount > 1 && (
-            <nav className="flex justify-center mt-4">
+            <nav className="flex flex-wrap justify-center items-center gap-2 mt-4">
               <div className="join">
-                {Array.from({ length: totalPageCount }).map((_, i) => (
+                <button
+                  onClick={() => paginate(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="join-item btn btn-sm btn-ghost"
+                  aria-label="Page précédente"
+                >
+                  «
+                </button>
+                {pageNumbers.map((p) => (
                   <button
-                    key={i}
-                    onClick={() => paginate(i + 1)}
-                    className={`join-item btn btn-sm ${currentPage === i + 1 ? 'btn-primary' : 'btn-ghost'}`}
+                    key={p}
+                    onClick={() => paginate(p)}
+                    className={`join-item btn btn-sm ${currentPage === p ? 'btn-primary' : 'btn-ghost'}`}
                   >
-                    {i + 1}
+                    {p}
                   </button>
                 ))}
+                <button
+                  onClick={() =>
+                    paginate(Math.min(totalPageCount, currentPage + 1))
+                  }
+                  disabled={currentPage === totalPageCount}
+                  className="join-item btn btn-sm btn-ghost"
+                  aria-label="Page suivante"
+                >
+                  »
+                </button>
               </div>
+              <span className="text-sm opacity-70">
+                Page {currentPage} / {totalPageCount}
+              </span>
             </nav>
           )}
         </Card>

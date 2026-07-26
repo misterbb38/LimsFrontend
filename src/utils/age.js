@@ -32,15 +32,27 @@ export function formatAge(dateNaissance, age) {
         months += 12
       }
 
+      const anS = (n) => `${n} an${n > 1 ? 's' : ''}`
+      const jourS = (n) => `${n} jour${n > 1 ? 's' : ''}`
+
+      if (years >= 5) {
+        // Adultes / grands enfants : annees uniquement.
+        return anS(years)
+      }
       if (years >= 1) {
-        return `${years} an${years > 1 ? 's' : ''}`
+        // Jeunes enfants : detail annees + mois (+ jours avant 2 ans) pour
+        // garder l'information "1 an 3 mois 4 jours".
+        const parts = [anS(years)]
+        if (months > 0) parts.push(`${months} mois`)
+        if (years < 2 && days > 0) parts.push(jourS(days))
+        return parts.join(' ')
       }
       if (months >= 1) {
-        return days > 0
-          ? `${months} mois ${days} jour${days > 1 ? 's' : ''}`
-          : `${months} mois`
+        // Nourrissons : mois + jours.
+        return days > 0 ? `${months} mois ${jourS(days)}` : `${months} mois`
       }
-      return `${days} jour${days > 1 ? 's' : ''}`
+      // Nouveau-nes : jours.
+      return jourS(days)
     }
   }
 
@@ -51,4 +63,25 @@ export function formatAge(dateNaissance, age) {
   }
 
   return ''
+}
+
+// Convertit un age saisi en annees/mois/jours en une DATE DE NAISSANCE
+// approximative (chaine 'YYYY-MM-DD'), calculee a partir d'aujourd'hui.
+// Utile quand l'utilisateur ne connait pas la date de naissance exacte
+// mais sait que le patient a p.ex. "2 mois 5 jours" ou "1 an 3 mois".
+// Stocker une date de naissance permet a l'age de rester correct dans le
+// temps (il "grandit" automatiquement) et fonctionne partout via
+// formatAge.
+export function ageToDateNaissance(annees, mois, jours) {
+  const a = Number(annees) || 0
+  const m = Number(mois) || 0
+  const j = Number(jours) || 0
+  if (a === 0 && m === 0 && j === 0) return ''
+  const d = new Date()
+  d.setFullYear(d.getFullYear() - a)
+  d.setMonth(d.getMonth() - m)
+  d.setDate(d.getDate() - j)
+  // Format YYYY-MM-DD (local) pour un <input type="date"> et le backend.
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }

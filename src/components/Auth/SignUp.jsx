@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 import LogoText from '../../images/bioramlogo.png'
+import { ageToDateNaissance } from '../../utils/age'
 
 const SignUp = ({ onUser, fixedUserType }) => {
   // fixedUserType : quand fourni (ex. "patient" depuis la page Patient), le
@@ -17,6 +18,8 @@ const SignUp = ({ onUser, fixedUserType }) => {
     sexe: '',
     dateNaissance: '',
     age: '',
+    ageMois: '',
+    ageJours: '',
     userType: fixedUserType || '',
     adresse: '',
     partenaireId: '', // Ajouter partenaireId
@@ -32,6 +35,8 @@ const SignUp = ({ onUser, fixedUserType }) => {
     userType,
     adresse,
     age,
+    ageMois,
+    ageJours,
     sexe,
     partenaireId, // Ajouter partenaireId
   } = formData
@@ -116,6 +121,14 @@ const SignUp = ({ onUser, fixedUserType }) => {
     // Format the phone number before sending
     const formattedPhoneNumber = formatPhoneNumber(telephone)
 
+    // Date de naissance effective : celle saisie, ou calculee a partir de
+    // l'age en annees/mois/jours quand la date exacte est inconnue (ex.
+    // bebe de "2 mois 5 jours"). On stocke toujours une date de naissance :
+    // l'age s'affiche alors correctement partout et reste a jour dans le
+    // temps.
+    const dateNaissanceEffective =
+      dateNaissance || ageToDateNaissance(age, ageMois, ageJours)
+
     // if (password.length < 8) {
     //   // setPasswordLengthError(true)
     //   setLoading(false)
@@ -142,7 +155,7 @@ const SignUp = ({ onUser, fixedUserType }) => {
           telephone: formattedPhoneNumber, // Use the formatted phone number
           email,
           password: generatedPassword, // Utiliser le mot de passe généré
-          dateNaissance,
+          dateNaissance: dateNaissanceEffective || undefined,
           userType,
           adresse,
           sexe,
@@ -185,6 +198,8 @@ const SignUp = ({ onUser, fixedUserType }) => {
           userType: fixedUserType || '',
           adresse: '',
           age: '',
+          ageMois: '',
+          ageJours: '',
           sexe: '',
           partenaireId: '',
         })
@@ -326,20 +341,56 @@ const SignUp = ({ onUser, fixedUserType }) => {
                 </div>
 
                 <div className="mb-4">
-                  <label
-                    htmlFor="dateNaissance"
-                    className="mb-2.5 block font-medium base-content"
-                  >
-                    Age (si la date de la naissance est inconnue)
+                  <label className="mb-2.5 block font-medium base-content">
+                    Âge (si la date de naissance est inconnue)
                   </label>
-                  <input
-                    id="dateNaissance"
-                    name="age"
-                    type="number"
-                    value={age}
-                    onChange={handleChange}
-                    className="input input-bordered input-primary w-full max-w-xs"
-                  />
+                  <div className="flex gap-2 max-w-xs">
+                    <div className="flex-1">
+                      <input
+                        id="ageAnnees"
+                        name="age"
+                        type="number"
+                        min="0"
+                        value={age}
+                        onChange={handleChange}
+                        placeholder="Années"
+                        className="input input-bordered input-primary w-full"
+                      />
+                      <span className="text-xs opacity-70">Années</span>
+                    </div>
+                    <div className="flex-1">
+                      <input
+                        id="ageMois"
+                        name="ageMois"
+                        type="number"
+                        min="0"
+                        max="11"
+                        value={ageMois}
+                        onChange={handleChange}
+                        placeholder="Mois"
+                        className="input input-bordered input-primary w-full"
+                      />
+                      <span className="text-xs opacity-70">Mois</span>
+                    </div>
+                    <div className="flex-1">
+                      <input
+                        id="ageJours"
+                        name="ageJours"
+                        type="number"
+                        min="0"
+                        max="31"
+                        value={ageJours}
+                        onChange={handleChange}
+                        placeholder="Jours"
+                        className="input input-bordered input-primary w-full"
+                      />
+                      <span className="text-xs opacity-70">Jours</span>
+                    </div>
+                  </div>
+                  <p className="mt-1 text-xs opacity-70">
+                    Ex : bébé de 2 mois 5 jours, ou 1 an 3 mois. Laissez vide
+                    si la date de naissance est renseignée.
+                  </p>
                 </div>
 
                 {/* Email */}
