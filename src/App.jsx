@@ -30,6 +30,7 @@ import DemandePayement from './pages/DemandePayement'
 
 import KeyExpired from './components/KeyExpired'
 import Notifications from './components/Notifications'
+import { isSessionExpired, clearSession } from './utils/auth'
 
 function AppLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
@@ -39,7 +40,12 @@ function AppLayout() {
   // Seuls les EMPLOYES accedent au tableau de bord /dash. Les clients
   // (patient) et les partenaires sont rediriges vers leur propre espace.
   const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null')
-  if (!userInfo) return <Navigate to="/" replace />
+  // Session terminee (token expire) ou absente : on nettoie et on renvoie
+  // vers la page de connexion.
+  if (!userInfo || isSessionExpired()) {
+    clearSession()
+    return <Navigate to="/" replace />
+  }
   if (userInfo.userType === 'patient')
     return <Navigate to="/patient-dash" replace />
   if (userInfo.userType === 'partenaire')
@@ -62,6 +68,12 @@ function PatientDashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen)
+  // Session terminee ou absente : retour a la connexion.
+  const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null')
+  if (!userInfo || isSessionExpired()) {
+    clearSession()
+    return <Navigate to="/" replace />
+  }
   return (
     <div className="flex h-screen bg-base-200">
       <SidebarPatient toggleSidebar={toggleSidebar} />
@@ -79,6 +91,12 @@ function PartenaireDashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen)
+  // Session terminee ou absente : retour a la connexion.
+  const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null')
+  if (!userInfo || isSessionExpired()) {
+    clearSession()
+    return <Navigate to="/" replace />
+  }
   return (
     <div className="flex h-screen bg-base-200">
       <SidebarPartenaire toggleSidebar={toggleSidebar} />
@@ -94,6 +112,24 @@ function PartenaireDashboardLayout() {
 
 function App() {
   useEffect(() => themeChange(false), [])
+
+  // Deconnexion automatique quand la session (token JWT) expire, meme si
+  // l'utilisateur reste sur une page sans naviguer. Verifie au montage
+  // puis toutes les 30 secondes.
+  useEffect(() => {
+    const verifierSession = () => {
+      const info = JSON.parse(localStorage.getItem('userInfo') || 'null')
+      if (info && isSessionExpired()) {
+        clearSession()
+        if (window.location.pathname !== '/') {
+          window.location.href = '/'
+        }
+      }
+    }
+    verifierSession()
+    const id = setInterval(verifierSession, 30000)
+    return () => clearInterval(id)
+  }, [])
 
   return (
     <BrowserRouter>

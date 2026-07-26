@@ -416,16 +416,32 @@ function EditPatientButton({ userId, onuserUpdated }) {
               : null,
         }
 
-        const response = await fetch(`${apiUrl}/api/user/${userId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        })
+        // forcePhone = true => on accepte un telephone deja utilise par
+        // un autre patient (plusieurs patients peuvent partager un numero).
+        const doUpdate = (forcePhone) =>
+          fetch(`${apiUrl}/api/user/${userId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ ...payload, forcePhone }),
+          })
 
-        const data = await response.json()
+        let response = await doUpdate(false)
+        let data = await response.json()
+
+        // Numero deja enregistre : demander confirmation puis reessayer.
+        if (response.status === 409 && data.phoneExists) {
+          const confirmer = window.confirm(data.message)
+          if (!confirmer) {
+            setLoading(false)
+            return
+          }
+          response = await doUpdate(true)
+          data = await response.json()
+        }
+
         if (data.success) {
           setShowToast(true)
           setTimeout(() => setShowToast(false), 3000)

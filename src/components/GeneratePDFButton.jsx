@@ -5,6 +5,7 @@ import jsPDF from 'jspdf'
 import PropTypes from 'prop-types'
 import logoLeft from '../images/bioramlogo.png'
 import logoRight from '../images/logo2.png'
+import { formatAge } from '../utils/age'
 
 function GeneratePDFButton({ invoice }) {
   const [user, setUser] = useState({
@@ -209,27 +210,14 @@ function GeneratePDFButton({ invoice }) {
         invoice.cliniquePartenaireId?.nom ||
         'paf'
 
-      // Age : age direct, sinon calcule depuis la date de naissance, sinon
-      // VIDE (pas de "Non disponible ans").
-      let ageDisplay = ''
-      if (invoice.userId.age) {
-        ageDisplay = invoice.userId.age.toString()
-      } else if (invoice.userId.dateNaissance) {
-        const birthDate = new Date(invoice.userId.dateNaissance)
-        const today = new Date()
-        let age = today.getFullYear() - birthDate.getFullYear()
-        const m = today.getMonth() - birthDate.getMonth()
-        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-          age--
-        }
-        ageDisplay = age.toString()
-      }
-
-      doc.text(
-        `Âge: ${ageDisplay}${ageDisplay ? ' ans' : ''}`,
-        135,
-        currentY + 17
+      // Age : calcule depuis la date de naissance (gere les nouveau-nes :
+      // mois/jours), sinon age numerique, sinon VIDE.
+      const ageDisplay = formatAge(
+        invoice.userId.dateNaissance,
+        invoice.userId.age
       )
+
+      doc.text(`Âge: ${ageDisplay}`, 135, currentY + 17)
 
       doc.text(`Tel: ${invoice.userId.telephone || ''}`, 135, currentY + 22)
 

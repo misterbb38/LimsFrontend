@@ -7,6 +7,7 @@ import jsPDF from 'jspdf'
 import PropTypes from 'prop-types'
 import logoLeft from '../images/bioramlogo.png'
 import logoRight from '../images/logo2.png'
+import { formatAge } from '../utils/age'
 
 /**
  * Composant pour générer un PDF de résultat d'analyse médicale.
@@ -562,21 +563,14 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
       currentY + 12
     )
 
-    let ageDisplay = ''
-    if (invoice.userId.age) {
-      ageDisplay = invoice.userId.age.toString()
-    } else if (invoice.userId.dateNaissance) {
-      const birthDate = new Date(invoice.userId.dateNaissance)
-      const today = new Date()
-      let age = today.getFullYear() - birthDate.getFullYear()
-      const m = today.getMonth() - birthDate.getMonth()
-      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-        age--
-      }
-      ageDisplay = age.toString()
-    }
+    // Age : calcule depuis la date de naissance (gere les nouveau-nes :
+    // mois/jours), sinon age numerique, sinon VIDE.
+    const ageDisplay = formatAge(
+      invoice.userId.dateNaissance,
+      invoice.userId.age
+    )
 
-    doc.text(`Âge: ${ageDisplay}${ageDisplay ? ' ans' : ''}`, 135, currentY + 17)
+    doc.text(`Âge: ${ageDisplay}`, 135, currentY + 17)
     // Format telephone : enleve prefixe +221 et tout ce qui n'est pas
     // un chiffre, puis groupe 2-3-2-2 (ex: 78 967 67 67).
     const formatTel = (raw) => {
@@ -3407,16 +3401,8 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
       // ---- DONNEES PATIENT ----
       const u = invoice.userId
       const nomComplet = `${(u.prenom || '').toUpperCase()} ${(u.nom || '').toUpperCase()}`.trim()
-      let ageDisplay = ''
-      if (u.age) ageDisplay = u.age.toString()
-      else if (u.dateNaissance) {
-        const b = new Date(u.dateNaissance)
-        const t = new Date()
-        let age = t.getFullYear() - b.getFullYear()
-        const m = t.getMonth() - b.getMonth()
-        if (m < 0 || (m === 0 && t.getDate() < b.getDate())) age--
-        ageDisplay = age.toString()
-      }
+      // Age : gere les nouveau-nes (mois/jours) via la date de naissance.
+      const ageDisplay = formatAge(u.dateNaissance, u.age)
       const formatTel = (raw) => {
         if (!raw) return ''
         let d = String(raw).replace(/\D/g, '')
@@ -3444,7 +3430,7 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
             new TableRow({
               children: [
                 infoCell([`NIP: ${safe(u.nip)}`, `Date: ${dateDossier}`], 50),
-                infoCell([`Nº Dossier: ${safe(invoice?.identifiant)}`, `Nom: ${nomComplet}`, `Âge: ${ageDisplay}${ageDisplay ? ' ans' : ''}`, `Tel: ${formatTel(u.telephone)}`], 50),
+                infoCell([`Nº Dossier: ${safe(invoice?.identifiant)}`, `Nom: ${nomComplet}`, `Âge: ${ageDisplay}`, `Tel: ${formatTel(u.telephone)}`], 50),
               ],
             }),
           ],

@@ -15,11 +15,25 @@ const getGroupKey = (name = '') => {
   return first.toUpperCase()
 }
 
+// Affichage court d'une date (jj/mm/aaaa) ; '' si absente.
+const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('fr-FR') : '')
+
+// Période d'un partenaire : "première → dernière" étiquette, ou la date
+// seule si les deux sont identiques, ou '-' si aucune.
+const periode = (premiere, derniere) => {
+  const a = fmtDate(premiere)
+  const b = fmtDate(derniere)
+  if (!a && !b) return '-'
+  return a === b ? a : `${a} → ${b}`
+}
+
 function PartenaireFacture() {
   const [partners, setPartners] = useState([])
   const [loading, setLoading] = useState(true)
   const [mois, setMois] = useState('')
   const [annee, setAnnee] = useState('')
+  const [dateDebut, setDateDebut] = useState('')
+  const [dateFin, setDateFin] = useState('')
   const [selectedPartner, setSelectedPartner] = useState('')
   const [selectedType, setSelectedType] = useState('')
   const [viewMode, setViewMode] = useState('simple') // 'simple' | 'groupe'
@@ -38,6 +52,8 @@ function PartenaireFacture() {
         const query = new URLSearchParams()
         if (mois) query.append('mois', mois)
         if (annee) query.append('annee', annee)
+        if (dateDebut) query.append('dateDebut', dateDebut)
+        if (dateFin) query.append('dateFin', dateFin)
         const qs = query.toString()
         const url = `${apiUrl}/api/eti/etiquettes${qs ? '?' + qs : ''}`
 
@@ -60,7 +76,7 @@ function PartenaireFacture() {
     }
     fetchPartners()
     return () => ctrl.abort()
-  }, [mois, annee])
+  }, [mois, annee, dateDebut, dateFin])
 
   // Listes uniques pour alimenter les selects. Tous les types sont
   // listes (cliniques incluses) : permet de suivre les analyses
@@ -107,6 +123,8 @@ function PartenaireFacture() {
           name: key,
           totalSomme: 0,
           totalCount: 0,
+          premiereDate: null,
+          derniereDate: null,
           types: {},
           filiales: [],
         })
@@ -116,6 +134,15 @@ function PartenaireFacture() {
       const count = Number(p.count) || 0
       g.totalSomme += somme
       g.totalCount += count
+      // Bornes de periode du groupe (min des premieres, max des dernieres).
+      if (p.premiereDate) {
+        const d = new Date(p.premiereDate)
+        if (!g.premiereDate || d < g.premiereDate) g.premiereDate = d
+      }
+      if (p.derniereDate) {
+        const d = new Date(p.derniereDate)
+        if (!g.derniereDate || d > g.derniereDate) g.derniereDate = d
+      }
       const t = p.typePartenaire || '-'
       g.types[t] = (g.types[t] || 0) + 1
       g.filiales.push(p)
@@ -163,6 +190,25 @@ function PartenaireFacture() {
           onChange={(e) => setAnnee(e.target.value)}
         />
 
+        <label className="flex items-center gap-1 text-sm">
+          Du
+          <input
+            type="date"
+            className="input input-bordered"
+            value={dateDebut}
+            onChange={(e) => setDateDebut(e.target.value)}
+          />
+        </label>
+        <label className="flex items-center gap-1 text-sm">
+          Au
+          <input
+            type="date"
+            className="input input-bordered"
+            value={dateFin}
+            onChange={(e) => setDateFin(e.target.value)}
+          />
+        </label>
+
         <select
           className="select select-bordered"
           value={selectedPartner}
@@ -189,7 +235,12 @@ function PartenaireFacture() {
           ))}
         </select>
 
-        {(selectedPartner || selectedType || mois || annee) && (
+        {(selectedPartner ||
+          selectedType ||
+          mois ||
+          annee ||
+          dateDebut ||
+          dateFin) && (
           <button
             className="btn btn-ghost"
             onClick={() => {
@@ -197,6 +248,8 @@ function PartenaireFacture() {
               setSelectedType('')
               setMois('')
               setAnnee('')
+              setDateDebut('')
+              setDateFin('')
             }}
           >
             Réinitialiser
@@ -237,6 +290,7 @@ function PartenaireFacture() {
                 </th>
                 <th className="font-bold text-lg text-base-content">Somme</th>
                 <th className="font-bold text-lg text-base-content">Facture</th>
+                <th className="font-bold text-lg text-base-content">Période</th>
                 <th className="font-bold text-lg text-base-content">Actions</th>
               </tr>
             </thead>
@@ -247,6 +301,9 @@ function PartenaireFacture() {
                   <td>{partner.typePartenaire}</td>
                   <td>{partner.totalSomme}</td>
                   <td>{partner.count}</td>
+                  <td className="text-sm">
+                    {periode(partner.premiereDate, partner.derniereDate)}
+                  </td>
                   <td>
                     <GenerateFacturePartenaire
                       partner={partner}
@@ -275,6 +332,7 @@ function PartenaireFacture() {
                 <th className="font-bold text-lg text-base-content">
                   Nb factures
                 </th>
+                <th className="font-bold text-lg text-base-content">Période</th>
                 <th className="font-bold text-lg text-base-content">Filiales</th>
                 <th className="font-bold text-lg text-base-content">Actions</th>
               </tr>
@@ -303,6 +361,9 @@ function PartenaireFacture() {
                       <td>{g.dominantType}</td>
                       <td>{g.totalSomme}</td>
                       <td>{g.totalCount}</td>
+                      <td className="text-sm">
+                        {periode(g.premiereDate, g.derniereDate)}
+                      </td>
                       <td>{g.filiales.length}</td>
                       <td>
                         {hasMultiple ? (
@@ -328,6 +389,9 @@ function PartenaireFacture() {
                             <td>{p.typePartenaire}</td>
                             <td>{p.totalSomme}</td>
                             <td>{p.count}</td>
+                            <td className="text-sm">
+                              {periode(p.premiereDate, p.derniereDate)}
+                            </td>
                             <td></td>
                             <td>
                               <GenerateFacturePartenaire
