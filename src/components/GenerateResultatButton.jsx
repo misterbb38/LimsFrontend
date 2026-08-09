@@ -674,20 +674,73 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
 
     let anterioriteHeight = 0
 
-    // Antériorités (colonne droite, alignee au bord droit pour eviter
-    // le chevauchement avec la colonne Reference (PDF_LAYOUT.REF_X = 155)
-    // qui peut contenir des textes longs type "Réf: Négative : < 2
-    // Douteuse : 2 - 2,6 Positive : >= 2,6 AU/mL"). On ancre le bloc
-    // a x=190 (bord droit du contenu) avec align: 'right'.
+    // Detecte si le test a une exception REELLEMENT remplie (avec
+    // au moins un sous-champ ayant une valeur saisie). Sinon
+    // (cas Urée, Glycémie, etc.) on affiche la ref globale du
+    // testModel via "Réf: 0,15 - 0,45 g/L" comme avant.
+    // Mongoose peut initialiser les sous-schemas vides ({}), donc
+    // le simple "Object.keys().length > 0" est trop permissif.
+    const hasMeaningfulException = (obj) => {
+      if (!obj || typeof obj !== 'object') return false
+      for (const k of Object.keys(obj)) {
+        const v = obj[k]
+        if (v == null) continue
+        if (typeof v === 'object') {
+          if (
+            'valeur' in v &&
+            v.valeur != null &&
+            v.valeur !== '' &&
+            v.valeur !== 0
+          )
+            return true
+          if (hasMeaningfulException(v)) return true
+        } else if (v !== '' && v !== 0 && k === 'valeur') {
+          return true
+        }
+      }
+      return false
+    }
+    // Cas particulier ionogramme : le modele stocke des chaines PLATES
+    // (na: "135.6") sans cle 'valeur', invisible pour le detecteur
+    // generique ci-dessus.
+    const ionoCells = test?.exceptions?.ionogramme
+    const hasIonogramme =
+      !!ionoCells &&
+      ['na', 'k', 'cl', 'ca', 'mg'].some((k) => {
+        const c = ionoCells[k]
+        return c !== null && typeof c === 'object' ? !!c.valeur : !!c
+      })
+    const hasExceptions =
+      hasIonogramme || hasMeaningfulException(test?.exceptions)
+
+    // La ref globale sera-t-elle affichee sur la ligne machine (REF_X=155) ?
+    // Sert a decaler le bloc Antériorités pour eviter le chevauchement.
+    const refGlobale = test?.statutMachine
+      ? test?.testId?.valeurMachineA
+      : test?.testId?.valeurMachineB
+    const refWillShow = !!refGlobale && !hasExceptions
+
+    // Antériorités (colonne droite, alignee au bord droit). La ligne
+    // machine porte deja "Réf: ..." a REF_X=155 qui peut s'etendre
+    // jusqu'au bord droit : si une ref globale sera affichee, on decale
+    // le bloc Antériorités d'une ligne sous la ref (idem si une ligne
+    // "Prélèvement :" decale la ligne machine vers le bas).
+    let anterioriteBottomY = 0
     if (test?.observations?.macroscopique?.length === 0 && test?.dernierResultatAnterieur) {
       const valeurAnterieure = test.dernierResultatAnterieur.valeur ?? ''
       const dateAnterieure = formattedDateAnterieur ?? ''
 
-      doc.text('Antériorités', 190, currentY, { align: 'right' })
-      doc.text(String(valeurAnterieure), 190, currentY + 5, { align: 'right' })
-      doc.text(String(dateAnterieure), 190, currentY + 10, { align: 'right' })
+      const anteOffset =
+        (test?.typePrelevement ? 5 : 0) + (refWillShow ? 5 : 0)
 
-      anterioriteHeight = 15
+      doc.text('Antériorités', 190, currentY + anteOffset, { align: 'right' })
+      doc.text(String(valeurAnterieure), 190, currentY + anteOffset + 5, { align: 'right' })
+      doc.text(String(dateAnterieure), 190, currentY + anteOffset + 10, { align: 'right' })
+
+      anterioriteHeight = 15 + anteOffset
+      // Bas du bloc (baseline de la date + une ligne de marge) : les
+      // exceptions ne doivent jamais commencer au-dessus de cette limite.
+      anterioriteBottomY = currentY + anteOffset + 15
     }
 
     // Contenu principal du test (si pas d'observations macroscopiques)
@@ -703,33 +756,6 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
         currentY += 5
       }
 
-      // Detecte si le test a une exception REELLEMENT remplie (avec
-      // au moins un sous-champ ayant une valeur saisie). Sinon
-      // (cas Urée, Glycémie, etc.) on affiche la ref globale du
-      // testModel via "Réf: 0,15 - 0,45 g/L" comme avant.
-      // Mongoose peut initialiser les sous-schemas vides ({}), donc
-      // le simple "Object.keys().length > 0" est trop permissif.
-      const hasMeaningfulException = (obj) => {
-        if (!obj || typeof obj !== 'object') return false
-        for (const k of Object.keys(obj)) {
-          const v = obj[k]
-          if (v == null) continue
-          if (typeof v === 'object') {
-            if (
-              'valeur' in v &&
-              v.valeur != null &&
-              v.valeur !== '' &&
-              v.valeur !== 0
-            )
-              return true
-            if (hasMeaningfulException(v)) return true
-          } else if (v !== '' && v !== 0 && k === 'valeur') {
-            return true
-          }
-        }
-        return false
-      }
-      const hasExceptions = hasMeaningfulException(test?.exceptions)
       renderMachineInfo(doc, test, currentY, { hideRef: hasExceptions })
       currentY += 2
 
@@ -755,6 +781,12 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
 
       // Exceptions
       if (test?.exceptions) {
+        // Les lignes d'exception (ionogramme, RAC...) ecrivent leur
+        // reference dans la colonne droite (REF_X -> 190) : on demarre
+        // sous le bloc Antériorités pour que sa date ne chevauche pas.
+        if (hasExceptions && anterioriteBottomY > 0) {
+          currentY = Math.max(currentY, anterioriteBottomY)
+        }
         currentY = renderExceptions(doc, test, currentY, invoice)
       }
 
@@ -1028,9 +1060,14 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
 
     rows.forEach((r) => {
       const cell = iono[r.key]
-      if (!cell?.valeur) return
-      const ref = getReference(cell, r.fb)
-      excepY = drawParamRow(doc, excepY, invoice, r.label, cell.valeur, ref)
+      // Le modele stocke l'ionogramme en chaines PLATES (na: "135.6"),
+      // pas en objets {valeur, unite, reference}. On accepte les deux
+      // formes pour rester compatible avec d'eventuelles anciennes donnees.
+      const isObj = cell !== null && typeof cell === 'object'
+      const val = isObj ? cell.valeur : cell
+      if (val === undefined || val === null || val === '') return
+      const ref = getReference(isObj ? cell : null, r.fb)
+      excepY = drawParamRow(doc, excepY, invoice, r.label, val, ref)
     })
 
     return excepY + 5
