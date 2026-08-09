@@ -345,6 +345,16 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
     ca: '',
     mg: '',
   },
+  widal: {
+    ao: { statut: '', titre: '' },
+    ah: { statut: '', titre: '' },
+    bo: { statut: '', titre: '' },
+    bh: { statut: '', titre: '' },
+    co: { statut: '', titre: '' },
+    ch: { statut: '', titre: '' },
+    to: { statut: '', titre: '' },
+    th: { statut: '', titre: '' },
+  },
   nfs: {
     hematiesEtConstantes: {
       gr: { valeur: '', unite: '10^6/uL', reference: '3.80-5.90' },
@@ -623,6 +633,8 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
     return 'hgpo'
   } else if (nameLower.includes('ionogram')) {
     return 'ionogramme'
+  } else if (nameLower.includes('widal')) {
+    return 'widal'
   } else if (nameLower.includes('nfs') || nameLower.includes('numération')) {
     return 'nfs'
   }
@@ -826,6 +838,16 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
           },
           hgpo: { t0: '', t60: '', t120: '' },
           ionogramme: { na: '', k: '', cl: '', ca: '', mg: '' },
+          widal: {
+            ao: { statut: '', titre: '' },
+            ah: { statut: '', titre: '' },
+            bo: { statut: '', titre: '' },
+            bh: { statut: '', titre: '' },
+            co: { statut: '', titre: '' },
+            ch: { statut: '', titre: '' },
+            to: { statut: '', titre: '' },
+            th: { statut: '', titre: '' },
+          },
           // AJOUT: structure NFS
           nfs: {
             hematiesEtConstantes: {
@@ -964,6 +986,20 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
             },
           },
 
+        }
+        // Widal : garantir la structure meme sur les anciens resultats
+        // enregistres avant l'ajout de ce parametre.
+        if (!fetchedExceptions.widal) {
+          fetchedExceptions.widal = {
+            ao: { statut: '', titre: '' },
+            ah: { statut: '', titre: '' },
+            bo: { statut: '', titre: '' },
+            bh: { statut: '', titre: '' },
+            co: { statut: '', titre: '' },
+            ch: { statut: '', titre: '' },
+            to: { statut: '', titre: '' },
+            th: { statut: '', titre: '' },
+          }
         }
         // AJOUT: Récupération des nouveaux paramètres calculés
 if (data.data.exceptions) {
@@ -2325,6 +2361,105 @@ if (data.data.exceptions) {
                           />
                         </div>
                       </div>
+                    </div>
+                  )}
+
+                  {/* Sérologie de Widal et Félix */}
+                  {selectedTestCategory === 'widal' && (
+                    <div className="border p-4 mt-4">
+                      <h3 className="font-bold mb-2">
+                        Sérologie de Widal et Félix
+                      </h3>
+                      {[
+                        { key: 'ao', genre: 'Paratyphi', code: 'AO' },
+                        { key: 'ah', genre: 'Paratyphi', code: 'AH' },
+                        { key: 'bo', genre: 'Paratyphi', code: 'BO' },
+                        { key: 'bh', genre: 'Paratyphi', code: 'BH' },
+                        { key: 'co', genre: 'Paratyphi', code: 'CO' },
+                        { key: 'ch', genre: 'Paratyphi', code: 'CH' },
+                        { key: 'to', genre: 'Typhi', code: 'TO' },
+                        { key: 'th', genre: 'Typhi', code: 'TH' },
+                      ].map((ag) => (
+                        <div
+                          key={ag.key}
+                          className="flex flex-wrap gap-4 items-center mb-2"
+                        >
+                          <span className="w-36">
+                            <i>{ag.genre}</i> ({ag.code})
+                          </span>
+                          <select
+                            className="select select-bordered select-sm"
+                            value={
+                              formData.exceptions.widal?.[ag.key]?.statut || ''
+                            }
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                exceptions: {
+                                  ...prev.exceptions,
+                                  widal: {
+                                    ...prev.exceptions.widal,
+                                    [ag.key]: {
+                                      statut: e.target.value,
+                                      // Efface le titre si non positif
+                                      titre:
+                                        e.target.value === 'Positive'
+                                          ? prev.exceptions.widal?.[ag.key]
+                                              ?.titre || ''
+                                          : '',
+                                    },
+                                  },
+                                },
+                              }))
+                            }
+                          >
+                            <option value="">—</option>
+                            <option value="Négative">Négative</option>
+                            <option value="Positive">Positive</option>
+                          </select>
+                          <select
+                            className="select select-bordered select-sm"
+                            value={
+                              formData.exceptions.widal?.[ag.key]?.titre || ''
+                            }
+                            disabled={
+                              formData.exceptions.widal?.[ag.key]?.statut !==
+                              'Positive'
+                            }
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                exceptions: {
+                                  ...prev.exceptions,
+                                  widal: {
+                                    ...prev.exceptions.widal,
+                                    [ag.key]: {
+                                      ...prev.exceptions.widal?.[ag.key],
+                                      titre: e.target.value,
+                                    },
+                                  },
+                                },
+                              }))
+                            }
+                          >
+                            <option value="">Titre</option>
+                            {[
+                              '1/20',
+                              '1/40',
+                              '1/80',
+                              '1/160',
+                              '1/320',
+                              '1/640',
+                              '1/1280',
+                              '1/2560',
+                            ].map((t) => (
+                              <option key={t} value={t}>
+                                {t}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
                     </div>
                   )}
 
@@ -4469,6 +4604,19 @@ if (data.data.exceptions) {
                         <option value="Verdâtres">Verdâtres</option>
                         <option value="Brunâtres">Brunâtres</option>
                         <option value="Molles">Molles</option>
+                        <option value="Blanchâtres">Blanchâtres</option>
+                        <option value="Blanchâtre">Blanchâtre</option>
+                        <option value="Jaunâtres">Jaunâtres</option>
+                        <option value="Jaunâtre">Jaunâtre</option>
+                        <option value="Glaireuses">Glaireuses</option>
+                        <option value="Dures">Dures</option>
+                        <option value="Moulées">Moulées</option>
+                        <option value="Diarrhéiques">Diarrhéiques</option>
+                        <option value="Sanguinolantes">Sanguinolantes</option>
+                        <option value="Lié">Lié</option>
+                        <option value="Non lié">Non lié</option>
+                        <option value="Caillebottées">Caillebottées</option>
+                        <option value="Peu fétides">Peu fétides</option>
                         {/* // Ajoutez d'autres options selon besoin */}
                       </select>
                       <div className="flex flex-wrap gap-2 mt-2">
@@ -5303,6 +5451,9 @@ if (data.data.exceptions) {
                           Cocci Gram positif
                         </option>
                         <option value="Levures">Levures</option>
+                        <option value="Absence de germes">
+                          Absence de germes
+                        </option>
                       </select>
                     </div>
                     <div className="divider"></div>

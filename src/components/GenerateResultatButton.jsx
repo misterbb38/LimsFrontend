@@ -710,8 +710,16 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
         const c = ionoCells[k]
         return c !== null && typeof c === 'object' ? !!c.valeur : !!c
       })
+    // Widal : les cellules ont un 'statut' (pas de cle 'valeur'), donc
+    // invisibles pour le detecteur generique egalement.
+    const widalCells = test?.exceptions?.widal
+    const hasWidal =
+      !!widalCells &&
+      ['ao', 'ah', 'bo', 'bh', 'co', 'ch', 'to', 'th'].some(
+        (k) => !!widalCells[k]?.statut
+      )
     const hasExceptions =
-      hasIonogramme || hasMeaningfulException(test?.exceptions)
+      hasIonogramme || hasWidal || hasMeaningfulException(test?.exceptions)
 
     // La ref globale sera-t-elle affichee sur la ligne machine (REF_X=155) ?
     // Sert a decaler le bloc Antériorités pour eviter le chevauchement.
@@ -887,7 +895,17 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
     ) {
       excepY = renderIonogrammeException(doc, test, excepY, invoice)
     }
-    
+
+    // Sérologie de Widal et Félix : au moins un antigène renseigné
+    if (
+      test.exceptions.widal &&
+      ['ao', 'ah', 'bo', 'bh', 'co', 'ch', 'to', 'th'].some(
+        (k) => test.exceptions.widal[k]?.statut
+      )
+    ) {
+      excepY = renderWidalException(doc, test, excepY, invoice)
+    }
+
     if (test.exceptions.nfs) {
       const { hematiesEtConstantes, leucocytesEtFormules } = test.exceptions.nfs
       const hasHematies = hasHematiesValues(hematiesEtConstantes)
@@ -1068,6 +1086,54 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
       if (val === undefined || val === null || val === '') return
       const ref = getReference(isObj ? cell : null, r.fb)
       excepY = drawParamRow(doc, excepY, invoice, r.label, val, ref)
+    })
+
+    return excepY + 5
+  }
+
+  // Sérologie de Widal et Félix : une ligne par antigène renseigné.
+  // "Paratyphi" (AO/AH/BO/BH/CO/CH) et "Typhi" (TO/TH) sont en ITALIQUE,
+  // suivis du code antigène, du statut et du titre (1/20 ... 1/2560)
+  // pour les antigènes positifs.
+  const renderWidalException = (doc, test, excepY, invoice) => {
+    const widal = test.exceptions.widal || {}
+    const antigenes = [
+      { key: 'ao', genre: 'Paratyphi', code: 'AO' },
+      { key: 'ah', genre: 'Paratyphi', code: 'AH' },
+      { key: 'bo', genre: 'Paratyphi', code: 'BO' },
+      { key: 'bh', genre: 'Paratyphi', code: 'BH' },
+      { key: 'co', genre: 'Paratyphi', code: 'CO' },
+      { key: 'ch', genre: 'Paratyphi', code: 'CH' },
+      { key: 'to', genre: 'Typhi', code: 'TO' },
+      { key: 'th', genre: 'Typhi', code: 'TH' },
+    ]
+
+    doc.setFontSize(9)
+    antigenes.forEach((ag) => {
+      const cell = widal[ag.key]
+      if (!cell?.statut) return
+      excepY = checkNewPage(doc, excepY, invoice)
+
+      // Genre en italique, puis "(CODE)" en normal a la suite.
+      doc.setFont('Courier', 'italic')
+      doc.text(ag.genre, PDF_LAYOUT.LABEL_X, excepY)
+      const genreWidth = doc.getTextWidth(ag.genre)
+      doc.setFont('Courier', 'normal')
+      doc.text(`(${ag.code})`, PDF_LAYOUT.LABEL_X + genreWidth + 2, excepY)
+
+      // Statut (Positive / Négative) dans la colonne valeur.
+      doc.setFont('Courier', 'bold')
+      doc.text(String(cell.statut), PDF_LAYOUT.VALUE_X, excepY, {
+        align: 'center',
+      })
+
+      // Titre (1/80...) uniquement si positif.
+      doc.setFont('Courier', 'normal')
+      if (cell.statut === 'Positive' && cell.titre) {
+        doc.text(String(cell.titre), PDF_LAYOUT.REF_X, excepY)
+      }
+
+      excepY += PDF_LAYOUT.ROW_H
     })
 
     return excepY + 5
@@ -2563,17 +2629,21 @@ const renderMacroscopicExam = (doc, test, currentY, positionX, invoice) => {
 
     const micro = test?.observations?.microscopique
 
+    // Unite de mesure saisie dans le formulaire (champ / mm3) : elle
+    // s'applique aux numerations Leucocytes et Hematies (ex. "12 /champ").
+    const uniteMicro = micro?.unite ? ` /${micro.unite}` : ''
+
     // ✅ CORRECTION: Utiliser les bons noms de champs (avec 's')
     if (micro?.leucocytes && micro.leucocytes.trim()) {
       currentY = checkNewPage(doc, currentY, invoice)
       doc.text(`Leucocytes:`, 20, currentY)
-      doc.text(String(micro.leucocytes), positionX, currentY)
+      doc.text(`${micro.leucocytes}${uniteMicro}`, positionX, currentY)
       currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 
     if (micro?.hematies && micro.hematies.trim()) {
       doc.text(`Hématies:`, 20, currentY)
-      doc.text(String(micro.hematies), positionX, currentY)
+      doc.text(`${micro.hematies}${uniteMicro}`, positionX, currentY)
       currentY += 5
     }
 
@@ -2709,7 +2779,13 @@ const renderMacroscopicExam = (doc, test, currentY, positionX, invoice) => {
 
     if (micro?.typeDeFlore && micro.typeDeFlore.trim()) {
       doc.text(`Type de flore:`, 20, currentY)
-      doc.text(String(micro.typeDeFlore), positionX, currentY)
+      // Normalise l'ancienne valeur mal orthographiee ("deséquilibrée")
+      // presente dans les resultats deja enregistres.
+      const floreDisplay = micro.typeDeFlore.replace(
+        /des[ée]quilibr[ée]e?/i,
+        'déséquilibrée'
+      )
+      doc.text(String(floreDisplay), positionX, currentY)
       currentY = checkNewPage(doc, currentY + 5, invoice)
     }
 

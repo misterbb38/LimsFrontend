@@ -57,6 +57,18 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
       mg: '',
       // ajoutez les paramètres de votre choix
     },
+    // Sérologie de Widal et Félix : 8 antigènes, chacun avec un statut
+    // (Positive/Négative) et un titre (1/20 ... 1/2560) si positif.
+    widal: {
+      ao: { statut: '', titre: '' },
+      ah: { statut: '', titre: '' },
+      bo: { statut: '', titre: '' },
+      bh: { statut: '', titre: '' },
+      co: { statut: '', titre: '' },
+      ch: { statut: '', titre: '' },
+      to: { statut: '', titre: '' },
+      th: { statut: '', titre: '' },
+    },
 
     // === REMPLACEMENT DE LA SECTION DES NOUVEAUX PARAMÈTRES ===
     // Remplacer les lignes ~140-280 de excepValues par ceci :
@@ -915,6 +927,16 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
       },
       hgpo: { t0: '', t60: '', t120: '' },
       ionogramme: { na: '', k: '', cl: '', ca: '', mg: '' },
+      widal: {
+        ao: { statut: '', titre: '' },
+        ah: { statut: '', titre: '' },
+        bo: { statut: '', titre: '' },
+        bh: { statut: '', titre: '' },
+        co: { statut: '', titre: '' },
+        ch: { statut: '', titre: '' },
+        to: { statut: '', titre: '' },
+        th: { statut: '', titre: '' },
+      },
       nfs: {
         hematiesEtConstantes: {
           gr: { valeur: '', unite: '10^6/uL', reference: '3.80-5.90' },
@@ -1161,6 +1183,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
       return 'hgpo'
     } else if (nameLower.includes('ionogram')) {
       return 'ionogramme'
+    } else if (nameLower.includes('widal')) {
+      return 'widal'
     } else if (nameLower.includes('nfs') || nameLower.includes('numération')) {
       return 'nfs'
     }
@@ -1923,6 +1947,90 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   />
                 </div> */}
                 {/* Ajoutez d’autres ions si besoin */}
+              </div>
+            )}
+            {/* Sérologie de Widal et Félix */}
+            {selectedTestCategory === 'widal' && (
+              <div className="mt-4 w-full">
+                <h3 className="font-bold mb-2">Sérologie de Widal et Félix</h3>
+                {[
+                  { key: 'ao', genre: 'Paratyphi', code: 'AO' },
+                  { key: 'ah', genre: 'Paratyphi', code: 'AH' },
+                  { key: 'bo', genre: 'Paratyphi', code: 'BO' },
+                  { key: 'bh', genre: 'Paratyphi', code: 'BH' },
+                  { key: 'co', genre: 'Paratyphi', code: 'CO' },
+                  { key: 'ch', genre: 'Paratyphi', code: 'CH' },
+                  { key: 'to', genre: 'Typhi', code: 'TO' },
+                  { key: 'th', genre: 'Typhi', code: 'TH' },
+                ].map((ag) => (
+                  <div
+                    key={ag.key}
+                    className="flex flex-wrap gap-4 items-center mb-2"
+                  >
+                    <span className="w-36">
+                      <i>{ag.genre}</i> ({ag.code})
+                    </span>
+                    <select
+                      className="select select-bordered select-sm"
+                      value={excepValues.widal?.[ag.key]?.statut || ''}
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          widal: {
+                            ...prev.widal,
+                            [ag.key]: {
+                              statut: e.target.value,
+                              // Efface le titre si l'antigène n'est pas positif
+                              titre:
+                                e.target.value === 'Positive'
+                                  ? prev.widal?.[ag.key]?.titre || ''
+                                  : '',
+                            },
+                          },
+                        }))
+                      }
+                    >
+                      <option value="">—</option>
+                      <option value="Négative">Négative</option>
+                      <option value="Positive">Positive</option>
+                    </select>
+                    <select
+                      className="select select-bordered select-sm"
+                      value={excepValues.widal?.[ag.key]?.titre || ''}
+                      disabled={
+                        excepValues.widal?.[ag.key]?.statut !== 'Positive'
+                      }
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          widal: {
+                            ...prev.widal,
+                            [ag.key]: {
+                              ...prev.widal?.[ag.key],
+                              titre: e.target.value,
+                            },
+                          },
+                        }))
+                      }
+                    >
+                      <option value="">Titre</option>
+                      {[
+                        '1/20',
+                        '1/40',
+                        '1/80',
+                        '1/160',
+                        '1/320',
+                        '1/640',
+                        '1/1280',
+                        '1/2560',
+                      ].map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
               </div>
             )}
             {/* fns */}
@@ -4072,6 +4180,19 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                 <option value="Verdâtres">Verdâtres</option>
                 <option value="Brunâtres">Brunâtres</option>
                 <option value="Molles">Molles</option>
+                <option value="Blanchâtres">Blanchâtres</option>
+                <option value="Blanchâtre">Blanchâtre</option>
+                <option value="Jaunâtres">Jaunâtres</option>
+                <option value="Jaunâtre">Jaunâtre</option>
+                <option value="Glaireuses">Glaireuses</option>
+                <option value="Dures">Dures</option>
+                <option value="Moulées">Moulées</option>
+                <option value="Diarrhéiques">Diarrhéiques</option>
+                <option value="Sanguinolantes">Sanguinolantes</option>
+                <option value="Lié">Lié</option>
+                <option value="Non lié">Non lié</option>
+                <option value="Caillebottées">Caillebottées</option>
+                <option value="Peu fétides">Peu fétides</option>
               </select>
               <div className="flex flex-wrap gap-2 mt-2">
                 {Array.isArray(macroscopique) &&
@@ -4436,7 +4557,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   <option value="III">III</option>
                   <option value="IV">IV</option>
                   <option value="équilibrée">équilibrée</option>
-                  <option value="deséquilibrée">deséquilibrée</option>
+                  <option value="déséquilibrée">déséquilibrée</option>
                 </select>
               </div>
               <div>
@@ -4769,6 +4890,7 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                 <option value="Cocci Gram négatif">Cocci Gram négatif</option>
                 <option value="Cocci Gram positif">Cocci Gram positif</option>
                 <option value="Levures">Levures</option>
+                <option value="Absence de germes">Absence de germes</option>
               </select>
             </div>
             <div className="divider"></div>
