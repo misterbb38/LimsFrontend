@@ -345,6 +345,8 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
     ca: '',
     mg: '',
   },
+  chargeVirale: { log: '' },
+  hpv: { hpv16: '', hpv18et45: '', autresHpv: '' },
   widal: {
     ao: { statut: '', titre: '' },
     ah: { statut: '', titre: '' },
@@ -635,6 +637,10 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
     return 'ionogramme'
   } else if (nameLower.includes('widal')) {
     return 'widal'
+  } else if (nameLower.includes('charge virale')) {
+    return 'chargeVirale'
+  } else if (nameLower.includes('hpv') || nameLower.includes('papilloma')) {
+    return 'hpv'
   } else if (nameLower.includes('nfs') || nameLower.includes('numération')) {
     return 'nfs'
   }
@@ -986,6 +992,14 @@ function EditResultatButton({ resultatId, analyseId, onResultatUpdated }) {
             },
           },
 
+        }
+        // Charge virale : garantir la structure sur les anciens resultats.
+        if (!fetchedExceptions.chargeVirale) {
+          fetchedExceptions.chargeVirale = { log: '' }
+        }
+        // HPV : garantir la structure sur les anciens resultats.
+        if (!fetchedExceptions.hpv) {
+          fetchedExceptions.hpv = { hpv16: '', hpv18et45: '', autresHpv: '' }
         }
         // Widal : garantir la structure meme sur les anciens resultats
         // enregistres avant l'ajout de ce parametre.
@@ -2364,6 +2378,67 @@ if (data.data.exceptions) {
                     </div>
                   )}
 
+                  {/* Charge virale : resultat complementaire en log */}
+                  {selectedTestCategory === 'chargeVirale' && (
+                    <div className="mt-2">
+                      <label className="label">
+                        Résultat en log (log UI/mL)
+                      </label>
+                      <input
+                        type="text"
+                        className="input input-bordered"
+                        placeholder="ex: 1,00"
+                        value={formData.exceptions.chargeVirale?.log || ''}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            exceptions: {
+                              ...prev.exceptions,
+                              chargeVirale: { log: e.target.value },
+                            },
+                          }))
+                        }
+                      />
+                    </div>
+                  )}
+                  {/* HPV : 3 resultats Positive/Négative */}
+                  {selectedTestCategory === 'hpv' && (
+                    <div className="border p-4 mt-4">
+                      <h3 className="font-bold mb-2">HPV (Papillomavirus)</h3>
+                      {[
+                        { key: 'hpv16', label: 'HPV 16' },
+                        { key: 'hpv18et45', label: 'HPV 18 et 45' },
+                        { key: 'autresHpv', label: 'Autres HPV' },
+                      ].map((h) => (
+                        <div
+                          key={h.key}
+                          className="flex flex-wrap gap-4 items-center mb-2"
+                        >
+                          <span className="w-36">{h.label}</span>
+                          <select
+                            className="select select-bordered select-sm"
+                            value={formData.exceptions.hpv?.[h.key] || ''}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                exceptions: {
+                                  ...prev.exceptions,
+                                  hpv: {
+                                    ...prev.exceptions.hpv,
+                                    [h.key]: e.target.value,
+                                  },
+                                },
+                              }))
+                            }
+                          >
+                            <option value="">—</option>
+                            <option value="Négative">Négative</option>
+                            <option value="Positive">Positive</option>
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   {/* Sérologie de Widal et Félix */}
                   {selectedTestCategory === 'widal' && (
                     <div className="border p-4 mt-4">

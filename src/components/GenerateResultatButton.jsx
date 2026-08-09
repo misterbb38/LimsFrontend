@@ -718,8 +718,16 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
       ['ao', 'ah', 'bo', 'bh', 'co', 'ch', 'to', 'th'].some(
         (k) => !!widalCells[k]?.statut
       )
+    // HPV : chaines plates egalement (hpv16/hpv18et45/autresHpv).
+    const hpvCells = test?.exceptions?.hpv
+    const hasHpv =
+      !!hpvCells &&
+      (!!hpvCells.hpv16 || !!hpvCells.hpv18et45 || !!hpvCells.autresHpv)
     const hasExceptions =
-      hasIonogramme || hasWidal || hasMeaningfulException(test?.exceptions)
+      hasIonogramme ||
+      hasWidal ||
+      hasHpv ||
+      hasMeaningfulException(test?.exceptions)
 
     // La ref globale sera-t-elle affichee sur la ligne machine (REF_X=155) ?
     // Sert a decaler le bloc Antériorités pour eviter le chevauchement.
@@ -783,6 +791,17 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
           currentY += 5
           doc.text(`(${test?.qualitatif})`, 86, currentY)
         }
+      }
+
+      // Charge virale : resultat complementaire en log, affiche sous la
+      // valeur principale (ex. "1,00 log UI/mL").
+      if (test?.exceptions?.chargeVirale?.log) {
+        currentY += 5
+        doc.text(
+          `${test.exceptions.chargeVirale.log} log UI/mL`,
+          90,
+          currentY
+        )
       }
 
       currentY = Math.max(currentY + 5, anterioriteHeight > 0 ? currentY + anterioriteHeight - 10 : currentY)
@@ -904,6 +923,16 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
       )
     ) {
       excepY = renderWidalException(doc, test, excepY, invoice)
+    }
+
+    // HPV : au moins un des 3 resultats renseigne
+    if (
+      test.exceptions.hpv &&
+      (test.exceptions.hpv.hpv16 ||
+        test.exceptions.hpv.hpv18et45 ||
+        test.exceptions.hpv.autresHpv)
+    ) {
+      excepY = renderHpvException(doc, test, excepY, invoice)
     }
 
     if (test.exceptions.nfs) {
@@ -1087,6 +1116,31 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
       const ref = getReference(isObj ? cell : null, r.fb)
       excepY = drawParamRow(doc, excepY, invoice, r.label, val, ref)
     })
+
+    return excepY + 5
+  }
+
+  // HPV (Papillomavirus) : 3 resultats Positive/Négative.
+  const renderHpvException = (doc, test, excepY, invoice) => {
+    const hpv = test.exceptions.hpv || {}
+    const rows = [
+      { key: 'hpv16', label: 'HPV 16' },
+      { key: 'hpv18et45', label: 'HPV 18 et 45' },
+      { key: 'autresHpv', label: 'Autres HPV' },
+    ]
+
+    doc.setFontSize(9)
+    rows.forEach((r) => {
+      const val = hpv[r.key]
+      if (!val) return
+      excepY = checkNewPage(doc, excepY, invoice)
+      doc.setFont('Courier', 'normal')
+      doc.text(r.label, PDF_LAYOUT.LABEL_X, excepY)
+      doc.setFont('Courier', 'bold')
+      doc.text(String(val), PDF_LAYOUT.VALUE_X, excepY, { align: 'center' })
+      excepY += PDF_LAYOUT.ROW_H
+    })
+    doc.setFont('Courier', 'normal')
 
     return excepY + 5
   }

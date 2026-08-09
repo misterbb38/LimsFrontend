@@ -361,6 +361,15 @@ function GenerateFacturePartenaire({ partner, mois, annee, label = 'PARTENAIRE' 
   }
 
   const generatePDF = async () => {
+    // Reference de la facture saisie MANUELLEMENT (pour le moment) :
+    // pre-remplie avec une proposition auto, modifiable avant generation.
+    const referenceAuto = `${partner.partenaire || ''}-${mois || ''}${annee || ''}`
+    const referenceSaisie = window.prompt(
+      'Référence de la facture :',
+      referenceAuto
+    )
+    if (referenceSaisie === null) return // annule -> pas de PDF
+
     const doc = new jsPDF()
     const userColor = getColorValue('gris')
 
@@ -459,14 +468,26 @@ function GenerateFacturePartenaire({ partner, mois, annee, label = 'PARTENAIRE' 
       doc.setFontSize(10)
       doc.text(`${label}: ${partner.partenaire || ''}`, 20, currentY + 2)
       doc.setFontSize(8)
-      doc.text(`Nombre de factures: ${partner.count || ''}`, 20, currentY + 17)
-      const reference = `${partner.partenaire || ''}-${mois || ''}${annee || ''}`
 
-      if (mois && annee) {
-        const moisNom = getMonthName(parseInt(mois, 10))
-        doc.text(`Période: ${moisNom} ${annee}`, 20, currentY + 12)
-        doc.text(`Référence: ${reference}`, 20, currentY + 7) // Ajouter la référence
+      // MOIS de la facture, juste sous le nom du partenaire : celui du
+      // filtre s'il est renseigne, sinon deduit de la premiere etiquette.
+      let moisNom = ''
+      if (mois) {
+        moisNom = getMonthName(parseInt(mois, 10))
+      } else if (partner.etiquettes?.length > 0) {
+        const d = new Date(partner.etiquettes[0].createdAt)
+        if (!isNaN(d.getTime())) moisNom = getMonthName(d.getMonth() + 1)
       }
+      if (moisNom) {
+        doc.text(`Mois: ${moisNom}${annee ? ' ' + annee : ''}`, 20, currentY + 7)
+      }
+
+      // Reference saisie manuellement au moment de la generation.
+      if (referenceSaisie) {
+        doc.text(`Référence: ${referenceSaisie}`, 20, currentY + 12)
+      }
+
+      doc.text(`Nombre de factures: ${partner.count || ''}`, 20, currentY + 17)
       const today = new Date()
       const formattedDate = today.toLocaleDateString('fr-FR')
       doc.text(`Date: ${formattedDate}`, 170, currentY + 7)

@@ -57,6 +57,10 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
       mg: '',
       // ajoutez les paramètres de votre choix
     },
+    // Charge virale : resultat complementaire en log UI/mL.
+    chargeVirale: { log: '' },
+    // HPV : 3 resultats Positive/Négative.
+    hpv: { hpv16: '', hpv18et45: '', autresHpv: '' },
     // Sérologie de Widal et Félix : 8 antigènes, chacun avec un statut
     // (Positive/Négative) et un titre (1/20 ... 1/2560) si positif.
     widal: {
@@ -927,6 +931,8 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
       },
       hgpo: { t0: '', t60: '', t120: '' },
       ionogramme: { na: '', k: '', cl: '', ca: '', mg: '' },
+      chargeVirale: { log: '' },
+      hpv: { hpv16: '', hpv18et45: '', autresHpv: '' },
       widal: {
         ao: { statut: '', titre: '' },
         ah: { statut: '', titre: '' },
@@ -1185,6 +1191,13 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
       return 'ionogramme'
     } else if (nameLower.includes('widal')) {
       return 'widal'
+    } else if (nameLower.includes('charge virale')) {
+      return 'chargeVirale'
+    } else if (
+      nameLower.includes('hpv') ||
+      nameLower.includes('papilloma')
+    ) {
+      return 'hpv'
     } else if (nameLower.includes('nfs') || nameLower.includes('numération')) {
       return 'nfs'
     }
@@ -1947,6 +1960,56 @@ function AddResultatForm({ analyseId, patientId, onResultatChange }) {
                   />
                 </div> */}
                 {/* Ajoutez d’autres ions si besoin */}
+              </div>
+            )}
+            {/* Charge virale : resultat complementaire en log */}
+            {selectedTestCategory === 'chargeVirale' && (
+              <div className="mt-2">
+                <label className="label">Résultat en log (log UI/mL)</label>
+                <input
+                  type="text"
+                  className="input input-bordered"
+                  placeholder="ex: 1,00"
+                  value={excepValues.chargeVirale?.log || ''}
+                  onChange={(e) =>
+                    setExcepValues((prev) => ({
+                      ...prev,
+                      chargeVirale: { log: e.target.value },
+                    }))
+                  }
+                />
+              </div>
+            )}
+            {/* HPV : 3 resultats Positive/Négative */}
+            {selectedTestCategory === 'hpv' && (
+              <div className="mt-4 w-full">
+                <h3 className="font-bold mb-2">HPV (Papillomavirus)</h3>
+                {[
+                  { key: 'hpv16', label: 'HPV 16' },
+                  { key: 'hpv18et45', label: 'HPV 18 et 45' },
+                  { key: 'autresHpv', label: 'Autres HPV' },
+                ].map((h) => (
+                  <div
+                    key={h.key}
+                    className="flex flex-wrap gap-4 items-center mb-2"
+                  >
+                    <span className="w-36">{h.label}</span>
+                    <select
+                      className="select select-bordered select-sm"
+                      value={excepValues.hpv?.[h.key] || ''}
+                      onChange={(e) =>
+                        setExcepValues((prev) => ({
+                          ...prev,
+                          hpv: { ...prev.hpv, [h.key]: e.target.value },
+                        }))
+                      }
+                    >
+                      <option value="">—</option>
+                      <option value="Négative">Négative</option>
+                      <option value="Positive">Positive</option>
+                    </select>
+                  </div>
+                ))}
               </div>
             )}
             {/* Sérologie de Widal et Félix */}

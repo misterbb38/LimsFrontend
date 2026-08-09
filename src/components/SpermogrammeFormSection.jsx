@@ -197,7 +197,17 @@ function SpermogrammeFormSection({ excepValues, setExcepValues, conclusionsList 
       ? conclusionsList
       : null
   const conclusionsSpg = conclusionsFromTest || CONCLUSION_SPG
-  const conclusionsScg = conclusionsFromTest || CONCLUSION_SCG
+  // Spermocytogramme : UNIQUEMENT "Normal" et "Tératospermie". On garde
+  // la ligne descriptive "Tératospermie : Pourcentage élevé..." si elle
+  // est configurée sur le test ; toutes les autres conclusions (Normo-,
+  // Oligo-, Asthéno-, Azoo-, etc.) sont exclues de ce select.
+  const teratoFromTest = (conclusionsFromTest || []).filter((c) =>
+    /^t[ée]ratospermie/i.test(String(c).trim())
+  )
+  const conclusionsScg = [
+    'Normal',
+    ...(teratoFromTest.length > 0 ? teratoFromTest : ['Tératospermie']),
+  ]
 
   // Calcul automatique en temps reel : ejaculat total = volume x numeration.
   // IMPORTANT : on retire les espaces (separateurs de milliers a la francaise)
