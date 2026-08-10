@@ -361,14 +361,59 @@ function GenerateFacturePartenaire({ partner, mois, annee, label = 'PARTENAIRE' 
   }
 
   const generatePDF = async () => {
-    // Reference de la facture saisie MANUELLEMENT (pour le moment) :
-    // pre-remplie avec une proposition auto, modifiable avant generation.
-    const referenceAuto = `${partner.partenaire || ''}-${mois || ''}${annee || ''}`
-    const referenceSaisie = window.prompt(
-      'Référence de la facture :',
-      referenceAuto
-    )
-    if (referenceSaisie === null) return // annule -> pas de PDF
+    // Reference de la facture : ENREGISTREE une seule fois par
+    // partenaire + periode. A la premiere generation, l'utilisateur la
+    // saisit (pre-remplie avec une proposition auto) et elle est
+    // sauvegardee cote serveur ; les impressions suivantes reutilisent
+    // exactement la meme reference (pas de nouvelle saisie).
+    const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null')
+    const token = userInfo?.token
+    const authHeaders = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    }
+    const refKey = {
+      partenaireId: partner.partenaireId,
+      mois: mois || '',
+      annee: annee || '',
+    }
+
+    let referenceSaisie = ''
+    try {
+      const params = new URLSearchParams(refKey)
+      const res = await fetch(
+        `${apiUrl}/api/eti/facture-reference?${params}`,
+        { headers: authHeaders }
+      )
+      const data = await res.json()
+      if (data.success && data.data?.reference) {
+        referenceSaisie = data.data.reference
+      }
+    } catch (e) {
+      console.error('Lecture de la référence impossible:', e)
+    }
+
+    if (!referenceSaisie) {
+      const referenceAuto = `${partner.partenaire || ''}-${mois || ''}${annee || ''}`
+      const saisie = window.prompt(
+        'Référence de la facture (enregistrée définitivement) :',
+        referenceAuto
+      )
+      if (saisie === null) return // annule -> pas de PDF
+      referenceSaisie = saisie.trim()
+      if (referenceSaisie) {
+        try {
+          await fetch(`${apiUrl}/api/eti/facture-reference`, {
+            method: 'POST',
+            headers: authHeaders,
+            body: JSON.stringify({ ...refKey, reference: referenceSaisie }),
+          })
+        } catch (e) {
+          console.error('Sauvegarde de la référence impossible:', e)
+        }
+      }
+    }
 
     const doc = new jsPDF()
     const userColor = getColorValue('gris')
