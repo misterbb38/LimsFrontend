@@ -19,6 +19,7 @@ function Personnel() {
     'superadmin',
     'medecin',
     'docteur',
+    'biologiste',
     'technicien',
     'preleveur',
     'accueil',
@@ -104,7 +105,7 @@ function Personnel() {
 
   // Vérifier si le type d'utilisateur est autorisé
   if (
-    !['superadmin', 'medecin', 'technicien', 'preleveur', 'docteur', 'acceuil', 'accueil'].includes(
+    !['superadmin', 'medecin', 'docteur', 'biologiste', 'preleveur', 'acceuil', 'accueil'].includes(
       userInfo?.userType
     )
   ) {
@@ -165,6 +166,8 @@ function Personnel() {
         >
           <option value="">Tous les profils</option>
           <option value="medecin">Médecin</option>
+          <option value="docteur">Docteur</option>
+          <option value="biologiste">Biologiste</option>
           <option value="technicien">Technicien</option>
           <option value="preleveur">Préleveur</option>
           <option value="accueil">Accueil</option>

@@ -667,6 +667,8 @@ function EditPatientButton({ userId, onuserUpdated }) {
                   <option value="">Sélectionnez un type</option>
                   <option value="patient">Patient</option>
                   <option value="medecin">Medecin</option>
+                  <option value="docteur">Docteur</option>
+                  <option value="biologiste">Biologiste</option>
                   <option value="technicien">Technicien</option>
                   <option value="preleveur">Preleveur</option>
                   <option value="acceuil">Accueil</option>

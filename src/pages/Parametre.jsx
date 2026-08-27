@@ -15,6 +15,7 @@ const Parametre = () => {
     couleur: '',
     nomEntreprise: '',
     profil: '', // Titres / qualifications affichees sous le nom dans le PDF
+    password: '', // Nouveau mot de passe (vide = inchange)
   })
   const [logo, setLogo] = useState(null) // Pour gérer le fichier image sélectionné
   const [isModified, setIsModified] = useState(false)
@@ -59,6 +60,7 @@ const Parametre = () => {
           nomEntreprise: data.nomEntreprise || '',
           couleur: data.couleur || '',
           profil: data.profil || '',
+          password: '', // jamais pre-rempli
         })
       } catch (error) {
         console.error('Erreur lors de la récupération du profil:', error)
@@ -144,6 +146,7 @@ const Parametre = () => {
 
       const updatedUser = await response.json()
       localStorage.setItem('userInfo', JSON.stringify(updatedUser))
+      setUser((prev) => ({ ...prev, password: '' })) // vider le champ apres envoi
       setIsModified(false)
       setIsSuccess(true)
       setToastMessage('Profil mis à jour avec succès !!')
@@ -277,6 +280,24 @@ const Parametre = () => {
                         name="profil"
                         value={user.profil}
                         onChange={handleChange}
+                      />
+                    </label>
+                  </div>
+
+                  {/* Changement de mot de passe : disponible pour TOUS les
+                      profils (technicien, accueil, preleveur, medecin...).
+                      Laisser vide pour ne pas le changer. */}
+                  <div className="mb-5.5">
+                    <label className="input input-bordered flex items-center gap-2">
+                      Nouveau mot de passe
+                      <input
+                        type="password"
+                        className="grow"
+                        placeholder="Laisser vide pour ne pas changer"
+                        name="password"
+                        value={user.password}
+                        onChange={handleChange}
+                        autoComplete="new-password"
                       />
                     </label>
                   </div>

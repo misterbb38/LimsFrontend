@@ -118,7 +118,7 @@ function PartenaireCliniqueList() {
   // preleveur ont acces a la gestion des cliniques.
   const userInfo = JSON.parse(localStorage.getItem('userInfo'))
   if (
-    !['superadmin', 'medecin', 'technicien', 'preleveur', 'docteur', 'acceuil', 'accueil'].includes(
+    !['superadmin', 'medecin', 'docteur', 'biologiste', 'preleveur', 'acceuil', 'accueil'].includes(
       userInfo?.userType
     )
   ) {

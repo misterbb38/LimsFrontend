@@ -120,7 +120,7 @@ function EtiquetteList() {
 
   // Vérifier si le type d'utilisateur est autorisé
   if (
-    !['superadmin', 'medecin', 'technicien', 'preleveur', 'docteur', 'acceuil', 'accueil'].includes(
+    !['superadmin', 'medecin', 'docteur', 'biologiste', 'preleveur', 'acceuil', 'accueil'].includes(
       userInfo?.userType
     )
   ) {

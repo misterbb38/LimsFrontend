@@ -183,6 +183,7 @@ function Facture() {
       'technicien',
       'preleveur',
       'docteur',
+      'biologiste',
       'accueil',
       'acceuil',
     ].includes(userInfo?.userType)

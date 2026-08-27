@@ -740,6 +740,23 @@ function Compta() {
   const aucunFiltre =
     !annee && !mois && !typeFilter && !partenaireFilter && !statutFilter
 
+  // Page financiere : interdite aux techniciens et biologistes.
+  const currentUserInfo = JSON.parse(localStorage.getItem('userInfo') || 'null')
+  if (
+    !['superadmin', 'medecin', 'docteur', 'preleveur', 'acceuil', 'accueil'].includes(
+      currentUserInfo?.userType
+    )
+  ) {
+    return (
+      <div role="alert" className="alert alert-warning">
+        <span>
+          Informations non autorisées. Vous n&apos;avez pas le droit
+          d&apos;accéder à cette page.
+        </span>
+      </div>
+    )
+  }
+
   return (
     <div className="base-content bg-base-100 mx-auto p-4 min-h-[800px]">
       <Chatbot />

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { Navigate } from 'react-router-dom'
 import NavigationBreadcrumb from '../components/NavigationBreadcrumb'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -219,11 +220,23 @@ const HomeContent = () => {
     }
   }, [analyses])
 
+  // Le technicien n'a pas acces a l'Accueil (uniquement Analyse,
+  // Patient et Profil) : redirection directe vers Analyse a la connexion.
+  if (userInfo?.userType === 'technicien') {
+    return <Navigate to="/dash/Analyse" replace />
+  }
+
   // Verification du role
   if (
-    !['superadmin', 'medecin', 'technicien', 'preleveur', 'docteur'].includes(
-      userInfo?.userType
-    )
+    ![
+      'superadmin',
+      'medecin',
+      'docteur',
+      'biologiste',
+      'preleveur',
+      'accueil',
+      'acceuil',
+    ].includes(userInfo?.userType)
   ) {
     return (
       <div role="alert" className="alert alert-warning m-4">

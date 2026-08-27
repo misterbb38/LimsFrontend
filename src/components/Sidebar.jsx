@@ -127,148 +127,128 @@ function Sidebar() {
   const userInfo = JSON.parse(localStorage.getItem('userInfo'))
   const userType = userInfo?.userType
 
+  // ============ ACCES PAR TYPE D'UTILISATEUR ============
+  // - superadmin, medecin, docteur : TOUT (le superadmin peut en plus
+  //   modifier les comptes des autres via Personnel/Patient).
+  // - biologiste : tout SAUF les pages financieres (Compta,
+  //   Facture(Partenaire), Demandes paiement).
+  // - technicien : uniquement Analyse, Patient (contacts) et Profil.
+  // - preleveur, accueil : acces complet (non restreints pour le moment).
+  const FULL_ACCESS = [
+    'superadmin',
+    'medecin',
+    'docteur',
+    'preleveur',
+    'accueil',
+    'acceuil',
+  ]
+  // Pages generales (non financieres) : + biologiste
+  const STANDARD = [...FULL_ACCESS, 'biologiste']
+  // Pages financieres : PAS de biologiste ni technicien
+  const FINANCE = FULL_ACCESS
+  // Pages du technicien : Analyse, Patient, Profil
+  const AVEC_TECHNICIEN = [...STANDARD, 'technicien']
+
   const menuItems = [
     {
       id: 1,
       label: 'Accueil',
       route: '/dash',
       icon: faHome,
-      allowedUserTypes: ['superadmin', 'medecin', 'docteur'],
+      allowedUserTypes: STANDARD,
     },
     {
       id: 2,
       label: 'Analyse',
       route: '/dash/Analyse',
       icon: faFileMedical,
-      allowedUserTypes: [
-        'medecin',
-        'superadmin',
-        'technicien',
-        'acceuil',
-        'accueil',
-        'docteur',
-        'preleveur',
-      ],
+      allowedUserTypes: AVEC_TECHNICIEN,
     },
     {
       id: 3,
       label: 'Parametre',
       route: '/dash/test',
       icon: faFlask,
-      allowedUserTypes: ['superadmin', 'medecin', 'docteur'],
+      allowedUserTypes: STANDARD,
     },
     {
       id: 4,
       label: 'Patient',
       route: '/dash/patient',
       icon: faUsers,
-      allowedUserTypes: [
-        'superadmin',
-        'medecin',
-        'docteur',
-        'acceuil',
-        'accueil',
-        'technicien',
-      ],
+      allowedUserTypes: AVEC_TECHNICIEN,
     },
     {
       id: 5,
       label: 'Personnel',
       route: '/dash/personnel',
       icon: faUsers,
-      allowedUserTypes: ['superadmin', 'medecin'],
+      allowedUserTypes: STANDARD,
     },
     {
       id: 6,
       label: 'Clinique',
       route: '/dash/partenaireclinique',
       icon: faBuilding,
-      allowedUserTypes: ['superadmin', 'medecin', 'docteur'],
+      allowedUserTypes: STANDARD,
     },
     {
       id: 7,
       label: 'Assurance/IPM',
       route: '/dash/partenaire',
       icon: faFileMedical,
-      allowedUserTypes: ['superadmin', 'medecin', 'docteur'],
+      allowedUserTypes: STANDARD,
     },
     {
       id: 8,
       label: 'Ettiquette',
       route: '/dash/ettiquette',
       icon: faClipboardList,
-      allowedUserTypes: ['superadmin', 'medecin', 'technicien', 'docteur'],
+      allowedUserTypes: STANDARD,
     },
     {
       id: 9,
       label: 'Facture(Partenaire)',
       route: '/dash/partenairefacture',
       icon: faFileInvoice,
-      allowedUserTypes: [
-        'superadmin',
-        'medecin',
-        'technicien',
-        'medecin',
-        'preleveur',
-        'docteur',
-        'acceuil',
-        'accueil',
-      ],
+      allowedUserTypes: FINANCE,
     },
     {
       id: 11,
       label: 'Compta',
       route: '/dash/compta',
       icon: faChartLine,
-      allowedUserTypes: ['superadmin', 'medecin', 'docteur', 'acceuil', 'accueil'],
+      allowedUserTypes: FINANCE,
     },
     {
       id: 13,
       label: 'Demandes paiement',
       route: '/dash/demande-payement',
       icon: faHandHoldingDollar,
-      allowedUserTypes: ['superadmin', 'medecin', 'docteur', 'acceuil', 'accueil'],
+      allowedUserTypes: FINANCE,
     },
     {
       id: 12,
       label: 'Logs',
       route: '/dash/logs',
       icon: faClipboardCheck,
-      allowedUserTypes: ['superadmin', 'medecin', 'docteur'],
+      allowedUserTypes: STANDARD,
     },
     {
       id: 10,
       label: 'Profil',
       route: '/dash/parametre',
       icon: faCog,
-      allowedUserTypes: [
-        'superadmin',
-        'medecin',
-        'technicien',
-        'medecin',
-        'preleveur',
-        'docteur',
-        'acceuil',
-        'accueil',
-      ],
+      allowedUserTypes: AVEC_TECHNICIEN,
     },
   ]
 
-  // Pour le moment : TOUS les employes voient TOUTES les pages. Les clients
-  // (patient) et les partenaires n'ont pas acces a ce menu (ils ont leur
-  // propre tableau de bord). On ignore donc allowedUserTypes par item et on
-  // se base uniquement sur "est-ce un employe ?".
-  const EMPLOYEE_TYPES = [
-    'superadmin',
-    'medecin',
-    'docteur',
-    'technicien',
-    'preleveur',
-    'accueil',
-    'acceuil',
-  ]
-  const isEmployee = EMPLOYEE_TYPES.includes(userType)
-  const filteredMenuItems = isEmployee ? menuItems : []
+  // Filtrage par role : chaque item liste explicitement les types
+  // autorises. Les clients (patient) et partenaires n'ont pas acces a ce
+  // menu (ils ont leur propre tableau de bord).
+  const filteredMenuItems = menuItems.filter((item) =>
+    item.allowedUserTypes.includes(userType)
+  )
 
   const handleMenuItemClick = (id) => {
     setSelectedMenuItem(id)
