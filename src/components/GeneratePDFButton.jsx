@@ -217,6 +217,12 @@ function GeneratePDFButton({ invoice }) {
         invoice.userId.age
       )
 
+      // Sexe : vide si inconnu ou absent (meme regle que le ticket).
+      const sexeDisplay =
+        invoice.userId.sexe && invoice.userId.sexe !== 'inconnu'
+          ? invoice.userId.sexe
+          : ''
+
       doc.text(`Âge: ${ageDisplay}`, 135, currentY + 17)
 
       doc.text(`Tel: ${invoice.userId.telephone || ''}`, 135, currentY + 22)
@@ -255,6 +261,8 @@ function GeneratePDFButton({ invoice }) {
         35,
         currentY + 17
       )
+      // Sexe du patient, sous "Nature" (slot libre de la colonne gauche).
+      doc.text(`Sexe: ${sexeDisplay}`, 35, currentY + 22)
       doc.setFont('helvetica', 'normal')
 
       // En-tête des articles avec fond vert

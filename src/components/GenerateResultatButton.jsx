@@ -592,6 +592,14 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
     const dateLabelWidth = doc.getTextWidth('Date: ')
     doc.setFont('Courier', 'bold')
     doc.text(formattedDate, 35 + dateLabelWidth, currentY + 12)
+
+    // Sexe : vide si inconnu ou absent (meme regle que le ticket),
+    // slot libre de la colonne gauche sous la date.
+    const sexeDisplay =
+      invoice.userId.sexe && invoice.userId.sexe !== 'inconnu'
+        ? invoice.userId.sexe
+        : ''
+    doc.text(`Sexe: ${sexeDisplay}`, 35, currentY + 17)
     doc.setFont('Courier', 'normal')
   }
 
@@ -3596,7 +3604,7 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
           rows: [
             new TableRow({
               children: [
-                infoCell([`NIP: ${safe(u.nip)}`, `Date: ${dateDossier}`], 50),
+                infoCell([`NIP: ${safe(u.nip)}`, `Date: ${dateDossier}`, `Sexe: ${u.sexe && u.sexe !== 'inconnu' ? u.sexe : ''}`], 50),
                 infoCell([`Nº Dossier: ${safe(invoice?.identifiant)}`, `Nom: ${nomComplet}`, `Âge: ${ageDisplay}`, `Tel: ${formatTel(u.telephone)}`], 50),
               ],
             }),
