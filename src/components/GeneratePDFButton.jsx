@@ -611,9 +611,11 @@ function GeneratePDFButton({ invoice }) {
       // centré entre les colonnes "B" (x=110) et "Total" (x=166),
       // toujours sur la PREMIÈRE page quelle que soit la longueur du tableau.
       const text =
-        invoice.statusPayement === 'Reliquat'
-          ? `Facture sous ${invoice.statusPayement}`
-          : `Facture ${invoice.statusPayement}`
+        invoice.statusPayement === 'Prise en charge'
+          ? 'Prise en charge' // partenaire a 100% : pas de prefixe "Facture"
+          : invoice.statusPayement === 'Reliquat'
+            ? `Facture sous ${invoice.statusPayement}`
+            : `Facture ${invoice.statusPayement}`
 
       // Mémoriser la page courante pour y revenir ensuite
       const pageAvantStatut = doc.internal.getCurrentPageInfo().pageNumber

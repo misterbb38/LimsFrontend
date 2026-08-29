@@ -31,6 +31,7 @@ const COLOR_PAIE = {
   Payée: '#10b981',
   Impayée: '#ef4444',
   Reliquat: '#f59e0b',
+  'Prise en charge': '#3b82f6',
 }
 
 const MODE_COLOR = {
@@ -371,6 +372,7 @@ function Compta() {
       nbPayees: 0,
       nbImpayees: 0,
       nbReliquat: 0,
+      nbPriseEnCharge: 0,
       totalFacture: 0,
       totalPaye: 0,
       totalImpaye: 0,
@@ -399,7 +401,10 @@ function Compta() {
         target.totalFacture += prixTotal
         const patientPaye = avance >= prixPat
         const partenaireOk = partenaireAttendu === 0
-        if (patientPaye && partenaireOk) target.nbPayees++
+        // Prise en charge (partenaire 100%) : categorie separee, ne
+        // compte ni dans payees ni dans impayees.
+        if (a.statusPayement === 'Prise en charge') target.nbPriseEnCharge++
+        else if (patientPaye && partenaireOk) target.nbPayees++
         else if (avance > 0 || partenairePaye > 0) target.nbReliquat++
         else target.nbImpayees++
         target.totalPaye += avance + partenairePaye
@@ -609,6 +614,7 @@ function Compta() {
       if (tab === 'paye') return a.statusPayement === 'Payée'
       if (tab === 'impaye') return a.statusPayement === 'Impayée'
       if (tab === 'reliquat') return a.statusPayement === 'Reliquat'
+      if (tab === 'prisecharge') return a.statusPayement === 'Prise en charge'
       return true
     })
   }
@@ -852,6 +858,7 @@ function Compta() {
                 <option value="Payée">Payée</option>
                 <option value="Impayée">Impayée</option>
                 <option value="Reliquat">Reliquat</option>
+                <option value="Prise en charge">Prise en charge</option>
               </select>
             </div>
 
@@ -1976,6 +1983,13 @@ function GroupDrawer({ groupe, hasFiliales, tab, setTab, analyses, etiquetteByAn
             >
               Reliquat ({groupe.nbReliquat})
             </a>
+            <a
+              role="tab"
+              className={`tab ${tab === 'prisecharge' ? 'tab-active' : ''}`}
+              onClick={() => setTab('prisecharge')}
+            >
+              Prise en charge ({groupe.nbPriseEnCharge})
+            </a>
           </div>
         </div>
 
@@ -2026,11 +2040,13 @@ function GroupDrawer({ groupe, hasFiliales, tab, setTab, analyses, etiquetteByAn
                     <td>
                       <span
                         className={`badge badge-xs ${
-                          a.statusPayement === 'Payée'
-                            ? 'badge-success'
-                            : a.statusPayement === 'Reliquat'
-                              ? 'badge-warning'
-                              : 'badge-error'
+                          a.statusPayement === 'Prise en charge'
+                            ? 'badge-info'
+                            : a.statusPayement === 'Payée'
+                              ? 'badge-success'
+                              : a.statusPayement === 'Reliquat'
+                                ? 'badge-warning'
+                                : 'badge-error'
                         }`}
                       >
                         {a.statusPayement}

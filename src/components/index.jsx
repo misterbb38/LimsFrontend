@@ -119,6 +119,7 @@ const HomeContent = () => {
     let validees = 0
     let aValider = 0
     let enCours = 0
+    let priseEnCharge = 0
 
     analyses.forEach((a) => {
       if (!a.createdAt) return
@@ -145,9 +146,11 @@ const HomeContent = () => {
       // Semaine precedente
       if (d >= previousWeekStart && d < weekStart) previousWeekList.push(a)
 
-      // Statut global
+      // Statut global. "Prise en charge" (partenaire 100%) = categorie
+      // separee : ne compte ni dans validees ni dans l'encaisse.
       if (a.statusPayement === 'Payée') validees++
       else if (a.statusPayement === 'Reliquat') enCours++
+      else if (a.statusPayement === 'Prise en charge') priseEnCharge++
       else aValider++
 
       // Impayes (global)
@@ -216,6 +219,7 @@ const HomeContent = () => {
       validees,
       aValider,
       enCours,
+      priseEnCharge,
       recentes,
     }
   }, [analyses])
@@ -270,11 +274,12 @@ const HomeContent = () => {
     year: 'numeric',
   })
 
-  const COLORS_STATUT = ['#10b981', '#f59e0b', '#ef4444']
+  const COLORS_STATUT = ['#10b981', '#f59e0b', '#ef4444', '#3b82f6']
   const dataStatut = [
     { name: 'Validées', value: stats.validees },
     { name: 'Reliquat', value: stats.enCours },
     { name: 'En attente', value: stats.aValider },
+    { name: 'Prise en charge', value: stats.priseEnCharge },
   ]
   const dataSexe = patientStats
     ? [
@@ -547,11 +552,13 @@ const HomeContent = () => {
                   <td>
                     <span
                       className={`badge badge-sm ${
-                        a.statusPayement === 'Payée'
-                          ? 'badge-success'
-                          : a.statusPayement === 'Reliquat'
-                            ? 'badge-warning'
-                            : 'badge-error'
+                        a.statusPayement === 'Prise en charge'
+                          ? 'badge-info'
+                          : a.statusPayement === 'Payée'
+                            ? 'badge-success'
+                            : a.statusPayement === 'Reliquat'
+                              ? 'badge-warning'
+                              : 'badge-error'
                       }`}
                     >
                       {a.statusPayement}

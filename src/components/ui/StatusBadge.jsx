@@ -36,6 +36,7 @@ const STATUS_COLOR = {
   'payee':                 'success',
   'impayee':               'error',
   'reliquat':              'warning',
+  'prise en charge':       'info',
 }
 
 // Libelles courts pour les cellules de tableau
