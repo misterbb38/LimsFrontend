@@ -118,6 +118,7 @@ import {
   faChartLine,
   faClipboardCheck,
   faHandHoldingDollar,
+  faSyringe, // Icone pour Prelevement
 } from '@fortawesome/free-solid-svg-icons'
 import logo from '../images/bioramlogo.png'
 
@@ -162,6 +163,13 @@ function Sidebar() {
       label: 'Analyse',
       route: '/dash/Analyse',
       icon: faFileMedical,
+      allowedUserTypes: AVEC_TECHNICIEN,
+    },
+    {
+      id: 14,
+      label: 'Prélèvement',
+      route: '/dash/prelevement',
+      icon: faSyringe,
       allowedUserTypes: AVEC_TECHNICIEN,
     },
     {

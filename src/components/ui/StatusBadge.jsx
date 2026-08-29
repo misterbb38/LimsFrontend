@@ -37,6 +37,12 @@ const STATUS_COLOR = {
   'impayee':               'error',
   'reliquat':              'warning',
   'prise en charge':       'info',
+  // Prelevement (cles normalisees sans accents par norm())
+  'dossier non preleve':   'error',
+  'effectue':              'success',
+  'non effectue':          'warning',
+  'a reprelever':          'error',
+  'a controler':           'warning',
 }
 
 // Libelles courts pour les cellules de tableau

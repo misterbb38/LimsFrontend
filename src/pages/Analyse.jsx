@@ -284,6 +284,9 @@ function Facture() {
                     {' '}
                     Status
                   </th>
+                  <th className="text-xs uppercase tracking-wide text-base-content/60">
+                    Prélèvement
+                  </th>
 
                   <th className="text-xs uppercase tracking-wide text-base-content/60">
                     Actions
@@ -328,6 +331,14 @@ function Facture() {
                             : 'Non défini'
                         }
                         compact
+                      />
+                    </td>
+
+                    <td>
+                      <StatusBadge
+                        value={
+                          facture.prelevement?.statut || 'Dossier non prélevé'
+                        }
                       />
                     </td>
 
