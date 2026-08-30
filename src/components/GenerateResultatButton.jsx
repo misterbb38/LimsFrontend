@@ -7,7 +7,7 @@ import jsPDF from 'jspdf'
 import PropTypes from 'prop-types'
 import logoLeft from '../images/bioramlogo.png'
 import logoRight from '../images/logo2.png'
-import { formatAge } from '../utils/age'
+import { formatAgeSexe } from '../utils/age'
 
 /**
  * Composant pour générer un PDF de résultat d'analyse médicale.
@@ -563,14 +563,15 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
       currentY + 12
     )
 
-    // Age : calcule depuis la date de naissance (gere les nouveau-nes :
-    // mois/jours), sinon age numerique, sinon VIDE.
-    const ageDisplay = formatAge(
+    // Age + sexe combines au format "27 ans / F" (sexe omis si
+    // inconnu/absent, age omis si indisponible).
+    const ageSexeDisplay = formatAgeSexe(
       invoice.userId.dateNaissance,
-      invoice.userId.age
+      invoice.userId.age,
+      invoice.userId.sexe
     )
 
-    doc.text(`Âge: ${ageDisplay}`, 135, currentY + 17)
+    doc.text(`Âge: ${ageSexeDisplay}`, 135, currentY + 17)
     // Format telephone : enleve prefixe +221 et tout ce qui n'est pas
     // un chiffre, puis groupe 2-3-2-2 (ex: 78 967 67 67).
     const formatTel = (raw) => {
@@ -593,13 +594,10 @@ const printLeucocytesLine = (doc, posY, label, pctValue, mainValue, unit, refere
     doc.setFont('Courier', 'bold')
     doc.text(formattedDate, 35 + dateLabelWidth, currentY + 12)
 
-    // Sexe : vide si inconnu ou absent (meme regle que le ticket),
-    // slot libre de la colonne gauche sous la date.
-    const sexeDisplay =
-      invoice.userId.sexe && invoice.userId.sexe !== 'inconnu'
-        ? invoice.userId.sexe
-        : ''
-    doc.text(`Sexe: ${sexeDisplay}`, 35, currentY + 17)
+    // Prescripteur (texte libre saisi sur l'analyse), colonne gauche.
+    if (invoice?.prescripteur) {
+      doc.text(`Prescripteur: ${invoice.prescripteur}`, 35, currentY + 17)
+    }
     doc.setFont('Courier', 'normal')
   }
 
@@ -3577,7 +3575,8 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
       const u = invoice.userId
       const nomComplet = `${(u.prenom || '').toUpperCase()} ${(u.nom || '').toUpperCase()}`.trim()
       // Age : gere les nouveau-nes (mois/jours) via la date de naissance.
-      const ageDisplay = formatAge(u.dateNaissance, u.age)
+      // Age + sexe combines : "27 ans / F".
+      const ageSexeDisplay = formatAgeSexe(u.dateNaissance, u.age, u.sexe)
       const formatTel = (raw) => {
         if (!raw) return ''
         let d = String(raw).replace(/\D/g, '')
@@ -3604,8 +3603,17 @@ const renderChemistryExam = (doc, test, currentY, positionX, invoice) => {
           rows: [
             new TableRow({
               children: [
-                infoCell([`NIP: ${safe(u.nip)}`, `Date: ${dateDossier}`, `Sexe: ${u.sexe && u.sexe !== 'inconnu' ? u.sexe : ''}`], 50),
-                infoCell([`Nº Dossier: ${safe(invoice?.identifiant)}`, `Nom: ${nomComplet}`, `Âge: ${ageDisplay}`, `Tel: ${formatTel(u.telephone)}`], 50),
+                infoCell(
+                  [
+                    `NIP: ${safe(u.nip)}`,
+                    `Date: ${dateDossier}`,
+                    ...(invoice?.prescripteur
+                      ? [`Prescripteur: ${sanitize(invoice.prescripteur)}`]
+                      : []),
+                  ],
+                  50
+                ),
+                infoCell([`Nº Dossier: ${safe(invoice?.identifiant)}`, `Nom: ${nomComplet}`, `Âge: ${ageSexeDisplay}`, `Tel: ${formatTel(u.telephone)}`], 50),
               ],
             }),
           ],

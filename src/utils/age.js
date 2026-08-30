@@ -65,6 +65,17 @@ export function formatAge(dateNaissance, age) {
   return ''
 }
 
+// Age + sexe combines pour les en-tetes de facture/resultat, au format
+// "27 ans / F" (F = femme, M = homme). Si le sexe est inconnu ou absent,
+// seul l'age est affiche ; si l'age manque, seul le sexe. '' si rien.
+export function formatAgeSexe(dateNaissance, age, sexe) {
+  const agePart = formatAge(dateNaissance, age)
+  let sexePart = ''
+  if (sexe === 'femme') sexePart = 'F'
+  else if (sexe === 'homme') sexePart = 'M'
+  return [agePart, sexePart].filter(Boolean).join(' / ')
+}
+
 // Convertit un age saisi en annees/mois/jours en une DATE DE NAISSANCE
 // approximative (chaine 'YYYY-MM-DD'), calculee a partir d'aujourd'hui.
 // Utile quand l'utilisateur ne connait pas la date de naissance exacte

@@ -5,7 +5,7 @@ import jsPDF from 'jspdf'
 import PropTypes from 'prop-types'
 import logoLeft from '../images/bioramlogo.png'
 import logoRight from '../images/logo2.png'
-import { formatAge } from '../utils/age'
+import { formatAgeSexe } from '../utils/age'
 
 function GeneratePDFButton({ invoice }) {
   const [user, setUser] = useState({
@@ -210,20 +210,15 @@ function GeneratePDFButton({ invoice }) {
         invoice.cliniquePartenaireId?.nom ||
         'paf'
 
-      // Age : calcule depuis la date de naissance (gere les nouveau-nes :
-      // mois/jours), sinon age numerique, sinon VIDE.
-      const ageDisplay = formatAge(
+      // Age + sexe combines au format "27 ans / F" (sexe omis si
+      // inconnu/absent, age omis si indisponible).
+      const ageSexeDisplay = formatAgeSexe(
         invoice.userId.dateNaissance,
-        invoice.userId.age
+        invoice.userId.age,
+        invoice.userId.sexe
       )
 
-      // Sexe : vide si inconnu ou absent (meme regle que le ticket).
-      const sexeDisplay =
-        invoice.userId.sexe && invoice.userId.sexe !== 'inconnu'
-          ? invoice.userId.sexe
-          : ''
-
-      doc.text(`Âge: ${ageDisplay}`, 135, currentY + 17)
+      doc.text(`Âge: ${ageSexeDisplay}`, 135, currentY + 17)
 
       doc.text(`Tel: ${invoice.userId.telephone || ''}`, 135, currentY + 22)
 
@@ -261,8 +256,6 @@ function GeneratePDFButton({ invoice }) {
         35,
         currentY + 17
       )
-      // Sexe du patient, sous "Nature" (slot libre de la colonne gauche).
-      doc.text(`Sexe: ${sexeDisplay}`, 35, currentY + 22)
       doc.setFont('helvetica', 'normal')
 
       // En-tête des articles avec fond vert

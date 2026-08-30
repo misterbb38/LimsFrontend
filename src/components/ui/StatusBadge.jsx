@@ -37,12 +37,18 @@ const STATUS_COLOR = {
   'impayee':               'error',
   'reliquat':              'warning',
   'prise en charge':       'info',
-  // Prelevement (cles normalisees sans accents par norm())
-  'dossier non preleve':   'error',
+  // Prelevement (cles normalisees sans accents par norm()).
+  // Statuts derives du dossier : Non prélevé / En attente ('en attente'
+  // deja mappe plus haut) / Effectué / À reprélever / À contrôler.
+  // Statuts par parametre : Prélevé / Non prélevé / À reprélever /
+  // À contrôler.
+  'non preleve':           'error',
+  'preleve':               'success',
   'effectue':              'success',
   'non effectue':          'warning',
   'a reprelever':          'error',
   'a controler':           'warning',
+  'dossier non preleve':   'error', // legacy
 }
 
 // Libelles courts pour les cellules de tableau
@@ -50,6 +56,7 @@ const COMPACT_LABEL = {
   'echantillon collecte':  'Collecte',
   'livre au laboratoire':  'Livre',
   'validation technique':  'Technique',
+  'dossier non preleve':   'Non prélevé',
 }
 
 // Normalise une valeur pour le mapping (sans accent, minuscule)
@@ -67,8 +74,11 @@ function StatusBadge({ value, type = 'status', compact = false, className = '' }
   const label = compact && COMPACT_LABEL[key] ? COMPACT_LABEL[key] : value
 
   return (
+    // whitespace-nowrap + h-auto : les libelles longs ("Prise en charge",
+    // "Dossier non prélevé") restent sur UNE ligne au lieu d'etre coupes
+    // par la hauteur fixe du badge DaisyUI dans les cellules etroites.
     <span
-      className={`badge badge-${color} text-white font-medium px-2.5 py-1 ${className}`}
+      className={`badge badge-${color} text-white font-medium px-2.5 py-1 whitespace-nowrap h-auto ${className}`}
     >
       {label}
     </span>

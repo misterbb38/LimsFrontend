@@ -26,6 +26,8 @@ function CreateAnalyseForm({ onAnalyseChange, preselectedUserId }) {
   const [searchTermIpm, setSearchTermIpm] = useState('')
   const [statusPayement, setStatusPayement] = useState('')
   const [typeAnalyse, setTypeAnalyse] = useState('Interne')
+  // Medecin/structure qui a prescrit l'analyse (texte libre, optionnel).
+  const [prescripteur, setPrescripteur] = useState('')
   // Mode test : si active, l'utilisateur saisit lui-meme le numero
   // d'analyse (dossier) au lieu de la generation automatique.
   const [modeTest, setModeTest] = useState(false)
@@ -351,6 +353,7 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
 if (pc2Quantity > 0) formData.append('pc2', pc2Quantity * 4000)
     formData.append('statusPayement', statusPayement || 'Impayée')
     formData.append('typeAnalyse', typeAnalyse || 'Interne')
+    formData.append('prescripteur', prescripteur.trim())
 
     // Mode test : envoyer le numero d'analyse saisi manuellement.
     if (modeTest && numeroTest.trim() !== '') {
@@ -568,6 +571,21 @@ if (pc2Quantity > 0) formData.append('pc2', pc2Quantity * 4000)
                 <option value="Interne">Interne</option>
                 <option value="Externe">Externe</option>
               </select>
+            </div>
+
+            {/* Prescripteur : medecin/structure qui a prescrit (texte libre,
+                affiche dans l'en-tete du resultat) */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Prescripteur</span>
+              </label>
+              <input
+                type="text"
+                className="input input-bordered"
+                placeholder="Ex : Dr Papa M. GUEYE"
+                value={prescripteur}
+                onChange={(e) => setPrescripteur(e.target.value)}
+              />
             </div>
 
             {/* === PARTENAIRE : une seule question, 3 selects exclusifs ===

@@ -335,11 +335,22 @@ function Facture() {
                     </td>
 
                     <td>
-                      <StatusBadge
-                        value={
-                          facture.prelevement?.statut || 'Dossier non prélevé'
-                        }
-                      />
+                      {/* Statut de prelevement DERIVE des parametres. Le
+                          title liste le detail par parametre (a controler /
+                          a reprelever) pour le voir sans quitter la page. */}
+                      <span
+                        title={(facture.prelevement?.parametres || [])
+                          .filter((p) => p.statut !== 'Prélevé')
+                          .map(
+                            (p) =>
+                              `${p.testId?.nom || ''} : ${p.statut}`.trim()
+                          )
+                          .join('\n')}
+                      >
+                        <StatusBadge
+                          value={facture.prelevement?.statut || 'Non prélevé'}
+                        />
+                      </span>
                     </td>
 
                     <td>

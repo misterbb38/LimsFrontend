@@ -12,6 +12,7 @@ function EditAnalyseButton({ analyseId, onAnalyseUpdated }) {
   const [ordonnancePdf, setOrdonnancePdf] = useState(null)
   const [statusPayement, setStatusPayement] = useState('')
   const [typeAnalyse, setTypeAnalyse] = useState('')
+  const [prescripteur, setPrescripteur] = useState('')
   // Mode test : permet de modifier manuellement le numero d'analyse.
   const [modeTest, setModeTest] = useState(false)
   const [numeroTest, setNumeroTest] = useState('')
@@ -158,6 +159,7 @@ const [pc2Quantity, setPc2Quantity] = useState(0)
 setPc2Quantity(data.data.pc2 > 0 ? Math.round(data.data.pc2 / 4000) : 0)
         setStatusPayement(data.data.statusPayement || 'Impayée') // Utilisez la valeur par défaut si aucune donnée n'est disponible
         setTypeAnalyse(data.data.typeAnalyse)
+        setPrescripteur(data.data.prescripteur || '')
         setAvance(data.data.avance || 0) // Récupération de l'avance
         setAvancePatient(data.data.avance || 0) // Récupération de l'avance
         setPaiements(Array.isArray(data.data.paiements) ? data.data.paiements : [])
@@ -297,6 +299,7 @@ formData.append('pc2', pc2Quantity * 4000) // Calculer le montant total PC2
     }
     formData.append('statusPayement', statusPayement)
     formData.append('typeAnalyse', typeAnalyse)
+    formData.append('prescripteur', prescripteur.trim())
 
     // Mode test : modifier le numero d'analyse (identifiant).
     if (modeTest && numeroTest.trim() !== '') {
@@ -440,6 +443,21 @@ formData.append('pc2', pc2Quantity * 4000) // Calculer le montant total PC2
                   <option value="Interne">Interne</option>
                   <option value="Externe">Externe</option>
                 </select>
+              </div>
+
+              {/* Prescripteur : medecin/structure qui a prescrit (texte
+                  libre, affiche dans l'en-tete du resultat) */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Prescripteur</span>
+                </label>
+                <input
+                  type="text"
+                  className="input input-bordered"
+                  placeholder="Ex : Dr Papa M. GUEYE"
+                  value={prescripteur}
+                  onChange={(e) => setPrescripteur(e.target.value)}
+                />
               </div>
 
               {/* === PARTENAIRE : une seule question, 3 selects exclusifs ===

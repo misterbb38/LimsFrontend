@@ -5,16 +5,28 @@ import { Card, SectionHeader, StatusBadge } from '../components/ui'
 
 const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
 
-const STATUTS = [
-  'Dossier non prélevé',
+// Statuts DERIVES du dossier (filtre + badge). Calcules cote serveur a
+// partir des statuts par parametre.
+const STATUTS_DOSSIER = [
+  'Non prélevé',
+  'En attente',
   'Effectué',
-  'Non effectué',
   'À reprélever',
   'À contrôler',
 ]
 
-// Statuts qui exigent de cocher les paramètres concernés.
-const STATUTS_AVEC_DETAIL = ['Non effectué', 'À reprélever', 'À contrôler']
+// Statuts par PARAMETRE (choisis par le preleveur dans le modal).
+const STATUTS_PARAM = ['Prélevé', 'Non prélevé', 'À reprélever', 'À contrôler']
+
+// Meme derivation que le serveur, pour l'apercu live dans le modal.
+const deriverStatutDossier = (statuts) => {
+  if (statuts.includes('À reprélever')) return 'À reprélever'
+  if (statuts.includes('À contrôler')) return 'À contrôler'
+  const nbPreleves = statuts.filter((s) => s === 'Prélevé').length
+  if (statuts.length > 0 && nbPreleves === statuts.length) return 'Effectué'
+  if (nbPreleves > 0) return 'En attente'
+  return 'Non prélevé'
+}
 
 const fmtDate = (d) =>
   d
@@ -39,10 +51,12 @@ function Prelevement() {
   const [dateDebut, setDateDebut] = useState('')
   const [dateFin, setDateFin] = useState('')
 
-  // Modal de changement de statut
-  const [selected, setSelected] = useState(null) // analyse en cours d'edition
-  const [formStatut, setFormStatut] = useState('')
-  const [formTests, setFormTests] = useState(new Set())
+  // Modal : statut PAR PARAMETRE du dossier selectionne
+  const [selected, setSelected] = useState(null)
+  const [formStatuts, setFormStatuts] = useState({}) // { testId: statut }
+  // Cases cochees pour les actions groupees (Set de testId)
+  const [checkedParams, setCheckedParams] = useState(new Set())
+  const [formOrigine, setFormOrigine] = useState('Prélevé au laboratoire')
   const [formCommentaire, setFormCommentaire] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
@@ -92,14 +106,20 @@ function Prelevement() {
 
   const openModal = (analyse) => {
     setSelected(analyse)
-    setFormStatut(analyse.prelevement?.statut || 'Dossier non prélevé')
-    setFormTests(
-      new Set(
-        (analyse.prelevement?.testsConcernes || []).map((t) =>
-          String(t?._id || t)
-        )
-      )
+    // Statuts existants par parametre, sinon "Non prélevé" par defaut.
+    const existants = new Map(
+      (analyse.prelevement?.parametres || []).map((p) => [
+        String(p.testId?._id || p.testId),
+        p.statut,
+      ])
     )
+    const init = {}
+    ;(analyse.tests || []).forEach((t) => {
+      init[String(t._id)] = existants.get(String(t._id)) || 'Non prélevé'
+    })
+    setFormStatuts(init)
+    setCheckedParams(new Set())
+    setFormOrigine(analyse.prelevement?.origine || 'Prélevé au laboratoire')
     setFormCommentaire(analyse.prelevement?.commentaire || '')
     setSaveError('')
   }
@@ -109,29 +129,65 @@ function Prelevement() {
     setSaveError('')
   }
 
-  const handleStatutChange = (statut) => {
-    setFormStatut(statut)
-    // Les statuts sans detail n'ont pas de parametres coches.
-    if (!STATUTS_AVEC_DETAIL.includes(statut)) setFormTests(new Set())
+  const setStatutParam = (testId, statut) =>
+    setFormStatuts((prev) => ({ ...prev, [testId]: statut }))
+
+  const setTous = (statut) => {
+    setFormStatuts((prev) => {
+      const next = {}
+      Object.keys(prev).forEach((k) => {
+        next[k] = statut
+      })
+      return next
+    })
   }
 
-  const toggleTest = (id) => {
-    setFormTests((prev) => {
+  // --- Selection par cases a cocher (actions groupees) ---
+  const toggleChecked = (id) =>
+    setCheckedParams((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
       else next.add(id)
       return next
     })
+
+  const allIds = (selected?.tests || []).map((t) => String(t._id))
+  const allChecked =
+    allIds.length > 0 && allIds.every((id) => checkedParams.has(id))
+
+  const toggleCheckAll = () =>
+    setCheckedParams(allChecked ? new Set() : new Set(allIds))
+
+  // Inverser : les coches deviennent decoches et inversement. Utile pour
+  // "tout sauf" : cocher les exceptions puis inverser.
+  const inverserSelection = () =>
+    setCheckedParams(
+      (prev) => new Set(allIds.filter((id) => !prev.has(id)))
+    )
+
+  // Applique un statut UNIQUEMENT aux parametres coches.
+  const setSelection = (statut) => {
+    if (checkedParams.size === 0) return
+    setFormStatuts((prev) => {
+      const next = { ...prev }
+      checkedParams.forEach((id) => {
+        next[id] = statut
+      })
+      return next
+    })
   }
 
-  const besoinDetail = STATUTS_AVEC_DETAIL.includes(formStatut)
-  const formInvalide = !formStatut || (besoinDetail && formTests.size === 0)
+  const statutDerive = deriverStatutDossier(Object.values(formStatuts))
 
   const handleSave = async () => {
-    if (formInvalide || !selected) return
+    if (!selected) return
     setSaving(true)
     setSaveError('')
     try {
+      const parametres = Object.entries(formStatuts).map(([testId, statut]) => ({
+        testId,
+        statut,
+      }))
       const res = await fetch(`${apiUrl}/api/prelevement/${selected._id}`, {
         method: 'PUT',
         headers: {
@@ -139,8 +195,8 @@ function Prelevement() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          statut: formStatut,
-          testsConcernes: [...formTests],
+          parametres,
+          origine: formOrigine,
           commentaire: formCommentaire,
         }),
       })
@@ -156,6 +212,17 @@ function Prelevement() {
     } finally {
       setSaving(false)
     }
+  }
+
+  // Resume par dossier : "x/y prélevés" + parametres a probleme.
+  const resumeParametres = (a) => {
+    const params = a.prelevement?.parametres || []
+    if (params.length === 0) return null
+    const nbPreleves = params.filter((p) => p.statut === 'Prélevé').length
+    const problemes = params.filter(
+      (p) => p.statut === 'À reprélever' || p.statut === 'À contrôler'
+    )
+    return { nbPreleves, totalParams: params.length, problemes }
   }
 
   // Pagination fenetree : au plus 10 numeros affiches, centres sur la
@@ -176,7 +243,7 @@ function Prelevement() {
 
       <SectionHeader
         title="Prélèvement"
-        subtitle="Statut de prélèvement des dossiers (salle de prélèvement)"
+        subtitle="Statut de prélèvement de chaque paramètre (salle de prélèvement)"
       />
 
       {/* Filtres */}
@@ -184,7 +251,7 @@ function Prelevement() {
         <div className="flex flex-wrap gap-3 items-end">
           <div>
             <label className="label py-1">
-              <span className="label-text text-xs">Statut</span>
+              <span className="label-text text-xs">Statut du dossier</span>
             </label>
             <select
               className="select select-bordered select-sm"
@@ -192,7 +259,7 @@ function Prelevement() {
               onChange={(e) => onFilterChange(setFilterStatut)(e.target.value)}
             >
               <option value="">Tous</option>
-              {STATUTS.map((s) => (
+              {STATUTS_DOSSIER.map((s) => (
                 <option key={s} value={s}>
                   {s}
                 </option>
@@ -275,16 +342,16 @@ function Prelevement() {
                   <th>Patient</th>
                   <th>NIP</th>
                   <th>Paramètres</th>
-                  <th>Statut prélèvement</th>
-                  <th>Paramètres concernés</th>
-                  <th>Préleveur</th>
+                  <th>Statut dossier</th>
+                  <th>Détail</th>
+                  <th>Préleveur / Réception</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {analyses.map((a) => {
-                  const statut = a.prelevement?.statut || 'Dossier non prélevé'
-                  const concernes = a.prelevement?.testsConcernes || []
+                  const statut = a.prelevement?.statut || 'Non prélevé'
+                  const resume = resumeParametres(a)
                   return (
                     <tr key={a._id}>
                       <td className="text-sm">{fmtDate(a.createdAt)}</td>
@@ -294,7 +361,7 @@ function Prelevement() {
                       </td>
                       <td className="font-mono text-sm">{a.userId?.nip}</td>
                       <td
-                        className="text-sm max-w-[16rem]"
+                        className="text-sm max-w-[14rem]"
                         title={(a.tests || []).map((t) => t.nom).join(', ')}
                       >
                         <span className="truncate block">
@@ -305,15 +372,23 @@ function Prelevement() {
                         <StatusBadge value={statut} />
                       </td>
                       <td>
-                        {STATUTS_AVEC_DETAIL.includes(statut) &&
-                        concernes.length > 0 ? (
-                          <div className="flex flex-wrap gap-1 max-w-[14rem]">
-                            {concernes.map((t) => (
+                        {resume ? (
+                          <div className="flex flex-wrap items-center gap-1 max-w-[16rem]">
+                            <span className="text-xs opacity-70 whitespace-nowrap">
+                              {resume.nbPreleves}/{resume.totalParams} prélevé
+                              {resume.nbPreleves > 1 ? 's' : ''}
+                            </span>
+                            {resume.problemes.map((p) => (
                               <span
-                                key={t._id || t}
-                                className="badge badge-outline badge-sm"
+                                key={p.testId?._id || p.testId}
+                                className={`badge badge-outline badge-sm whitespace-nowrap ${
+                                  p.statut === 'À reprélever'
+                                    ? 'badge-error'
+                                    : 'badge-warning'
+                                }`}
+                                title={p.statut}
                               >
-                                {t.nom || t}
+                                {p.testId?.nom || '?'} — {p.statut}
                               </span>
                             ))}
                           </div>
@@ -322,9 +397,20 @@ function Prelevement() {
                         )}
                       </td>
                       <td className="text-sm">
-                        {a.prelevement?.preleveurId
-                          ? `${a.prelevement.preleveurId.prenom || ''} ${a.prelevement.preleveurId.nom || ''}`.trim()
-                          : '-'}
+                        {a.prelevement?.preleveurId ? (
+                          <div>
+                            <div>
+                              {`${a.prelevement.preleveurId.prenom || ''} ${a.prelevement.preleveurId.nom || ''}`.trim()}
+                            </div>
+                            <div className="text-xs opacity-60 whitespace-nowrap">
+                              {a.prelevement?.origine === 'Apporté au laboratoire'
+                                ? 'Apporté (réceptionné)'
+                                : 'Prélevé au labo'}
+                            </div>
+                          </div>
+                        ) : (
+                          '-'
+                        )}
                       </td>
                       <td>
                         <button
@@ -379,10 +465,10 @@ function Prelevement() {
         </Card>
       )}
 
-      {/* Modal de statut */}
+      {/* Modal : statut par parametre */}
       {selected && (
         <dialog open className="modal">
-          <div className="modal-box max-w-xl">
+          <div className="modal-box max-w-2xl">
             <button
               type="button"
               className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
@@ -398,60 +484,172 @@ function Prelevement() {
               {selected.userId?.nip ? ` — NIP ${selected.userId.nip}` : ''}
             </p>
 
-            {/* Statuts */}
-            <div className="mt-4 space-y-1">
-              {STATUTS.map((s) => (
-                <label
-                  key={s}
-                  className="label cursor-pointer justify-start gap-3 py-1"
-                >
-                  <input
-                    type="radio"
-                    name="statut-prelevement"
-                    className="radio radio-sm radio-primary"
-                    checked={formStatut === s}
-                    onChange={() => handleStatutChange(s)}
-                  />
-                  <span className="label-text">{s}</span>
-                </label>
-              ))}
+            {/* Origine : preleve sur place ou echantillon apporte. La
+                personne qui enregistre (connectee) est tracee comme
+                preleveur ou receptionnaire selon ce choix. */}
+            <div className="mt-4 flex flex-wrap items-center gap-4">
+              <span className="text-xs opacity-70">Origine :</span>
+              {['Prélevé au laboratoire', 'Apporté au laboratoire'].map(
+                (o) => (
+                  <label
+                    key={o}
+                    className="label cursor-pointer justify-start gap-2 py-0"
+                  >
+                    <input
+                      type="radio"
+                      name="origine-prelevement"
+                      className="radio radio-sm radio-primary"
+                      checked={formOrigine === o}
+                      onChange={() => setFormOrigine(o)}
+                    />
+                    <span className="label-text text-sm">{o}</span>
+                  </label>
+                )
+              )}
             </div>
 
-            {/* Parametres concernes (statuts partiels) */}
-            {besoinDetail && (
-              <div className="mt-3 p-3 bg-base-200 rounded-lg">
-                <div className="font-medium text-sm mb-2">
-                  Paramètres concernés *
+            {/* Actions rapides sur TOUS les parametres */}
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              <span className="text-xs opacity-70">Tout marquer :</span>
+              <button
+                className="btn btn-xs btn-success"
+                onClick={() => setTous('Prélevé')}
+              >
+                Prélevé
+              </button>
+              <button
+                className="btn btn-xs"
+                onClick={() => setTous('Non prélevé')}
+              >
+                Non prélevé
+              </button>
+              <span className="ml-auto flex items-center gap-2 text-sm">
+                Statut du dossier : <StatusBadge value={statutDerive} />
+              </span>
+            </div>
+
+            {/* Actions groupees sur la SELECTION (cases cochees).
+                Ex. "tout sauf 6" : Tout marquer Prélevé, cocher les 6
+                exceptions, puis "Marquer la sélection : Non prélevé"
+                (ou cocher les 6 puis Inverser, puis marquer Prélevé). */}
+            <div className="flex flex-wrap items-center gap-2 mt-2 p-2 rounded-lg border border-base-300">
+              <span className="text-xs opacity-70 whitespace-nowrap">
+                Sélection ({checkedParams.size}) :
+              </span>
+              <button
+                className="btn btn-xs btn-outline"
+                onClick={toggleCheckAll}
+              >
+                {allChecked ? 'Tout désélectionner' : 'Tout sélectionner'}
+              </button>
+              <button
+                className="btn btn-xs btn-outline"
+                onClick={inverserSelection}
+              >
+                Inverser
+              </button>
+              <span className="text-xs opacity-70 whitespace-nowrap ml-1">
+                Marquer la sélection :
+              </span>
+              <button
+                className="btn btn-xs btn-success"
+                disabled={checkedParams.size === 0}
+                onClick={() => setSelection('Prélevé')}
+              >
+                Prélevé
+              </button>
+              <button
+                className="btn btn-xs"
+                disabled={checkedParams.size === 0}
+                onClick={() => setSelection('Non prélevé')}
+              >
+                Non prélevé
+              </button>
+              <button
+                className="btn btn-xs btn-error"
+                disabled={checkedParams.size === 0}
+                onClick={() => setSelection('À reprélever')}
+              >
+                À reprélever
+              </button>
+              <button
+                className="btn btn-xs btn-warning"
+                disabled={checkedParams.size === 0}
+                onClick={() => setSelection('À contrôler')}
+              >
+                À contrôler
+              </button>
+            </div>
+
+            {/* Un statut PAR PARAMETRE */}
+            <div className="mt-3 p-3 bg-base-200 rounded-lg max-h-72 overflow-y-auto">
+              {(selected.tests || []).length === 0 ? (
+                <div className="text-sm opacity-60">
+                  Aucun paramètre dans ce dossier.
                 </div>
-                {(selected.tests || []).length === 0 ? (
-                  <div className="text-sm opacity-60">
-                    Aucun paramètre dans ce dossier.
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 max-h-52 overflow-y-auto">
-                    {(selected.tests || []).map((t) => (
-                      <label
-                        key={t._id}
-                        className="label cursor-pointer justify-start gap-2 py-1"
-                      >
+              ) : (
+                <table className="table table-xs">
+                  <thead>
+                    <tr>
+                      <th className="w-8">
                         <input
                           type="checkbox"
-                          className="checkbox checkbox-sm checkbox-primary"
-                          checked={formTests.has(String(t._id))}
-                          onChange={() => toggleTest(String(t._id))}
+                          className="checkbox checkbox-xs"
+                          checked={allChecked}
+                          onChange={toggleCheckAll}
+                          title="Tout sélectionner / désélectionner"
                         />
-                        <span className="label-text text-sm">{t.nom}</span>
-                      </label>
+                      </th>
+                      <th>Paramètre</th>
+                      <th className="w-44">Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(selected.tests || []).map((t) => (
+                      <tr key={t._id}>
+                        <td>
+                          <input
+                            type="checkbox"
+                            className="checkbox checkbox-xs"
+                            checked={checkedParams.has(String(t._id))}
+                            onChange={() => toggleChecked(String(t._id))}
+                          />
+                        </td>
+                        <td
+                          className="text-sm cursor-pointer"
+                          onClick={() => toggleChecked(String(t._id))}
+                        >
+                          {t.nom}
+                        </td>
+                        <td>
+                          <select
+                            className={`select select-bordered select-xs w-full ${
+                              formStatuts[String(t._id)] === 'Prélevé'
+                                ? 'select-success'
+                                : formStatuts[String(t._id)] === 'À reprélever'
+                                  ? 'select-error'
+                                  : formStatuts[String(t._id)] === 'À contrôler'
+                                    ? 'select-warning'
+                                    : ''
+                            }`}
+                            value={formStatuts[String(t._id)] || 'Non prélevé'}
+                            onChange={(e) =>
+                              setStatutParam(String(t._id), e.target.value)
+                            }
+                          >
+                            {STATUTS_PARAM.map((s) => (
+                              <option key={s} value={s}>
+                                {s}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                      </tr>
                     ))}
-                  </div>
-                )}
-                {formTests.size === 0 && (
-                  <div className="text-xs text-warning mt-1">
-                    Cochez au moins un paramètre pour ce statut.
-                  </div>
-                )}
-              </div>
-            )}
+                  </tbody>
+                </table>
+              )}
+            </div>
 
             {/* Commentaire */}
             <div className="mt-3">
@@ -480,7 +678,7 @@ function Prelevement() {
               <button
                 className="btn btn-primary"
                 onClick={handleSave}
-                disabled={saving || formInvalide}
+                disabled={saving || (selected.tests || []).length === 0}
               >
                 {saving ? 'Enregistrement...' : 'Enregistrer'}
               </button>
