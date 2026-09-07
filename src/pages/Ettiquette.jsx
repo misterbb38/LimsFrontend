@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import NavigationBreadcrumb from '../components/NavigationBreadcrumb'
 import FiltreEtiquette from '../components/FiltreEtiquette'
+import EditDateEtiquetteButton from '../components/EditDateEtiquetteButton'
 
 function EtiquetteList() {
   const [etiquettes, setEtiquettes] = useState([])
@@ -120,9 +121,15 @@ function EtiquetteList() {
 
   // Vérifier si le type d'utilisateur est autorisé
   if (
-    !['superadmin', 'medecin', 'docteur', 'biologiste', 'preleveur', 'acceuil', 'accueil'].includes(
-      userInfo?.userType
-    )
+    ![
+      'superadmin',
+      'medecin',
+      'docteur',
+      'biologiste',
+      'preleveur',
+      'acceuil',
+      'accueil',
+    ].includes(userInfo?.userType)
   ) {
     // Si l'utilisateur n'est pas autorisé, retourner un message d'erreur ou un composant spécifique
     return (
@@ -186,6 +193,9 @@ function EtiquetteList() {
                   <th className="font-bold text-lg text-base-content">
                     Status
                   </th>
+                  <th className="font-bold text-lg text-base-content">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -208,8 +218,7 @@ function EtiquetteList() {
                           },
                           body: JSON.stringify({
                             statusPayement: next,
-                            datePayement:
-                              next === 'Payée' ? new Date() : null,
+                            datePayement: next === 'Payée' ? new Date() : null,
                           }),
                         }
                       )
@@ -242,6 +251,13 @@ function EtiquetteList() {
                         >
                           {isPaye ? 'Payée' : 'Impayée'}
                         </button>
+                      </td>
+                      <td>
+                        <EditDateEtiquetteButton
+                          etiquette={etiquette}
+                          onUpdated={fetchEtiquettes}
+                          size="sm"
+                        />
                       </td>
                     </tr>
                   )

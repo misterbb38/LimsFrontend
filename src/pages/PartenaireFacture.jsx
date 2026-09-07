@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo, Fragment } from 'react'
+import PropTypes from 'prop-types'
 import NavigationBreadcrumb from '../components/NavigationBreadcrumb'
 import Chatbot from '../components/Chatbot'
 import GenerateFacturePartenaire from '../components/GenerateFacturePartenaire'
 import GenerateFactureGroupePartenaire from '../components/GenerateFactureGroupePartenaire'
+import EditDateEtiquetteButton from '../components/EditDateEtiquetteButton'
 
 const apiUrl = import.meta.env.VITE_APP_API_BASE_URL
 
@@ -27,6 +29,72 @@ const periode = (premiere, derniere) => {
   return a === b ? a : `${a} → ${b}`
 }
 
+// Detail des dossiers d'un partenaire, replie par defaut. Sert surtout a
+// corriger la DATE DE FACTURATION d'un dossier : c'est elle qui decide du
+// mois de la facture, et un dossier saisi ou re-affecte en retard peut se
+// retrouver dans le mauvais mois.
+function DetailEtiquettes({ partner, colSpan, onUpdated }) {
+  const lignes = Array.isArray(partner?.etiquettes) ? partner.etiquettes : []
+  if (lignes.length === 0) {
+    return (
+      <tr>
+        <td colSpan={colSpan} className="bg-base-200 text-sm italic opacity-70">
+          Aucun dossier sur la période.
+        </td>
+      </tr>
+    )
+  }
+  const triees = [...lignes].sort(
+    (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+  )
+  return (
+    <tr>
+      <td colSpan={colSpan} className="bg-base-200 p-0">
+        <table className="table table-sm w-full">
+          <thead>
+            <tr>
+              <th>Date de facturation</th>
+              <th>Dossier</th>
+              <th>Patient</th>
+              <th>Somme</th>
+              <th>Statut</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {triees.map((e) => (
+              <tr key={e._id}>
+                <td>{fmtDate(e.createdAt)}</td>
+                <td>{e.analyse?.identifiant || '-'}</td>
+                <td>
+                  {[e.analyse?.user?.prenom, e.analyse?.user?.nom]
+                    .filter(Boolean)
+                    .join(' ') || '-'}
+                </td>
+                <td>{e.sommeAPayer}</td>
+                <td>{e.statusPayement}</td>
+                <td>
+                  <EditDateEtiquetteButton
+                    etiquette={e}
+                    onUpdated={onUpdated}
+                    size="sm"
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  )
+}
+
+DetailEtiquettes.propTypes = {
+  partner: PropTypes.object.isRequired,
+  colSpan: PropTypes.number.isRequired,
+  onUpdated: PropTypes.func,
+}
+
 function PartenaireFacture() {
   const [partners, setPartners] = useState([])
   const [loading, setLoading] = useState(true)
@@ -38,6 +106,10 @@ function PartenaireFacture() {
   const [selectedType, setSelectedType] = useState('')
   const [viewMode, setViewMode] = useState('simple') // 'simple' | 'groupe'
   const [expandedGroups, setExpandedGroups] = useState({})
+  // Detail des dossiers, par partenaire (cle = partenaireId).
+  const [expandedPartners, setExpandedPartners] = useState({})
+  // Incremente pour forcer un re-fetch apres modification d'une date.
+  const [reload, setReload] = useState(0)
 
   // Re-fetch automatique des le changement de mois/annee. Tableau de
   // dependance vide en plus de [mois, annee] : couvre aussi le 1er
@@ -76,7 +148,7 @@ function PartenaireFacture() {
     }
     fetchPartners()
     return () => ctrl.abort()
-  }, [mois, annee, dateDebut, dateFin])
+  }, [mois, annee, dateDebut, dateFin, reload])
 
   // Listes uniques pour alimenter les selects. Tous les types sont
   // listes (cliniques incluses) : permet de suivre les analyses
@@ -150,7 +222,8 @@ function PartenaireFacture() {
     // type majoritaire du groupe
     return Array.from(map.values())
       .map((g) => {
-        const dominantType = Object.entries(g.types).sort((a, b) => b[1] - a[1])[0]?.[0] || '-'
+        const dominantType =
+          Object.entries(g.types).sort((a, b) => b[1] - a[1])[0]?.[0] || '-'
         return { ...g, dominantType }
       })
       .sort((a, b) => a.name.localeCompare(b.name))
@@ -159,12 +232,24 @@ function PartenaireFacture() {
   const toggleGroup = (key) =>
     setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] }))
 
+  const togglePartner = (key) =>
+    setExpandedPartners((prev) => ({ ...prev, [key]: !prev[key] }))
+
+  // Une date de facturation a change : les totaux et les bornes de
+  // periode sont recalcules cote serveur, on refait la requete.
+  const handleDateUpdated = () => setReload((n) => n + 1)
+
   // Page financiere : interdite aux techniciens et biologistes.
   const currentUserInfo = JSON.parse(localStorage.getItem('userInfo') || 'null')
   if (
-    !['superadmin', 'medecin', 'docteur', 'preleveur', 'acceuil', 'accueil'].includes(
-      currentUserInfo?.userType
-    )
+    ![
+      'superadmin',
+      'medecin',
+      'docteur',
+      'preleveur',
+      'acceuil',
+      'accueil',
+    ].includes(currentUserInfo?.userType)
   ) {
     return (
       <div role="alert" className="alert alert-warning">
@@ -190,8 +275,18 @@ function PartenaireFacture() {
         >
           <option value="">Mois (tous)</option>
           {[
-            'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-            'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
+            'Janvier',
+            'Février',
+            'Mars',
+            'Avril',
+            'Mai',
+            'Juin',
+            'Juillet',
+            'Août',
+            'Septembre',
+            'Octobre',
+            'Novembre',
+            'Décembre',
           ].map((nom, idx) => (
             <option key={nom} value={idx + 1}>
               {nom}
@@ -301,6 +396,7 @@ function PartenaireFacture() {
           <table className="table w-full">
             <thead>
               <tr>
+                <th className="font-bold text-lg text-base-content w-8"></th>
                 <th className="font-bold text-lg text-base-content">Nom</th>
                 <th className="font-bold text-lg text-base-content">
                   Type Partenaire
@@ -312,24 +408,50 @@ function PartenaireFacture() {
               </tr>
             </thead>
             <tbody>
-              {filteredPartners.map((partner) => (
-                <tr key={partner.partenaireId}>
-                  <td>{partner.partenaire}</td>
-                  <td>{partner.typePartenaire}</td>
-                  <td>{partner.totalSomme}</td>
-                  <td>{partner.count}</td>
-                  <td className="text-sm">
-                    {periode(partner.premiereDate, partner.derniereDate)}
-                  </td>
-                  <td>
-                    <GenerateFacturePartenaire
-                      partner={partner}
-                      mois={mois}
-                      annee={annee}
-                    />
-                  </td>
-                </tr>
-              ))}
+              {filteredPartners.map((partner) => {
+                const isOpen = !!expandedPartners[partner.partenaireId]
+                return (
+                  <Fragment key={partner.partenaireId}>
+                    <tr>
+                      <td>
+                        <button
+                          className="btn btn-ghost btn-xs"
+                          onClick={() => togglePartner(partner.partenaireId)}
+                          aria-label={
+                            isOpen
+                              ? 'Masquer les dossiers'
+                              : 'Voir les dossiers'
+                          }
+                          title="Voir les dossiers (et corriger leur date)"
+                        >
+                          {isOpen ? '▼' : '▶'}
+                        </button>
+                      </td>
+                      <td>{partner.partenaire}</td>
+                      <td>{partner.typePartenaire}</td>
+                      <td>{partner.totalSomme}</td>
+                      <td>{partner.count}</td>
+                      <td className="text-sm">
+                        {periode(partner.premiereDate, partner.derniereDate)}
+                      </td>
+                      <td>
+                        <GenerateFacturePartenaire
+                          partner={partner}
+                          mois={mois}
+                          annee={annee}
+                        />
+                      </td>
+                    </tr>
+                    {isOpen && (
+                      <DetailEtiquettes
+                        partner={partner}
+                        colSpan={7}
+                        onUpdated={handleDateUpdated}
+                      />
+                    )}
+                  </Fragment>
+                )
+              })}
             </tbody>
           </table>
         </div>
@@ -350,7 +472,9 @@ function PartenaireFacture() {
                   Nb factures
                 </th>
                 <th className="font-bold text-lg text-base-content">Période</th>
-                <th className="font-bold text-lg text-base-content">Filiales</th>
+                <th className="font-bold text-lg text-base-content">
+                  Filiales
+                </th>
                 <th className="font-bold text-lg text-base-content">Actions</th>
               </tr>
             </thead>
@@ -372,7 +496,21 @@ function PartenaireFacture() {
                           >
                             {isOpen ? '▼' : '▶'}
                           </button>
-                        ) : null}
+                        ) : (
+                          // Groupe a un seul partenaire : le chevron ouvre
+                          // directement le detail de ses dossiers.
+                          <button
+                            className="btn btn-ghost btn-xs"
+                            onClick={() =>
+                              togglePartner(g.filiales[0]?.partenaireId)
+                            }
+                            title="Voir les dossiers (et corriger leur date)"
+                          >
+                            {expandedPartners[g.filiales[0]?.partenaireId]
+                              ? '▼'
+                              : '▶'}
+                          </button>
+                        )}
                       </td>
                       <td>{g.name}</td>
                       <td>{g.dominantType}</td>
@@ -398,26 +536,55 @@ function PartenaireFacture() {
                         )}
                       </td>
                     </tr>
+                    {/* Groupe a un seul partenaire : detail directement sous
+                        la ligne du groupe. */}
+                    {!hasMultiple &&
+                      expandedPartners[g.filiales[0]?.partenaireId] && (
+                        <DetailEtiquettes
+                          partner={g.filiales[0]}
+                          colSpan={8}
+                          onUpdated={handleDateUpdated}
+                        />
+                      )}
                     {hasMultiple && isOpen
                       ? g.filiales.map((p) => (
-                          <tr key={p.partenaireId} className="bg-base-100">
-                            <td></td>
-                            <td className="pl-8">↳ {p.partenaire}</td>
-                            <td>{p.typePartenaire}</td>
-                            <td>{p.totalSomme}</td>
-                            <td>{p.count}</td>
-                            <td className="text-sm">
-                              {periode(p.premiereDate, p.derniereDate)}
-                            </td>
-                            <td></td>
-                            <td>
-                              <GenerateFacturePartenaire
+                          <Fragment key={p.partenaireId}>
+                            <tr className="bg-base-100">
+                              <td>
+                                <button
+                                  className="btn btn-ghost btn-xs"
+                                  onClick={() => togglePartner(p.partenaireId)}
+                                  title="Voir les dossiers (et corriger leur date)"
+                                >
+                                  {expandedPartners[p.partenaireId]
+                                    ? '▼'
+                                    : '▶'}
+                                </button>
+                              </td>
+                              <td className="pl-8">↳ {p.partenaire}</td>
+                              <td>{p.typePartenaire}</td>
+                              <td>{p.totalSomme}</td>
+                              <td>{p.count}</td>
+                              <td className="text-sm">
+                                {periode(p.premiereDate, p.derniereDate)}
+                              </td>
+                              <td></td>
+                              <td>
+                                <GenerateFacturePartenaire
+                                  partner={p}
+                                  mois={mois}
+                                  annee={annee}
+                                />
+                              </td>
+                            </tr>
+                            {expandedPartners[p.partenaireId] && (
+                              <DetailEtiquettes
                                 partner={p}
-                                mois={mois}
-                                annee={annee}
+                                colSpan={8}
+                                onUpdated={handleDateUpdated}
                               />
-                            </td>
-                          </tr>
+                            )}
+                          </Fragment>
                         ))
                       : null}
                   </Fragment>
