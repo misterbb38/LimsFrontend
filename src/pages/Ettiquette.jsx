@@ -98,7 +98,17 @@ function EtiquetteList() {
     0
   )
 
-  const indexOfLastEtiquette = currentPage * etiquettesPerPage
+  const totalPageCount = Math.max(
+    1,
+    Math.ceil(filteredEtiquettes.length / etiquettesPerPage)
+  )
+
+  // Page effectivement affichee : bornee au nombre de pages restantes.
+  // Sans ca, un filtre ou un rechargement qui raccourcit la liste laisse
+  // currentPage au-dela de la derniere page -> tableau vide.
+  const pageSafe = Math.min(currentPage, totalPageCount)
+
+  const indexOfLastEtiquette = pageSafe * etiquettesPerPage
   const indexOfFirstEtiquette = indexOfLastEtiquette - etiquettesPerPage
   const currentEtiquettes = filteredEtiquettes.slice(
     indexOfFirstEtiquette,
@@ -107,9 +117,20 @@ function EtiquetteList() {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber)
 
-  const totalPageCount = Math.ceil(
-    filteredEtiquettes.length / etiquettesPerPage
+  // Pagination fenetree : au plus 10 numeros de page affiches a la fois,
+  // centres autour de la page courante (evite le debordement quand il y a
+  // beaucoup de pages). Boutons precedent/suivant en plus.
+  const PAGE_WINDOW = 10
+  const windowStart = Math.max(
+    1,
+    Math.min(
+      pageSafe - Math.floor(PAGE_WINDOW / 2),
+      totalPageCount - PAGE_WINDOW + 1
+    )
   )
+  const windowEnd = Math.min(totalPageCount, windowStart + PAGE_WINDOW - 1)
+  const pageNumbers = []
+  for (let p = windowStart; p <= windowEnd; p++) pageNumbers.push(p)
 
   function formatDate(date) {
     const d = new Date(date)
@@ -266,16 +287,39 @@ function EtiquetteList() {
             </table>
           </div>
           {totalPageCount > 1 && (
-            <nav className="flex justify-center mt-4 pagination">
-              {Array.from({ length: totalPageCount }, (_, index) => (
+            <nav className="flex flex-wrap justify-center items-center gap-2 mt-4">
+              <div className="join">
                 <button
-                  key={index}
-                  onClick={() => paginate(index + 1)}
-                  className={` page-link btn btn-secondary hover:bg-primary text-base-content rounde mr-2 page-item ${currentPage === index + 1 ? 'active' : ''}`}
+                  onClick={() => paginate(Math.max(1, pageSafe - 1))}
+                  disabled={pageSafe === 1}
+                  className="join-item btn btn-sm btn-ghost"
+                  aria-label="Page précédente"
                 >
-                  {index + 1}
+                  «
                 </button>
-              ))}
+                {pageNumbers.map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => paginate(p)}
+                    className={`join-item btn btn-sm ${pageSafe === p ? 'btn-primary' : 'btn-ghost'}`}
+                  >
+                    {p}
+                  </button>
+                ))}
+                <button
+                  onClick={() =>
+                    paginate(Math.min(totalPageCount, pageSafe + 1))
+                  }
+                  disabled={pageSafe === totalPageCount}
+                  className="join-item btn btn-sm btn-ghost"
+                  aria-label="Page suivante"
+                >
+                  »
+                </button>
+              </div>
+              <span className="text-sm opacity-70">
+                Page {pageSafe} / {totalPageCount}
+              </span>
             </nav>
           )}
         </>
