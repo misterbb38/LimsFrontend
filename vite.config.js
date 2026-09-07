@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3001,
+    port: 3000,
     // host: true ecoute sur toutes les interfaces (0.0.0.0 + ::1 + IP LAN).
     // Necessaire quand un VPN comme Happ/Hiddify intercepte le loopback,
     // l'app reste accessible via l'IP de l'interface VPN ou l'IP LAN.
