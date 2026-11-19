@@ -46,6 +46,12 @@ const KEEP_MAX = 55
 // Une fin de bloc plus courte que cette hauteur (mm) ne part jamais seule sur
 // la page suivante (couvre aussi le bloc de validation avec signature).
 const TAIL_MIN = 48
+// Un sous-bloc insecable plus petit que cette hauteur reste entier avec le
+// titre qui le precede ; plus grand, il est coupe apres ses premieres lignes.
+const LEAD_BLOCK_MAX = 35
+// Un petit bloc et la fin courte qui le suit passent ensemble a la page
+// suivante tant que leur hauteur totale ne depasse pas cette valeur.
+const KEEP_TAIL_MAX = 60
 
 const PT = 0.3528 // 1 point en mm
 const LH = (size) => size * PT * 1.3 // interligne
@@ -2198,6 +2204,24 @@ export function renderResultatPdf(doc, invoice, assets = {}) {
     if (isGroup(n)) return n.children.reduce((s, c) => s + height(c), 0)
     return n.h
   }
+  const leafCount = (n) =>
+    isGap(n) || isBreak(n)
+      ? 0
+      : isGroup(n)
+        ? n.children.reduce((s, c) => s + leafCount(c), 0)
+        : 1
+  /**
+   * Sous-bloc qui reste entier avec le titre qui le precede : il est court,
+   * ou il a trop peu de lignes pour etre coupe proprement.
+   */
+  const wholeWithTitle = (n) => {
+    const H = height(n)
+    const max = n.keepMax ?? KEEP_MAX
+    return (
+      H <= Math.min(max, LEAD_BLOCK_MAX) ||
+      (H <= max && leafCount(n) <= (n.head ?? 3) + 1)
+    )
+  }
   /** Hauteur des k premieres feuilles d'un noeud (titre + premieres lignes). */
   const leadHeight = (n, k) => {
     let h = 0
@@ -2209,6 +2233,17 @@ export function renderResultatPdf(doc, invoice, assets = {}) {
         return true
       }
       if (isGroup(node)) {
+        // Un sous-bloc insecable compte en entier : sinon le titre resterait
+        // seul en bas de page pendant que le sous-bloc passe a la suivante.
+        // Au-dela de LEAD_BLOCK_MAX, le sous-bloc sera coupe apres ses
+        // propres premieres lignes (voir place) : on ne reserve que celles-ci.
+        if (node !== n) {
+          h += wholeWithTitle(node)
+            ? height(node)
+            : leadHeight(node, node.head ?? 3)
+          count = k
+          return false
+        }
         for (const c of node.children) if (!walk(c)) return false
         return true
       }
@@ -2220,11 +2255,12 @@ export function renderResultatPdf(doc, invoice, assets = {}) {
     return h
   }
 
-  const st = { y: 0, fresh: false, stack: [] }
+  const st = { y: 0, fresh: false, stack: [], pages: 0, leaves: 0 }
   const rem = () => PAGE.BOTTOM - st.y
 
   const breakPage = () => {
     doc.addPage()
+    st.pages += 1
     drawFooter()
     st.y = drawPageHeader()
     st.fresh = true
@@ -2240,6 +2276,7 @@ export function renderResultatPdf(doc, invoice, assets = {}) {
     n.draw(st.y)
     st.y += n.h
     st.fresh = false
+    st.leaves += 1
   }
   const drawAll = (n) => {
     if (isGap(n)) {
@@ -2251,7 +2288,7 @@ export function renderResultatPdf(doc, invoice, assets = {}) {
    * Place un noeud dans le flux. `after` = hauteur de ce qui suit le noeud
    * dans son parent et qui doit rester avec sa fin (fin de test, validation).
    */
-  const place = (n, after = 0) => {
+  const place = (n, after = 0, force = false) => {
     if (!n) return
     if (isGap(n)) {
       if (!st.fresh) st.y = Math.min(st.y + n.gap, PAGE.BOTTOM)
@@ -2272,9 +2309,10 @@ export function renderResultatPdf(doc, invoice, assets = {}) {
     // (S'il tient ici mais pas avec la fin qu'il doit emmener, et que le tout
     // laisserait un trop grand blanc, il est coupe comme un grand groupe.)
     if (
+      !force &&
       H <= (n.keepMax ?? KEEP_MAX) &&
       !st.fresh &&
-      (H > rem() || H + after <= KEEP_MAX + 7)
+      (H > rem() || H + after <= KEEP_TAIL_MAX)
     ) {
       breakPage()
       return drawAll(n)
@@ -2282,27 +2320,57 @@ export function renderResultatPdf(doc, invoice, assets = {}) {
     // Grand groupe : coupe entre deux lignes. Le titre reste avec ses
     // premieres lignes ; une fin de bloc trop courte (moins de TAIL_MIN) ne
     // part jamais seule sur la page suivante : elle emmene ce qui la precede.
-    if (leadHeight(n, n.head ?? 3) > rem() && !st.fresh) breakPage()
+    // (un bloc tout entier contenu dans ses premieres lignes emmene aussi la
+    // fin courte qui le suit)
+    const lead = leadHeight(n, n.head ?? 3)
+    const leadNeed =
+      H - lead + after <= TAIL_MIN && H + after <= KEEP_TAIL_MAX
+        ? H + after
+        : lead
+    if (leadNeed > rem() && !st.fresh) breakPage()
     if (n.repeat) st.stack.push(n.repeat)
     const ch = n.children
+    // Lignes de ce groupe deja posees sur la page courante.
+    let page = st.pages
+    let drawn = 0
     for (let i = 0; i < ch.length; i++) {
       const c = ch[i]
       if (isGap(c) || isBreak(c)) {
         place(c)
         continue
       }
+      if (st.pages !== page) {
+        page = st.pages
+        drawn = n.head ?? 3
+      }
       const rest = ch.slice(i + 1)
       const hasBreak = rest.some(isBreak)
       const R = hasBreak
         ? Infinity
         : rest.reduce((s, x) => s + height(x), 0) + after
-      const carry = R <= TAIL_MIN ? R : 0
+      // Tant que les premieres lignes du bloc ne sont pas posees, rien n'est
+      // reporte a la page suivante : le titre ne doit pas rester seul.
+      const started = drawn >= (n.head ?? 3) || st.fresh
+      const carry = R <= TAIL_MIN && started ? R : 0
       if (isGroup(c)) {
-        place(c, carry)
+        // Juste apres le titre, un sous-bloc qui ne tient pas est coupe apres
+        // ses premieres lignes au lieu de laisser le titre seul en bas de page.
+        const before = st.leaves
+        place(
+          c,
+          carry,
+          drawn < (n.head ?? 3) && !st.fresh && !wholeWithTitle(c)
+        )
+        drawn += st.leaves - before
         continue
       }
-      if (c.h + carry > rem() && !st.fresh) breakPage()
+      // (la ligne n'emmene la fin que si le blanc laisse reste raisonnable)
+      // ni si cela laissait le titre du bloc seul en bas de page.
+      const need =
+        c.h + carry <= KEEP_MAX && drawn >= (n.head ?? 3) ? c.h + carry : c.h
+      if (need > rem() && !st.fresh) breakPage()
       drawLeaf(c)
+      drawn += 1
     }
     if (n.repeat) st.stack.pop()
   }
@@ -2332,6 +2400,9 @@ export function renderResultatPdf(doc, invoice, assets = {}) {
   const signature = validationNode()
   let signaturePlaced = false
 
+  // Toutes les rubriques forment un seul flux : une derniere rubrique tres
+  // courte emmene ainsi la fin de la precedente au lieu de partir seule.
+  const flux = []
   categories.forEach((cat, ci) => {
     const hasGrid = cat.tests.some((t) => t.grid)
     const children = [categoryBanner(cat.name)]
@@ -2350,8 +2421,8 @@ export function renderResultatPdf(doc, invoice, assets = {}) {
       }
       children.push(t.node)
     })
-    if (ci > 0) place(gap(6))
-    place(
+    if (ci > 0) flux.push(gap(6))
+    flux.push(
       group(children, {
         keepMax: 0,
         head: hasGrid ? 5 : 4,
@@ -2359,6 +2430,7 @@ export function renderResultatPdf(doc, invoice, assets = {}) {
       })
     )
   })
+  if (flux.length) place(group(flux, { keepMax: 0 }))
 
   if (signature && !signaturePlaced) {
     place(gap(7))

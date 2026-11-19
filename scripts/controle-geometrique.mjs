@@ -27,7 +27,10 @@ export const assets = {
 const PT = 0.3528
 const LIMITS = { left: 16.5, right: 190.6, bottom: 272.6, footer: 277 }
 // Blanc maximal tolere en bas d'une page non finale (hors saut de page voulu).
-const MAX_BLANC = 62
+// Borne = rubrique + titre + premier bloc insecable gardes ensemble (cas le
+// plus defavorable : une petite rubrique entiere reportee a la page suivante
+// plutot que de separer un titre de son tableau).
+const MAX_BLANC = 68
 
 export function rendre(invoice) {
   const doc = new jsPDF()
@@ -38,6 +41,7 @@ export function rendre(invoice) {
   doc.text = (text, x, y, options) => {
     const lines = Array.isArray(text) ? text : [text]
     const fs = doc.getFontSize()
+    const police = doc.getFont()
     lines.forEach((ln, i) => {
       const s = String(ln)
       if (!s.trim()) return
@@ -52,6 +56,11 @@ export function rendre(invoice) {
         y0: yy - fs * PT * 0.7,
         y1: yy + fs * PT * 0.2,
         s,
+        // Titre d'analyse : Courier gras 10 pt.
+        titre:
+          /courier/i.test(police.fontName) &&
+          police.fontStyle === 'bold' &&
+          fs === 10,
       })
     })
     return text0(text, x, y, options)
@@ -100,6 +109,18 @@ export function controler({ boxes, images, pages }, { sautVoulu }) {
           `p${p} signature dans le pied de page (y=${im.y1.toFixed(1)})`
         )
     }
+    // Titre orphelin : un titre repris avec "(suite)" a la page suivante ne
+    // doit pas etre dans les deux dernieres lignes de cette page.
+    if (p < pages && contenu.length) {
+      const bas = Math.max(...contenu.map((b) => b.y1))
+      const suites = boxes
+        .filter((b) => b.page === p + 1 && b.s.endsWith(' (suite)'))
+        .map((b) => b.s.slice(0, -' (suite)'.length))
+      for (const b of contenu) {
+        if (suites.includes(b.s) && b.y1 > bas - 9)
+          errs.push(`p${p} titre seul en bas de page : "${b.s}"`)
+      }
+    }
     if (p < pages) {
       const bas = Math.max(...contenu.map((b) => b.y1))
       const blanc = LIMITS.bottom - bas
@@ -107,11 +128,20 @@ export function controler({ boxes, images, pages }, { sautVoulu }) {
         errs.push(`p${p} grand blanc en bas de page : ${blanc.toFixed(0)} mm`)
     }
   }
-  // La validation ne doit jamais etre seule sur la derniere page.
+  // La validation ou une fin d'analyse ne doit jamais etre seule sur la
+  // derniere page. (Une analyse entiere, avec son titre, y est a sa place.)
   const derniere = boxes.filter(
     (b) => b.page === pages && b.y0 < LIMITS.footer - 1 && b.y0 > 20
   )
-  if (pages > 1 && derniere.length > 0 && derniere.length <= 3) {
+  const analyseEntiere = derniere.some(
+    (b) => b.titre && !b.s.endsWith(' (suite)')
+  )
+  if (
+    pages > 1 &&
+    derniere.length > 0 &&
+    derniere.length <= 3 &&
+    !analyseEntiere
+  ) {
     errs.push(
       `derniere page presque vide (${derniere.map((b) => b.s).join(' | ')})`
     )
